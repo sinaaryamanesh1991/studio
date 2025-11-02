@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { Users, Home, Briefcase, DatabaseZap } from 'lucide-react';
+import { Users, Home, Briefcase, DatabaseZap, Loader2 } from 'lucide-react';
 import type { Resident, Villa, BoardMember, Personnel } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +34,7 @@ const ownerStatusVariant = {
 
 
 export default function DashboardPage() {
-  const { firestore, user } = useFirebase();
+  const { firestore, user, isUserLoading } = useFirebase();
   const { toast } = useToast();
   const estateId = user?.uid;
 
@@ -91,7 +91,7 @@ export default function DashboardPage() {
 
   const isDataEmpty = !personnel?.length && !residents?.length && !villas?.length;
 
-  if (isLoading) {
+  if (isLoading && !isDataEmpty) {
     return (
       <>
         <PageHeader title="داشبورد" />
@@ -127,8 +127,9 @@ export default function DashboardPage() {
             <AlertTitle>دیتابیس شما خالی است!</AlertTitle>
             <AlertDescription>
                 برای شروع کار با برنامه و مشاهده قابلیت‌ها، می‌توانید داده‌های اولیه نمونه را به دیتابیس خود اضافه کنید.
-                <Button onClick={handleSeed} className="mt-4">
-                    اعمال داده های اولیه
+                <Button onClick={handleSeed} disabled={isUserLoading} className="mt-4">
+                    {isUserLoading && <Loader2 className="ms-2 h-4 w-4 animate-spin" />}
+                    {isUserLoading ? 'در حال اتصال...' : 'اعمال داده های اولیه'}
                 </Button>
             </AlertDescription>
         </Alert>
