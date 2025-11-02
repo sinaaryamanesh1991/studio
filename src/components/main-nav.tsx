@@ -59,16 +59,14 @@ export function MainNav() {
           <SidebarMenu>
             {navItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href} legacyBehavior passHref>
+                <Link href={item.href} passHref>
                   <SidebarMenuButton
-                    asChild
+                    as="a"
                     isActive={pathname === item.href}
                     tooltip={{ children: item.label, className: 'font-body' }}
                   >
-                    <a>
                       <item.icon />
                       <span>{item.label}</span>
-                    </a>
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
@@ -85,16 +83,16 @@ export function MainNav() {
                     <CollapsibleContent>
                         <SidebarMenuSub>
                           <SidebarMenuItem>
-                               <Link href="/financials" legacyBehavior passHref>
-                                    <SidebarMenuSubButton isActive={pathname === '/financials'}>
+                               <Link href="/financials" passHref>
+                                    <SidebarMenuSubButton as="a" isActive={pathname === '/financials'}>
                                         <List />
                                         <span>لیست تراکنش ها</span>
                                     </SidebarMenuSubButton>
                                 </Link>
                            </SidebarMenuItem>
                            <SidebarMenuItem>
-                                <Link href="/financials/payroll" legacyBehavior passHref>
-                                    <SidebarMenuSubButton isActive={pathname.startsWith('/financials/payroll')}>
+                                <Link href="/financials/payroll" passHref>
+                                    <SidebarMenuSubButton as="a" isActive={pathname.startsWith('/financials/payroll')}>
                                         <Settings />
                                         <span>حقوق و دستمزد</span>
                                     </SidebarMenuSubButton>

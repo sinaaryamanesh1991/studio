@@ -50,12 +50,12 @@ export default function PayrollListPage() {
                                 مشاهده و مدیریت حقوق و دستمزد محاسبه شده برای پرسنل.
                             </CardDescription>
                         </div>
-                        <Link href="/financials/payroll-calculator" passHref>
-                            <Button>
+                        <Button asChild>
+                            <Link href="/financials/payroll-calculator">
                                 <Calculator className="ms-2 h-4 w-4" />
                                 محاسبه حقوق جدید
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4">

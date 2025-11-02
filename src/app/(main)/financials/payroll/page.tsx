@@ -65,12 +65,12 @@ export default function PayrollSystemPage() {
     return (
         <>
             <PageHeader title="سیستم جامع حقوق و دستمزد">
-                 <Link href="/financials/payroll-calculator" passHref>
-                    <Button>
+                 <Button asChild>
+                    <Link href="/financials/payroll-calculator">
                         <Calculator className="ms-2 h-4 w-4" />
                         محاسبه حقوق جدید
-                    </Button>
-                </Link>
+                    </Link>
+                </Button>
             </PageHeader>
             
             <Tabs defaultValue="company-info" className="w-full">
@@ -90,12 +90,12 @@ export default function PayrollSystemPage() {
                             <CardDescription>برای مدیریت کامل پرسنل، به صفحه اختصاصی آن مراجعه کنید.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Link href="/personnel" passHref>
-                                <Button>
+                            <Button asChild>
+                                <Link href="/personnel">
                                     <Users className="ms-2 h-4 w-4" />
                                     رفتن به صفحه مدیریت پرسنل
-                                </Button>
-                            </Link>
+                                </Link>
+                            </Button>
                         </CardContent>
                     </Card>
                 </TabsContent>
