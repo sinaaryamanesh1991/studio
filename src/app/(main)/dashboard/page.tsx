@@ -16,8 +16,15 @@ const statusVariant = {
   'خالی': 'secondary',
 } as const;
 
+const ownerStatusVariant = {
+    'مالک ساکن است': 'default',
+    'ویلا خالی است': 'secondary',
+    'ساکن مستاجر است': 'outline',
+};
+
+
 export default function DashboardPage() {
-  const { personnel, residents, setResidents, boardMembers, exportData, importData } = useData();
+  const { personnel, residents, setResidents, boardMembers, villas, exportData, importData } = useData();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImportClick = () => {
@@ -41,7 +48,23 @@ export default function DashboardPage() {
     );
   };
   
-  const residentCount = residents.filter(r => r.status === 'ساکن').length;
+  const residentCount = residents.length;
+  const presentCount = residents.filter(r => r.status === 'ساکن').length;
+
+  const getOwnerStatus = (villaId: number): { text: string; variant: keyof typeof ownerStatusVariant } => {
+    const resident = residents.find(r => r.villaNumber === villaId);
+    const villa = villas.find(v => v.id === villaId);
+
+    if (resident && resident.status === 'ساکن') {
+      // A simple check to see if owner name is part of the resident name
+      if (villa && (resident.name.includes(villa.owner) || resident.familyName.includes(villa.owner) || villa.owner.includes(resident.name) || villa.owner.includes(resident.familyName))) {
+        return { text: 'مالک ساکن است', variant: 'مالک ساکن است' };
+      }
+      return { text: 'ساکن مستاجر است', variant: 'ساکن مستاجر است' };
+    }
+    return { text: 'ویلا خالی است', variant: 'ویلا خالی است' };
+  };
+
 
   return (
     <>
@@ -79,8 +102,8 @@ export default function DashboardPage() {
             <Home className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{residentCount} خانوار</div>
-            <p className="text-xs text-muted-foreground">از مجموع {residents.length} واحد</p>
+            <div className="text-2xl font-bold">{presentCount} خانوار</div>
+            <p className="text-xs text-muted-foreground">از مجموع {residentCount} واحد</p>
           </CardContent>
         </Card>
         <Card>
@@ -136,6 +159,43 @@ export default function DashboardPage() {
                                 </TableCell>
                             </TableRow>
                         ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+      </div>
+      <div className="mt-6">
+        <Card>
+            <CardHeader>
+                <CardTitle>لیست صاحبین و وضعیت ویلاها</CardTitle>
+                <CardDescription>فهرست مالکین ویلاها و وضعیت فعلی سکونت هر ویلا.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>شماره ویلا</TableHead>
+                            <TableHead>نام مالک</TableHead>
+                            <TableHead>شماره تماس مالک</TableHead>
+                            <TableHead>وضعیت ویلا</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {villas.map((villa) => {
+                            const status = getOwnerStatus(villa.id);
+                            return (
+                                <TableRow key={villa.id}>
+                                    <TableCell className="font-medium">{villa.id}</TableCell>
+                                    <TableCell>{villa.owner}</TableCell>
+                                    <TableCell>{villa.phone}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={ownerStatusVariant[status.variant]}>
+                                            {status.text}
+                                        </Badge>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </CardContent>

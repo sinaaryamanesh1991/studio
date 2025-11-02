@@ -11,7 +11,6 @@ import {
   FileText,
   Building,
   Briefcase,
-  UserSquare,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -28,7 +27,6 @@ const navItems = [
   { href: '/dashboard', label: 'داشبورد', icon: LayoutDashboard },
   { href: '/personnel', label: 'پرسنل', icon: Users },
   { href: '/residents', label: 'ساکنین', icon: Home },
-  { href: '/owners', label: 'صاحبین', icon: UserSquare },
   { href: '/board-members', label: 'هیئت مدیره', icon: Briefcase },
   { href: '/map', label: 'نقشه شهرک', icon: Map },
   { href: '/financials', label: 'امور مالی', icon: CircleDollarSign },
