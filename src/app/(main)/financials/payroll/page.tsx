@@ -10,8 +10,9 @@ import { useData } from '@/context/data-context';
 import { useToast } from '@/hooks/use-toast';
 import type { CompanyInfo } from '@/lib/types';
 import Link from 'next/link';
-import { Calculator, Users } from 'lucide-react';
+import { Calculator, Users, Clock, Receipt } from 'lucide-react';
 import PayrollListPage from './payroll-list-content';
+import { useRouter } from 'next/navigation';
 
 function CompanyInfoForm() {
     const { companyInfo, setCompanyInfo } = useData();
@@ -62,6 +63,7 @@ function CompanyInfoForm() {
 
 
 export default function PayrollSystemPage() {
+    const router = useRouter();
     return (
         <>
             <PageHeader title="سیستم جامع حقوق و دستمزد">
@@ -73,17 +75,19 @@ export default function PayrollSystemPage() {
                 </Button>
             </PageHeader>
             
-            <Tabs defaultValue="company-info" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-6">
-                    <TabsTrigger value="company-info">اطلاعات پایه</TabsTrigger>
-                    <TabsTrigger value="personnel-info">اطلاعات پرسنل</TabsTrigger>
-                    <TabsTrigger value="payroll-list">لیست حقوق</TabsTrigger>
+            <Tabs defaultValue="company-info" className="w-full" onValueChange={(value) => router.push(`/financials/payroll/${value}`)}>
+                <TabsList className="grid w-full grid-cols-5 mb-6">
+                    <TabsTrigger value="info">اطلاعات پایه</TabsTrigger>
+                    <TabsTrigger value="personnel">اطلاعات پرسنل</TabsTrigger>
+                    <TabsTrigger value="work-hours">ساعت کاری</TabsTrigger>
+                    <TabsTrigger value="list">لیست حقوق</TabsTrigger>
+                    <TabsTrigger value="payslip">فیش حقوقی</TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="company-info">
+                <TabsContent value="info">
                     <CompanyInfoForm />
                 </TabsContent>
-                <TabsContent value="personnel-info">
+                <TabsContent value="personnel">
                     <Card>
                         <CardHeader>
                             <CardTitle>اطلاعات پرسنل</CardTitle>
@@ -99,8 +103,40 @@ export default function PayrollSystemPage() {
                         </CardContent>
                     </Card>
                 </TabsContent>
-                <TabsContent value="payroll-list">
+                <TabsContent value="work-hours">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>مدیریت ساعات کاری</CardTitle>
+                            <CardDescription>برای مدیریت ساعت ورود و خروج پرسنل به صفحه مربوطه مراجعه کنید.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                           <Button asChild>
+                                <Link href="/financials/payroll/work-hours">
+                                    <Clock className="ms-2 h-4 w-4" />
+                                    رفتن به صفحه ساعت کاری
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="list">
                     <PayrollListPage />
+                </TabsContent>
+                 <TabsContent value="payslip">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>مشاهده فیش حقوقی</CardTitle>
+                            <CardDescription>برای مشاهده و چاپ فیش حقوقی به صفحه مربوطه مراجعه کنید.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                           <Button asChild>
+                                <Link href="/financials/payroll/payslip">
+                                    <Receipt className="ms-2 h-4 w-4" />
+                                    رفتن به صفحه فیش حقوقی
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
             </Tabs>
         </>

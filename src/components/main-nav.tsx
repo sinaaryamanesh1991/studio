@@ -14,6 +14,8 @@ import {
   ChevronDown,
   Settings,
   List,
+  Clock,
+  Receipt,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -27,7 +29,6 @@ import {
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
 const navItems = [
@@ -59,9 +60,8 @@ export function MainNav() {
           <SidebarMenu>
             {navItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href} passHref>
+                <Link href={item.href}>
                   <SidebarMenuButton
-                    as="a"
                     isActive={pathname === item.href}
                     tooltip={{ children: item.label, className: 'font-body' }}
                   >
@@ -83,18 +83,34 @@ export function MainNav() {
                     <CollapsibleContent>
                         <SidebarMenuSub>
                           <SidebarMenuItem>
-                               <Link href="/financials" passHref>
-                                    <SidebarMenuSubButton as="a" isActive={pathname === '/financials'}>
+                               <Link href="/financials">
+                                    <SidebarMenuSubButton isActive={pathname === '/financials'}>
                                         <List />
                                         <span>لیست تراکنش ها</span>
                                     </SidebarMenuSubButton>
                                 </Link>
                            </SidebarMenuItem>
                            <SidebarMenuItem>
-                                <Link href="/financials/payroll" passHref>
-                                    <SidebarMenuSubButton as="a" isActive={pathname.startsWith('/financials/payroll')}>
+                                <Link href="/financials/payroll">
+                                    <SidebarMenuSubButton isActive={pathname.startsWith('/financials/payroll')}>
                                         <Settings />
                                         <span>حقوق و دستمزد</span>
+                                    </SidebarMenuSubButton>
+                                </Link>
+                            </SidebarMenuItem>
+                             <SidebarMenuItem>
+                                <Link href="/financials/payroll/work-hours">
+                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll/work-hours'}>
+                                        <Clock />
+                                        <span>ساعت کاری</span>
+                                    </SidebarMenuSubButton>
+                                </Link>
+                            </SidebarMenuItem>
+                             <SidebarMenuItem>
+                                <Link href="/financials/payroll/payslip">
+                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll/payslip'}>
+                                        <Receipt />
+                                        <span>فیش حقوقی</span>
                                     </SidebarMenuSubButton>
                                 </Link>
                             </SidebarMenuItem>
