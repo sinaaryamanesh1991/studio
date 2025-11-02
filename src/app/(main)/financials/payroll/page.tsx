@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +17,7 @@ import { Loader2, Calculator } from 'lucide-react';
 import { automatedPayrollCalculation } from '@/ai/flows/automated-payroll-calculation';
 import type { AutomatedPayrollCalculationOutput } from '@/ai/flows/automated-payroll-calculation';
 import { useData } from '@/context/data-context';
+import type { PayrollRecord } from '@/lib/types';
 
 const formSchema = z.object({
   personnelId: z.string().min(1, { message: "لطفا یک پرسنل را انتخاب کنید." }),
@@ -31,7 +32,8 @@ export default function PayrollCalculatorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AutomatedPayrollCalculationOutput | null>(null);
   const { toast } = useToast();
-  const { personnel } = useData();
+  const { personnel, setPayrollRecords } = useData();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,14 +50,43 @@ export default function PayrollCalculatorPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setResult(null);
+    const selectedPersonnel = personnel.find(p => p.id === values.personnelId);
+    if (!selectedPersonnel) {
+        toast({ variant: "destructive", title: "خطا", description: "پرسنل انتخاب شده یافت نشد."});
+        setIsLoading(false);
+        return;
+    }
+
     try {
       const { personnelId, ...calculationInput } = values;
       const response = await automatedPayrollCalculation(calculationInput);
       setResult(response);
+
+      const newRecord: PayrollRecord = {
+        id: `pr${Date.now()}`,
+        personnelId: values.personnelId,
+        personnelName: `${selectedPersonnel.name} ${selectedPersonnel.familyName}`,
+        calculationDate: new Date().toLocaleDateString('fa-IR'),
+        ...values,
+        ...response,
+      };
+
+      setPayrollRecords(prev => [...prev, newRecord]);
+
       toast({
-        title: "محاسبه موفق",
-        description: "حقوق با موفقیت محاسبه شد.",
+        title: "محاسبه و ذخیره موفق",
+        description: `حقوق برای ${newRecord.personnelName} محاسبه و ذخیره شد.`,
+        action: (
+          <Button variant="outline" size="sm" onClick={() => router.push('/financials')}>
+            مشاهده لیست حقوق
+          </Button>
+        ),
       });
+
+      // Reset form for next entry
+      form.reset();
+      setResult(null);
+
     } catch (error) {
       console.error(error);
       toast({
@@ -86,7 +117,7 @@ export default function PayrollCalculatorPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>انتخاب پرسنل</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="یکی از پرسنل را انتخاب کنید" />
@@ -175,7 +206,7 @@ export default function PayrollCalculatorPage() {
                   ) : (
                     <Calculator className="ms-2 h-4 w-4" />
                   )}
-                  محاسبه کن
+                  محاسبه و ذخیره
                 </Button>
               </form>
             </Form>

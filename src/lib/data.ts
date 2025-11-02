@@ -1,4 +1,4 @@
-import type { Personnel, Resident, BoardMember, Villa, Transaction, Document } from './types';
+import type { Personnel, Resident, BoardMember, Villa, Transaction, Document, PayrollRecord } from './types';
 
 export const initialPersonnel: Personnel[] = [
   { id: 'p001', name: 'اسحاق', familyName: '', hireDate: '1403-01-01', phone: '0910-305-3794', position: 'نگهبان', status: 'مشغول کار' },
@@ -70,3 +70,5 @@ export const initialDocuments: Document[] = [
     { id: 'd002', name: 'قرارداد نگهبانی', category: 'پرسنل', uploadDate: '1402-03-15', url: '#' },
     { id: 'd003', name: 'بیمه آسانسور', category: 'ادارات', uploadDate: '1403-02-20', url: '#' },
 ];
+
+export const initialPayrollRecords: PayrollRecord[] = [];

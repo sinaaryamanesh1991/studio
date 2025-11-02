@@ -1,8 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
-import { initialPersonnel, initialResidents, initialBoardMembers, initialVillas, initialTransactions, initialDocuments } from '@/lib/data';
-import type { Personnel, Resident, BoardMember, Villa, Transaction, Document } from '@/lib/types';
+import { initialPersonnel, initialResidents, initialBoardMembers, initialVillas, initialTransactions, initialDocuments, initialPayrollRecords } from '@/lib/data';
+import type { Personnel, Resident, BoardMember, Villa, Transaction, Document, PayrollRecord } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 interface AppData {
@@ -12,6 +12,7 @@ interface AppData {
   villas: Villa[];
   transactions: Transaction[];
   documents: Document[];
+  payrollRecords: PayrollRecord[];
 }
 
 interface DataContextType extends AppData {
@@ -21,6 +22,7 @@ interface DataContextType extends AppData {
   setVillas: React.Dispatch<React.SetStateAction<Villa[]>>;
   setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
   setDocuments: React.Dispatch<React.SetStateAction<Document[]>>;
+  setPayrollRecords: React.Dispatch<React.SetStateAction<PayrollRecord[]>>;
   importData: (file: File) => void;
   exportData: () => void;
   isLoading: boolean;
@@ -37,6 +39,7 @@ const initialData: AppData = {
     villas: initialVillas,
     transactions: initialTransactions,
     documents: initialDocuments,
+    payrollRecords: initialPayrollRecords,
 };
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
@@ -46,6 +49,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [villas, setVillas] = useState<Villa[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -60,6 +64,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setVillas(parsedData.villas || initialVillas);
         setTransactions(parsedData.transactions || initialTransactions);
         setDocuments(parsedData.documents || initialDocuments);
+        setPayrollRecords(parsedData.payrollRecords || initialPayrollRecords);
       } else {
         // If no data in storage, use initial data
         setPersonnel(initialPersonnel);
@@ -68,6 +73,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setVillas(initialVillas);
         setTransactions(initialTransactions);
         setDocuments(initialDocuments);
+        setPayrollRecords(initialPayrollRecords);
       }
     } catch (error) {
         console.error("Failed to load data from localStorage", error);
@@ -78,6 +84,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setVillas(initialVillas);
         setTransactions(initialTransactions);
         setDocuments(initialDocuments);
+        setPayrollRecords(initialPayrollRecords);
     } finally {
         setIsLoading(false);
     }
@@ -86,17 +93,17 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!isLoading) {
         try {
-            const appData: AppData = { personnel, residents, boardMembers, villas, transactions, documents };
+            const appData: AppData = { personnel, residents, boardMembers, villas, transactions, documents, payrollRecords };
             localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
         } catch (error) {
             console.error("Failed to save data to localStorage", error);
         }
     }
-  }, [personnel, residents, boardMembers, villas, transactions, documents, isLoading]);
+  }, [personnel, residents, boardMembers, villas, transactions, documents, payrollRecords, isLoading]);
 
 
   const exportData = useCallback(() => {
-    const appData: AppData = { personnel, residents, boardMembers, villas, transactions, documents };
+    const appData: AppData = { personnel, residents, boardMembers, villas, transactions, documents, payrollRecords };
     const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(appData, null, 2))}`;
     const link = document.createElement("a");
     link.href = jsonString;
@@ -106,7 +113,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       title: "خروجی موفق",
       description: "اطلاعات با موفقیت به صورت فایل JSON ذخیره شد.",
     });
-  }, [personnel, residents, boardMembers, villas, transactions, documents, toast]);
+  }, [personnel, residents, boardMembers, villas, transactions, documents, payrollRecords, toast]);
 
   const importData = useCallback((file: File) => {
     const reader = new FileReader();
@@ -126,6 +133,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           setVillas(parsedData.villas);
           setTransactions(parsedData.transactions || []);
           setDocuments(parsedData.documents || []);
+          setPayrollRecords(parsedData.payrollRecords || []);
           toast({
             title: "بارگذاری موفق",
             description: "اطلاعات با موفقیت از فایل JSON بارگذاری شد.",
@@ -152,6 +160,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     villas, setVillas,
     transactions, setTransactions,
     documents, setDocuments,
+    payrollRecords, setPayrollRecords,
     importData, exportData,
     isLoading,
   };

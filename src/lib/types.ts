@@ -54,3 +54,20 @@ export interface Document {
   uploadDate: string;
   url: string;
 }
+
+export interface PayrollRecord {
+  id: string;
+  personnelId: string;
+  personnelName: string;
+  calculationDate: string;
+  // Inputs
+  hourlyRate: number;
+  hoursWorked: number;
+  overtimeHours: number;
+  holidayPay: number;
+  deductions: number;
+  // Outputs
+  grossPay: number;
+  netPay: number;
+  overtimePay: number;
+}
