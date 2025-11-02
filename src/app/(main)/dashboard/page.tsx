@@ -94,18 +94,20 @@ export default function DashboardPage() {
   
   const presentCount = residents?.filter(r => r.status === 'ساکن').length ?? 0;
 
-  const getOwnerStatus = (villaNumber: number): { text: string; variant: keyof typeof ownerStatusVariant } => {
-    const resident = residents?.find(r => r.villaNumber === villaNumber);
-    const villa = villas?.find(v => v.villaNumber === villaNumber);
+  const getOwnerStatus = (villa: Villa): { text: string; variant: keyof typeof ownerStatusVariant } => {
+    const resident = residents?.find(r => r.villaNumber === villa.villaNumber);
 
     if (resident && resident.status === 'ساکن') {
-      if (villa && villa.owner && (resident.name.includes(villa.owner) || resident.familyName.includes(villa.owner) || villa.owner.includes(resident.name) || villa.owner.includes(resident.familyName))) {
+      const residentFullName = `${resident.name} ${resident.familyName}`.trim();
+      const ownerFullName = villa.owner.trim();
+
+      if (residentFullName === ownerFullName) {
         return { text: 'مالک ساکن است', variant: 'مالک ساکن است' };
       }
       return { text: 'ساکن مستاجر است', variant: 'ساکن مستاجر است' };
     }
     return { text: 'ویلا خالی است', variant: 'ویلا خالی است' };
-  };
+};
 
 
   if (globalLoading || isSeeding) {
@@ -225,7 +227,7 @@ export default function DashboardPage() {
                     </TableHeader>
                     <TableBody>
                         {villas?.sort((a, b) => a.villaNumber - b.villaNumber).map((villa) => {
-                            const status = getOwnerStatus(villa.villaNumber);
+                            const status = getOwnerStatus(villa);
                             return (
                                 <TableRow key={villa.id}>
                                     <TableCell className="font-medium">{villa.villaNumber}</TableCell>

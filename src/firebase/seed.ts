@@ -33,20 +33,19 @@ const initialResidents: Omit<Resident, 'estateId' | 'villaId'>[] = [
     { id: 'res20', villaNumber: 20, name: 'مقصودی', familyName: '', phone: '09119021145', carPlates: '', status: 'ساکن', isPresent: true },
 ];
 
-
 const initialVillas: Omit<Villa, 'estateId'>[] = Array.from({ length: 20 }, (_, i) => {
     const resident = initialResidents.find(r => r.villaNumber === i + 1);
-    const ownerName = resident ? `${resident.name} ${resident.familyName}` : 'نامشخص';
+    const ownerName = resident ? `${resident.name} ${resident.familyName}`.trim() : 'نامشخص';
     const ownerPhone = resident ? resident.phone : '';
     
     return {
         id: `v${i + 1}`,
+        villaNumber: i + 1,
         name: `ویلا ${i + 1}`,
         owner: ownerName,
+        phone: ownerPhone,
         area: Math.floor(Math.random() * 100) + 150, // Random area between 150-250
         residentInfo: resident ? 'ساکن' : 'خالی',
-        phone: ownerPhone,
-        villaNumber: i + 1,
     };
 });
 
