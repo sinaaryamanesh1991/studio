@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { Users, Home, Briefcase } from 'lucide-react';
+import { Users, Home, Briefcase, DatabaseZap } from 'lucide-react';
 import type { Resident, Villa, BoardMember, Personnel } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { seedDatabase } from '@/firebase/seed';
 import { useToast } from '@/hooks/use-toast';
+import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+} from "@/components/ui/alert"
+
 
 const statusVariant = {
   'ساکن': 'default',
@@ -53,7 +59,8 @@ export default function DashboardPage() {
     }
     try {
       await seedDatabase(firestore, estateId);
-      toast({ title: 'موفقیت', description: 'داده‌های اولیه با موفقیت در دیتابیس ثبت شد.' });
+      toast({ title: 'موفقیت', description: 'داده‌های اولیه با موفقیت در دیتابیس ثبت شد. صفحه به زودی تازه‌سازی می‌شود...' });
+      setTimeout(() => window.location.reload(), 2000);
     } catch (error) {
       console.error("Seeding error: ", error);
       toast({ variant: 'destructive', title: 'خطا', description: 'خطا در ثبت داده‌های اولیه.' });
@@ -82,12 +89,12 @@ export default function DashboardPage() {
     return { text: 'ویلا خالی است', variant: 'ویلا خالی است' };
   };
 
+  const isDataEmpty = !personnel?.length && !residents?.length && !villas?.length;
+
   if (isLoading) {
     return (
       <>
-        <PageHeader title="داشبورد">
-           <Skeleton className="h-10 w-40" />
-        </PageHeader>
+        <PageHeader title="داشبورد" />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card><CardHeader><Skeleton className="h-4 w-2/3" /></CardHeader><CardContent><Skeleton className="h-8 w-1/3" /></CardContent></Card>
           <Card><CardHeader><Skeleton className="h-4 w-2/3" /></CardHeader><CardContent><Skeleton className="h-8 w-1/3" /></CardContent></Card>
@@ -112,11 +119,21 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="داشبورد">
-        <Button onClick={handleSeed}>
-            اعمال داده های اولیه
-        </Button>
-      </PageHeader>
+      <PageHeader title="داشبورد" />
+
+      {isDataEmpty && (
+         <Alert className="mb-6 border-primary text-primary">
+            <DatabaseZap className="h-4 w-4 !text-primary" />
+            <AlertTitle>دیتابیس شما خالی است!</AlertTitle>
+            <AlertDescription>
+                برای شروع کار با برنامه و مشاهده قابلیت‌ها، می‌توانید داده‌های اولیه نمونه را به دیتابیس خود اضافه کنید.
+                <Button onClick={handleSeed} className="mt-4">
+                    اعمال داده های اولیه
+                </Button>
+            </AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -266,3 +283,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
