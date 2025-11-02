@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useData } from '@/context/data-context';
 import { Users, Home, UserCheck, FileDown, FileUp } from 'lucide-react';
-import type { BoardMember, Resident } from '@/lib/types';
+import type { Resident } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useRef } from 'react';
+import { Switch } from '@/components/ui/switch';
 
 const statusVariant = {
   'ساکن': 'default',
@@ -16,7 +17,7 @@ const statusVariant = {
 } as const;
 
 export default function DashboardPage() {
-  const { personnel, residents, boardMembers, exportData, importData } = useData();
+  const { personnel, residents, setResidents, boardMembers, exportData, importData } = useData();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImportClick = () => {
@@ -28,6 +29,12 @@ export default function DashboardPage() {
     if (file) {
       importData(file);
     }
+  };
+
+  const handlePresenceChange = (residentId: string, isPresent: boolean) => {
+    setResidents(prev =>
+        prev.map(r => (r.id === residentId ? { ...r, isPresent } : r))
+    );
   };
 
   return (
@@ -98,6 +105,7 @@ export default function DashboardPage() {
                             <TableHead>شماره تماس</TableHead>
                             <TableHead>پلاک خودرو</TableHead>
                             <TableHead>وضعیت</TableHead>
+                            <TableHead>حضور</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -112,6 +120,13 @@ export default function DashboardPage() {
                                     <Badge variant={statusVariant[resident.status]}>
                                         {resident.status}
                                     </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={resident.isPresent}
+                                        onCheckedChange={(checked) => handlePresenceChange(resident.id, checked)}
+                                        aria-label="وضعیت حضور"
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -137,7 +152,7 @@ export default function DashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {boardMembers.map((member: BoardMember) => (
+                        {boardMembers.map((member) => (
                             <TableRow key={member.id}>
                                 <TableCell className="font-medium">{member.name} {member.familyName}</TableCell>
                                 <TableCell>{member.phone}</TableCell>
