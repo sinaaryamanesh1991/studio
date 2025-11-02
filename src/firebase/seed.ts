@@ -50,20 +50,31 @@ const initialBoardMembers: Omit<BoardMember, 'estateId'>[] = [
     { id: 'bm3', residentId: 'res3', name: 'احمدی', familyName: '(احمدی) گنج', position: 'خزانه دار', phone: '09121148481', villaNumber: 3 },
     { id: 'bm4', residentId: 'res4', name: 'احمدی', familyName: 'گنج', position: 'منشی', phone: '09121122387', villaNumber: 4 },
 ];
-const initialTransactions: Omit<Transaction, 'estateId'>[] = [];
-const initialDocuments: Omit<Document, 'estateId'>[] = [];
+const initialTransactions: Omit<Transaction, 'estateId' | 'id'>[] = [
+    { type: 'دریافتی', party: 'ویلا شماره ۵', reason: 'شارژ ماهانه', amount: 500000, date: '1403/04/01' },
+    { type: 'پرداختی', party: 'شرکت باغبانی', reason: 'هزینه نگهداری فضای سبز', amount: 1200000, date: '1403/04/05' },
+    { type: 'دریافتی', party: 'ویلا شماره ۱۰', reason: 'شارژ ماهانه', amount: 500000, date: '1403/04/02' },
+    { type: 'پرداختی', party: 'اداره برق', reason: 'قبض برق مشاعات', amount: 750000, date: '1403/04/10' },
+];
+const initialDocuments: Omit<Document, 'estateId' | 'id'>[] = [];
 
 const initialCompanyInfo: Omit<CompanyInfo, 'estateId'> = {
-    name: 'شهرک شما',
+    name: 'شهرک سینا',
     defaultEntryTime: '08:00',
     defaultExitTime: '17:00'
 };
 
 const initialPayrollSettings: Omit<PayrollSettings, 'estateId'> = {
-    baseHourlyRate: 33299, 
+    baseSalaryOfMonth: 71661840,
     overtimeMultiplier: 1.4,
-    maxAllowedLateness: 15, // default 15 minutes
-    latenessPenaltyAmount: 0 // default 0
+    nightWorkMultiplier: 1.35,
+    holidayWorkMultiplier: 1.9,
+    childAllowance: 7166184,
+    housingAllowance: 9000000,
+    foodAllowance: 14000000,
+    insuranceDeductionPercentage: 7,
+    maxAllowedLateness: 15,
+    latenessPenaltyAmount: 0
 };
 
 

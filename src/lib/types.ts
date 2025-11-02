@@ -155,7 +155,7 @@ export interface PayrollSettings {
 
 // This type combines all necessary inputs for a payroll calculation.
 // It's used by both the AI flow and the reliable TypeScript calculator.
-export interface AutomatedPayrollCalculationInput extends Omit<PayrollSettings, 'taxDeductionPercentage'>, CompanyInfo {
+export interface AutomatedPayrollCalculationInput extends Omit<PayrollSettings, 'estateId'>, Omit<CompanyInfo, 'estateId' | 'name'> {
   totalHoursWorked: number;
   totalOvertimeHours: number;
   totalHolidayHours: number;
