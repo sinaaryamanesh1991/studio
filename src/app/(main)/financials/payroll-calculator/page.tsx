@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { PayrollRecord } from '@/lib/types';
 import { automatedPayrollCalculation } from '@/ai/flows/automated-payroll-calculation';
 import { Wand2, Loader2, Save } from 'lucide-react';
-import { format } from 'date-fns-jalali';
+import { format as formatEn } from 'date-fns';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 
@@ -27,12 +27,13 @@ export default function PayrollCalculatorPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [calculationResult, setCalculationResult] = useState<Omit<PayrollRecord, 'id' | 'personnelId' | 'personnelName' | 'calculationDate'> | null>(null);
     
+    // Set a default state that won't be null
     const [initialFormState, setInitialFormState] = useState<Partial<PayrollRecord>>({
-        hourlyRate: payrollSettings.baseHourlyRate,
-        entryTime: companyInfo.defaultEntryTime,
-        exitTime: companyInfo.defaultExitTime,
+        hourlyRate: payrollSettings.baseHourlyRate || 0,
+        entryTime: companyInfo.defaultEntryTime || '08:00',
+        exitTime: companyInfo.defaultExitTime || '17:00',
         overtimeHours: 0,
-        overtimeMultiplier: payrollSettings.overtimeMultiplier,
+        overtimeMultiplier: payrollSettings.overtimeMultiplier || 1.4,
         holidayPay: 0,
         deductions: 0,
     });
@@ -42,7 +43,7 @@ export default function PayrollCalculatorPage() {
             const recordToEdit = payrollRecords.find(p => p.id === payrollIdToEdit);
             if (recordToEdit) {
                 setSelectedPersonnelId(recordToEdit.personnelId);
-                setInitialFormState({
+                const formState = {
                     hourlyRate: recordToEdit.hourlyRate,
                     entryTime: recordToEdit.entryTime,
                     exitTime: recordToEdit.exitTime,
@@ -50,21 +51,25 @@ export default function PayrollCalculatorPage() {
                     overtimeMultiplier: recordToEdit.overtimeMultiplier,
                     holidayPay: recordToEdit.holidayPay,
                     deductions: recordToEdit.deductions,
-                });
+                };
+                setInitialFormState(formState);
                 setCalculationResult({
                     ...recordToEdit,
                 });
             }
         } else {
-             setInitialFormState({
-                hourlyRate: payrollSettings.baseHourlyRate,
-                entryTime: companyInfo.defaultEntryTime,
-                exitTime: companyInfo.defaultExitTime,
+             const defaultState = {
+                hourlyRate: payrollSettings.baseHourlyRate || 0,
+                entryTime: companyInfo.defaultEntryTime || '08:00',
+                exitTime: companyInfo.defaultExitTime || '17:00',
                 overtimeHours: 0,
-                overtimeMultiplier: payrollSettings.overtimeMultiplier,
+                overtimeMultiplier: payrollSettings.overtimeMultiplier || 1.4,
                 holidayPay: 0,
                 deductions: 0,
-            });
+            };
+            setInitialFormState(defaultState);
+            setCalculationResult(null); // Reset result for new calculations
+            setSelectedPersonnelId(''); // Reset selected personnel
         }
     }, [payrollIdToEdit, payrollRecords, payrollSettings, companyInfo]);
 
@@ -112,7 +117,7 @@ export default function PayrollCalculatorPage() {
         const sharedData = {
             personnelId: selectedPersonnelId,
             personnelName: `${selectedPerson.name} ${selectedPerson.familyName}`,
-            calculationDate: format(new Date(), 'yyyy-MM-dd'),
+            calculationDate: formatEn(new Date(), 'yyyy-MM-dd'),
             hourlyRate: calculationResult.hourlyRate,
             entryTime: calculationResult.entryTime,
             exitTime: calculationResult.exitTime,

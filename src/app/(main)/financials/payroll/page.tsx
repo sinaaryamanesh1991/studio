@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator, Users, Clock, Receipt, Search, Printer, Save, Settings } from 'lucide-react';
-import PayrollListPage from './payroll-list-content';
 import { useState, useMemo } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarIcon } from 'lucide-react';
@@ -22,6 +21,7 @@ import { format as formatEn } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
+import PayrollListPage from './payroll-list-content';
 
 function CompanyInfoForm() {
     const { companyInfo, setCompanyInfo } = useData();
@@ -148,20 +148,20 @@ function WorkHoursContent() {
     
     return (
         <Card>
-            <CardHeader className="flex-row justify-between items-start">
+            <CardHeader className="flex-col md:flex-row justify-between items-start md:items-center gap-4">
                  <div>
                     <CardTitle>ثبت ورود و خروج روزانه</CardTitle>
                     <CardDescription>
                         ساعات ورود و خروج پرسنل را برای تاریخ انتخاب شده وارد کنید.
                     </CardDescription>
                 </div>
-                 <div className="flex items-center gap-4">
+                 <div className="flex flex-col sm:flex-row items-center gap-4">
                      <Popover>
                         <PopoverTrigger asChild>
                             <Button
                             variant={"outline"}
                             className={cn(
-                                "w-[280px] justify-start text-left font-normal",
+                                "w-full sm:w-[280px] justify-start text-left font-normal",
                                 !selectedDate && "text-muted-foreground"
                             )}
                             >
@@ -179,7 +179,7 @@ function WorkHoursContent() {
                             />
                         </PopoverContent>
                     </Popover>
-                    <Button onClick={handleSaveLogs}>
+                    <Button onClick={handleSaveLogs} className="w-full sm:w-auto">
                         <Save className="ms-2 h-4 w-4" />
                         ذخیره تغییرات
                     </Button>
@@ -228,7 +228,7 @@ function WorkHoursContent() {
     );
 }
 
-function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord, personnel: Personnel }) {
+export function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord, personnel: Personnel | null | undefined }) {
     const { toast } = useToast();
 
     const handlePrint = () => {
@@ -240,10 +240,15 @@ function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord, person
     
     const formatDate = (dateString: string) => {
         try {
-            return format(new Date(dateString), 'yyyy/MM/dd');
+            // Using toDate from date-fns-jalali to correctly parse the string
+            return format(toDate(new Date(dateString)), 'yyyy/MM/dd');
         } catch(e) {
             return dateString;
         }
+    }
+
+    if (!personnel) {
+        return <div className="text-center py-16 text-muted-foreground">اطلاعات پرسنل یافت نشد.</div>
     }
 
     return (
@@ -439,7 +444,7 @@ export default function PayrollSystemPage() {
             </PageHeader>
             
             <Tabs defaultValue="info" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 mb-6">
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-3 lg:grid-cols-6 mb-6">
                     <TabsTrigger value="info">اطلاعات پایه</TabsTrigger>
                     <TabsTrigger value="payroll-settings">تنظیمات حقوق</TabsTrigger>
                     <TabsTrigger value="personnel">اطلاعات پرسنل</TabsTrigger>
