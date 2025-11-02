@@ -108,7 +108,7 @@ export default function DashboardPage() {
                             <TableHead>نام خانوادگی</TableHead>
                             <TableHead>شماره تماس</TableHead>
                             <TableHead>پلاک خودرو</TableHead>
-                            <TableHead>وضعیت</TableHead>
+                            <TableHead>وضعیت سکونت</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
