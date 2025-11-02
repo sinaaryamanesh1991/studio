@@ -12,8 +12,8 @@ const initialPersonnel: Omit<Personnel, 'estateId'>[] = [
 
 const initialResidents: Omit<Resident, 'estateId' | 'villaId'>[] = [
   { id: 'res1', name: 'علیرضا', familyName: 'عبادی', phone: '09123070435', carPlates: '', villaNumber: 1, status: 'ساکن', isPresent: true },
-  { id: 'res2', name: 'شهمیری', familyName: '(احمدی) کنج', phone: '09394957877', carPlates: '', villaNumber: 2, status: 'ساکن', isPresent: true },
-  { id: 'res3', name: 'احمدی', familyName: '(احمدی) کنج', phone: '09121148481', carPlates: '', villaNumber: 3, status: 'ساکن', isPresent: true },
+  { id: 'res2', name: 'شهمیری', familyName: '(احمدی) گنج', phone: '09394957877', carPlates: '', villaNumber: 2, status: 'ساکن', isPresent: true },
+  { id: 'res3', name: 'احمدی', familyName: '(احمدی) گنج', phone: '09121148481', carPlates: '', villaNumber: 3, status: 'ساکن', isPresent: true },
   { id: 'res4', name: 'احمدی', familyName: 'گنج', phone: '09121122387', carPlates: '', villaNumber: 4, status: 'ساکن', isPresent: true },
   { id: 'res5', name: 'مندری', familyName: '', phone: '09121143803', carPlates: '', villaNumber: 5, status: 'ساکن', isPresent: true },
   { id: 'res6', name: 'احمدی', familyName: 'گنج', phone: '09121122387', carPlates: '', villaNumber: 6, status: 'ساکن', isPresent: true },
