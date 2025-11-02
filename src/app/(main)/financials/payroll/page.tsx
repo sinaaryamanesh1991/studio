@@ -74,12 +74,10 @@ export default function PayrollSystemPage() {
             </PageHeader>
             
             <Tabs defaultValue="company-info" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-6">
+                <TabsList className="grid w-full grid-cols-3 mb-6">
                     <TabsTrigger value="company-info">اطلاعات پایه</TabsTrigger>
                     <TabsTrigger value="personnel-info">اطلاعات پرسنل</TabsTrigger>
-                    <TabsTrigger value="work-hours" disabled>ساعت کاری (بزودی)</TabsTrigger>
                     <TabsTrigger value="payroll-list">لیست حقوق</TabsTrigger>
-                    <TabsTrigger value="payslip" disabled>فیش حقوق (بزودی)</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="company-info">
@@ -101,14 +99,8 @@ export default function PayrollSystemPage() {
                         </CardContent>
                     </Card>
                 </TabsContent>
-                <TabsContent value="work-hours">
-                    {/* Work hours component will go here */}
-                </TabsContent>
                 <TabsContent value="payroll-list">
                     <PayrollListPage />
-                </TabsContent>
-                <TabsContent value="payslip">
-                    {/* Payslip component will go here */}
                 </TabsContent>
             </Tabs>
         </>

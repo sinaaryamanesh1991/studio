@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,17 +13,47 @@ import type { PayrollRecord } from '@/lib/types';
 import { automatedPayrollCalculation } from '@/ai/flows/automated-payroll-calculation';
 import { Wand2, Loader2, Save } from 'lucide-react';
 import { format } from 'date-fns-jalali';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 
 export default function PayrollCalculatorPage() {
-    const { personnel, companyInfo, setPayrollRecords } = useData();
+    const { personnel, companyInfo, payrollRecords, setPayrollRecords } = useData();
     const { toast } = useToast();
     const router = useRouter();
-    
+    const searchParams = useSearchParams();
+    const payrollIdToEdit = searchParams.get('id');
+
     const [selectedPersonnelId, setSelectedPersonnelId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [calculationResult, setCalculationResult] = useState<Omit<PayrollRecord, 'id' | 'personnelId' | 'personnelName' | 'calculationDate'> | null>(null);
+    const [initialFormState, setInitialFormState] = useState<Partial<PayrollRecord>>({
+        hourlyRate: 25000,
+        entryTime: companyInfo.defaultEntryTime,
+        exitTime: companyInfo.defaultExitTime,
+        overtimeHours: 0,
+        holidayPay: 0,
+        deductions: 0,
+    });
+
+    useEffect(() => {
+        if (payrollIdToEdit) {
+            const recordToEdit = payrollRecords.find(p => p.id === payrollIdToEdit);
+            if (recordToEdit) {
+                setSelectedPersonnelId(recordToEdit.personnelId);
+                setInitialFormState({
+                    hourlyRate: recordToEdit.hourlyRate,
+                    entryTime: recordToEdit.entryTime,
+                    exitTime: recordToEdit.exitTime,
+                    overtimeHours: recordToEdit.overtimeHours,
+                    holidayPay: recordToEdit.holidayPay,
+                    deductions: recordToEdit.deductions,
+                });
+                setCalculationResult({
+                    ...recordToEdit,
+                });
+            }
+        }
+    }, [payrollIdToEdit, payrollRecords]);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -65,22 +95,34 @@ export default function PayrollCalculatorPage() {
         const selectedPerson = personnel.find(p => p.id === selectedPersonnelId);
         if (!selectedPerson) return;
         
-        const newRecord: PayrollRecord = {
-            id: `pay-${Date.now()}`,
-            personnelId: selectedPersonnelId,
-            personnelName: `${selectedPerson.name} ${selectedPerson.familyName}`,
-            calculationDate: format(new Date(), 'yyyy-MM-dd'),
-            ...calculationResult
-        };
-
-        setPayrollRecords(prev => [...prev, newRecord]);
-        toast({ title: 'موفقیت', description: 'محاسبه حقوق با موفقیت در لیست ذخیره شد.' });
-        router.push('/financials/payroll-list');
+        if (payrollIdToEdit) {
+            const updatedRecord: PayrollRecord = {
+                id: payrollIdToEdit,
+                personnelId: selectedPersonnelId,
+                personnelName: `${selectedPerson.name} ${selectedPerson.familyName}`,
+                calculationDate: format(new Date(), 'yyyy-MM-dd'),
+                ...calculationResult
+            };
+            setPayrollRecords(prev => prev.map(p => p.id === payrollIdToEdit ? updatedRecord : p));
+            toast({ title: 'موفقیت', description: 'محاسبه حقوق با موفقیت به‌روزرسانی شد.' });
+        } else {
+             const newRecord: PayrollRecord = {
+                id: `pay-${Date.now()}`,
+                personnelId: selectedPersonnelId,
+                personnelName: `${selectedPerson.name} ${selectedPerson.familyName}`,
+                calculationDate: format(new Date(), 'yyyy-MM-dd'),
+                ...calculationResult
+            };
+            setPayrollRecords(prev => [...prev, newRecord]);
+            toast({ title: 'موفقیت', description: 'محاسبه حقوق با موفقیت در لیست ذخیره شد.' });
+        }
+        
+        router.push('/financials/payroll');
     };
 
     return (
         <>
-            <PageHeader title="محاسبه‌گر حقوق و دستمزد" />
+            <PageHeader title={payrollIdToEdit ? "ویرایش محاسبه حقوق" : "محاسبه‌گر حقوق و دستمزد"} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-1">
@@ -90,7 +132,7 @@ export default function PayrollCalculatorPage() {
                             <CardDescription>اطلاعات کارکرد پرسنل را برای محاسبه حقوق وارد کنید.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <form onSubmit={handleSubmit} className="space-y-6" key={payrollIdToEdit || 'new'}>
                                 <div className="space-y-2">
                                     <Label htmlFor="personnelId">انتخاب پرسنل</Label>
                                     <Select name="personnelId" onValueChange={setSelectedPersonnelId} value={selectedPersonnelId} required>
@@ -106,29 +148,29 @@ export default function PayrollCalculatorPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="hourlyRate">نرخ ساعتی (تومان)</Label>
-                                    <Input id="hourlyRate" name="hourlyRate" type="number" defaultValue={25000} required />
+                                    <Input id="hourlyRate" name="hourlyRate" type="number" defaultValue={initialFormState.hourlyRate} required />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="entryTime">ساعت ورود</Label>
-                                        <Input id="entryTime" name="entryTime" type="time" defaultValue={companyInfo.defaultEntryTime} required />
+                                        <Input id="entryTime" name="entryTime" type="time" defaultValue={initialFormState.entryTime} required />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="exitTime">ساعت خروج</Label>
-                                        <Input id="exitTime" name="exitTime" type="time" defaultValue={companyInfo.defaultExitTime} required />
+                                        <Input id="exitTime" name="exitTime" type="time" defaultValue={initialFormState.exitTime} required />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="overtimeHours">ساعات اضافه کاری</Label>
-                                    <Input id="overtimeHours" name="overtimeHours" type="number" defaultValue={0} required />
+                                    <Input id="overtimeHours" name="overtimeHours" type="number" defaultValue={initialFormState.overtimeHours} required />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="holidayPay">مبلغ تعطیل کاری (تومان)</Label>
-                                    <Input id="holidayPay" name="holidayPay" type="number" defaultValue={0} required />
+                                    <Input id="holidayPay" name="holidayPay" type="number" defaultValue={initialFormState.holidayPay} required />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="deductions">کسورات (تومان)</Label>
-                                    <Input id="deductions" name="deductions" type="number" defaultValue={0} required />
+                                    <Input id="deductions" name="deductions" type="number" defaultValue={initialFormState.deductions} required />
                                 </div>
 
                                 <Button type="submit" className="w-full" disabled={isLoading}>
@@ -180,7 +222,7 @@ export default function PayrollCalculatorPage() {
                                     <div className="pt-6">
                                         <Button onClick={handleSaveRecord} className="w-full">
                                             <Save className="ms-2 h-4 w-4" />
-                                            ذخیره در لیست حقوق
+                                            {payrollIdToEdit ? 'ذخیره تغییرات' : 'ذخیره در لیست حقوق'}
                                         </Button>
                                     </div>
                                 </div>

@@ -24,13 +24,19 @@ import {
     DialogClose,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import { useRouter } from 'next/navigation';
 
 export default function PayrollListPage() {
     const { payrollRecords, setPayrollRecords } = useData();
     const [selectedPayslip, setSelectedPayslip] = useState<PayrollRecord | null>(null);
+    const router = useRouter();
 
     const handleDeletePayroll = (id: string) => {
         setPayrollRecords(prev => prev.filter(p => p.id !== id));
+    };
+
+    const handleEditPayroll = (id: string) => {
+        router.push(`/financials/payroll-calculator?id=${id}`);
     };
 
     return (
@@ -83,9 +89,9 @@ export default function PayrollListPage() {
                                                     <FileText className="ms-2 h-4 w-4" />
                                                     مشاهده فیش
                                                 </DropdownMenuItem>
-                                                 <DropdownMenuItem disabled>
+                                                 <DropdownMenuItem onClick={() => handleEditPayroll(record.id)}>
                                                     <Edit className="ms-2 h-4 w-4" />
-                                                    ویرایش (بزودی)
+                                                    ویرایش
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem className="text-destructive" onClick={() => handleDeletePayroll(record.id)}>
                                                     <Trash2 className="ms-2 h-4 w-4" />
