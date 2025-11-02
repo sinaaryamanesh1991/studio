@@ -112,8 +112,8 @@
   .pool{
     position:absolute;
     top:70px;
-    left:90px;
-    width:176px;
+    left:188px;
+    width:88px;
     height:78px;
     border:1px solid var(--villa-border);
     background:linear-gradient(180deg,#eaf6ff,#fff);
@@ -126,7 +126,7 @@
   }
   .guard{
     position:absolute;
-    top:18px;
+    top:70px;
     left:90px;
     width:88px;
     height:78px;
