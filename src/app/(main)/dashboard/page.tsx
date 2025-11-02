@@ -31,9 +31,13 @@ export default function DashboardPage() {
     }
   };
 
-  const handlePresenceChange = (residentId: string, isPresent: boolean) => {
+  const handleStatusChange = (residentId: string, isPresent: boolean) => {
     setResidents(prev =>
-        prev.map(r => (r.id === residentId ? { ...r, isPresent } : r))
+      prev.map(r =>
+        r.id === residentId
+          ? { ...r, isPresent: isPresent, status: isPresent ? 'ساکن' : 'خالی' }
+          : r
+      )
     );
   };
 
@@ -105,7 +109,6 @@ export default function DashboardPage() {
                             <TableHead>شماره تماس</TableHead>
                             <TableHead>پلاک خودرو</TableHead>
                             <TableHead>وضعیت</TableHead>
-                            <TableHead>حضور</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -117,16 +120,17 @@ export default function DashboardPage() {
                                 <TableCell>{resident.phone}</TableCell>
                                 <TableCell>{resident.carPlates}</TableCell>
                                 <TableCell>
-                                    <Badge variant={statusVariant[resident.status]}>
-                                        {resident.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <Switch
-                                        checked={resident.isPresent}
-                                        onCheckedChange={(checked) => handlePresenceChange(resident.id, checked)}
-                                        aria-label="وضعیت حضور"
-                                    />
+                                    <div className="flex items-center space-x-2 space-x-reverse">
+                                        <Switch
+                                            id={`status-switch-${resident.id}`}
+                                            checked={resident.isPresent}
+                                            onCheckedChange={(checked) => handleStatusChange(resident.id, checked)}
+                                            aria-label="وضعیت سکونت"
+                                        />
+                                        <Badge variant={statusVariant[resident.status]}>
+                                            {resident.status}
+                                        </Badge>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

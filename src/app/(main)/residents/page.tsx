@@ -50,6 +50,7 @@ export default function ResidentsPage() {
         if (!editingResident) return;
 
         const formData = new FormData(e.currentTarget);
+        const newStatus = formData.get('status') as Resident['status'];
         const updatedResident: Resident = {
             ...editingResident,
             name: formData.get('name') as string,
@@ -57,7 +58,8 @@ export default function ResidentsPage() {
             phone: formData.get('phone') as string,
             carPlates: formData.get('carPlates') as string,
             villaNumber: parseInt(formData.get('villaNumber') as string, 10),
-            status: formData.get('status') as Resident['status'],
+            status: newStatus,
+            isPresent: newStatus === 'ساکن',
         };
 
         setResidents(prev => prev.map(r => r.id === updatedResident.id ? updatedResident : r));
@@ -65,9 +67,9 @@ export default function ResidentsPage() {
         setEditingResident(null);
     };
 
-    const handlePresenceChange = (residentId: string, isPresent: boolean) => {
+    const handleStatusChange = (residentId: string, isPresent: boolean) => {
         setResidents(prev =>
-            prev.map(r => (r.id === residentId ? { ...r, isPresent } : r))
+            prev.map(r => (r.id === residentId ? { ...r, isPresent: isPresent, status: isPresent ? 'ساکن' : 'خالی' } : r))
         );
     };
 
@@ -85,7 +87,6 @@ export default function ResidentsPage() {
                                 <TableHead>شماره تماس</TableHead>
                                 <TableHead>پلاک خودرو</TableHead>
                                 <TableHead>وضعیت</TableHead>
-                                <TableHead>حضور</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -98,14 +99,14 @@ export default function ResidentsPage() {
                                     <TableCell>{resident.phone}</TableCell>
                                     <TableCell>{resident.carPlates}</TableCell>
                                     <TableCell>
-                                        <Badge variant={statusVariant[resident.status]}>{resident.status}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Switch
-                                            checked={resident.isPresent}
-                                            onCheckedChange={(checked) => handlePresenceChange(resident.id, checked)}
-                                            aria-label="وضعیت حضور"
-                                        />
+                                        <div className="flex items-center space-x-2 space-x-reverse">
+                                            <Switch
+                                                checked={resident.isPresent}
+                                                onCheckedChange={(checked) => handleStatusChange(resident.id, checked)}
+                                                aria-label="وضعیت سکونت"
+                                            />
+                                            <Badge variant={statusVariant[resident.status]}>{resident.status}</Badge>
+                                        </div>
                                     </TableCell>
                                     <TableCell className="text-left">
                                         <DropdownMenu>
