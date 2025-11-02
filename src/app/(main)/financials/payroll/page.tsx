@@ -10,7 +10,9 @@ import { useData } from '@/context/data-context';
 import { useToast } from '@/hooks/use-toast';
 import type { CompanyInfo } from '@/lib/types';
 import Link from 'next/link';
-import { Calculator, List } from 'lucide-react';
+import { Calculator, List, Users } from 'lucide-react';
+import PersonnelPage from '../../personnel/page';
+import PayrollListPage from '../payroll-list/page';
 
 function CompanyInfoForm() {
     const { companyInfo, setCompanyInfo } = useData();
@@ -70,34 +72,28 @@ export default function PayrollSystemPage() {
                         محاسبه حقوق جدید
                     </Button>
                 </Link>
-                 <Link href="/financials/payroll-list" passHref>
-                    <Button variant="outline">
-                        <List className="ms-2 h-4 w-4" />
-                        مشاهده لیست حقوق
-                    </Button>
-                </Link>
             </PageHeader>
             
             <Tabs defaultValue="company-info" className="w-full">
                 <TabsList className="grid w-full grid-cols-5 mb-6">
                     <TabsTrigger value="company-info">اطلاعات پایه</TabsTrigger>
-                    <TabsTrigger value="personnel-info" disabled>اطلاعات پرسنل</TabsTrigger>
-                    <TabsTrigger value="work-hours" disabled>ساعت کاری</TabsTrigger>
-                    <TabsTrigger value="payroll-list" disabled>لیست حقوق</TabsTrigger>
-                    <TabsTrigger value="payslip" disabled>فیش حقوق</TabsTrigger>
+                    <TabsTrigger value="personnel-info">اطلاعات پرسنل</TabsTrigger>
+                    <TabsTrigger value="work-hours" disabled>ساعت کاری (بزودی)</TabsTrigger>
+                    <TabsTrigger value="payroll-list">لیست حقوق</TabsTrigger>
+                    <TabsTrigger value="payslip" disabled>فیش حقوق (بزودی)</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="company-info">
                     <CompanyInfoForm />
                 </TabsContent>
                 <TabsContent value="personnel-info">
-                    {/* Personnel info component will go here */}
+                    <PersonnelPage />
                 </TabsContent>
                 <TabsContent value="work-hours">
                     {/* Work hours component will go here */}
                 </TabsContent>
                 <TabsContent value="payroll-list">
-                    {/* Payroll list component will go here */}
+                    <PayrollListPage/>
                 </TabsContent>
                 <TabsContent value="payslip">
                     {/* Payslip component will go here */}

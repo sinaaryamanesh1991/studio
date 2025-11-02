@@ -15,6 +15,7 @@ import {
   Calculator,
   List,
   FilePlus,
+  Settings,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -95,25 +96,17 @@ export function MainNav() {
                            </SidebarMenuItem>
                            <SidebarMenuItem>
                                 <Link href="/financials/payroll" legacyBehavior passHref>
-                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll'}>
-                                        <Calculator />
-                                        <span>تنظیمات حقوق</span>
+                                    <SidebarMenuSubButton isActive={pathname.startsWith('/financials/payroll') && !pathname.endsWith('calculator') && !pathname.endsWith('list')}>
+                                        <Settings />
+                                        <span>حقوق و دستمزد</span>
                                     </SidebarMenuSubButton>
                                 </Link>
                             </SidebarMenuItem>
                              <SidebarMenuItem>
                                 <Link href="/financials/payroll-calculator" legacyBehavior passHref>
                                     <SidebarMenuSubButton isActive={pathname === '/financials/payroll-calculator'}>
-                                        <FilePlus />
+                                        <Calculator />
                                         <span>محاسبه حقوق</span>
-                                    </SidebarMenuSubButton>
-                                </Link>
-                            </SidebarMenuItem>
-                             <SidebarMenuItem>
-                                <Link href="/financials/payroll-list" legacyBehavior passHref>
-                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll-list'}>
-                                        <List />
-                                        <span>لیست حقوق</span>
                                     </SidebarMenuSubButton>
                                 </Link>
                             </SidebarMenuItem>
