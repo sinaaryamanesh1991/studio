@@ -37,7 +37,9 @@ import { collection, doc } from 'firebase/firestore';
 import { setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format, parse, isValid } from 'date-fns-jalali';
+import { format } from 'date-fns-jalali';
+import { parse as parseJalali } from 'date-fns-jalali';
+import { format as formatEn, parse as parseEn } from 'date-fns';
 import { faIR } from 'date-fns-jalali/locale';
 import { cn } from '@/lib/utils';
 
@@ -63,8 +65,10 @@ export default function PersonnelPage() {
     useEffect(() => {
         if (isDialogOpen) {
             if (editingPersonnel && editingPersonnel.hireDate) {
-                const parsedDate = parse(editingPersonnel.hireDate, 'yyyy-MM-dd', new Date());
-                if (isValid(parsedDate)) {
+                // The date is stored in 'yyyy-MM-dd' (Gregorian) format.
+                // We need to parse it as such.
+                const parsedDate = parseEn(editingPersonnel.hireDate, 'yyyy-MM-dd', new Date());
+                if (!isNaN(parsedDate.getTime())) {
                     setSelectedDate(parsedDate);
                 } else {
                     setSelectedDate(undefined);
@@ -97,12 +101,15 @@ export default function PersonnelPage() {
         const formData = new FormData(e.currentTarget);
         const personId = editingPersonnel ? editingPersonnel.id : `p${Date.now()}`;
         
+        // Use formatEn from the standard date-fns to format for database
+        const hireDateForDb = selectedDate ? formatEn(selectedDate, 'yyyy-MM-dd') : '';
+        
         const newPerson: Personnel = {
             id: personId,
             name: formData.get('name') as string,
             familyName: formData.get('familyName') as string,
             phone: formData.get('phone') as string,
-            hireDate: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
+            hireDate: hireDateForDb, // Save in standard format
             position: formData.get('position') as Personnel['position'],
             status: formData.get('status') as Personnel['status'],
             nationalId: formData.get('nationalId') as string,
@@ -118,6 +125,17 @@ export default function PersonnelPage() {
         setEditingPersonnel(null);
         setSelectedDate(undefined);
     };
+    
+    const formatDateForDisplay = (dateString: string | undefined) => {
+        if (!dateString) return "تاریخ ثبت نشده";
+        try {
+            const date = parseEn(dateString, 'yyyy-MM-dd', new Date());
+             if (isNaN(date.getTime())) return dateString; // fallback
+            return format(date, 'yyyy/MM/dd', { locale: faIR });
+        } catch {
+            return dateString; // fallback
+        }
+    }
 
     if (isLoading) {
         return <div>در حال بارگذاری...</div>
@@ -153,7 +171,7 @@ export default function PersonnelPage() {
                                     <TableCell className="font-mono">{person.id}</TableCell>
                                     <TableCell>{person.name}</TableCell>
                                     <TableCell>{person.familyName}</TableCell>
-                                    <TableCell>{person.hireDate}</TableCell>
+                                    <TableCell>{formatDateForDisplay(person.hireDate)}</TableCell>
                                     <TableCell>{person.phone}</TableCell>
                                     <TableCell>{person.position}</TableCell>
                                     <TableCell>
