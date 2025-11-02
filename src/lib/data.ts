@@ -4,30 +4,56 @@ export const initialPersonnel: Personnel[] = [
   { id: 'p001', name: 'علی', familyName: 'رضایی', hireDate: '1402-03-15', phone: '09123456789', position: 'نگهبان', status: 'مشغول کار' },
   { id: 'p002', name: 'مریم', familyName: 'محمدی', hireDate: '1401-08-20', phone: '09129876543', position: 'خدمات', status: 'مشغول کار' },
   { id: 'p003', name: 'رضا', familyName: 'حسینی', hireDate: '1403-01-10', phone: '09121112233', position: 'سرایدار', status: 'مشغول کار' },
-  { id: 'p004', name: 'سارا', familyName: 'احمدی', hireDate: '1400-11-01', phone: '09124445566', position: 'مدیر شهرک', status: 'اتمام کار' },
+  { id: 'p004', name: 'احمدی', familyName: 'گنج', hireDate: '1400-01-01', phone: '09121122387', position: 'مدیر شهرک', status: 'مشغول کار' },
 ];
 
 export const initialResidents: Resident[] = [
-    { id: 'r001', name: 'احمد', familyName: 'کریمی', phone: '09125556677', carPlates: '۱۲س۳۴۵ایران۱۱', villaNumber: 101, status: 'ساکن' },
-    { id: 'r002', name: 'فاطمه', familyName: 'صادقی', phone: '09128889900', carPlates: '۳۴ب۵۶۷ایران۲۲', villaNumber: 102, status: 'ساکن' },
-    { id: 'r003', name: 'حسین', familyName: 'جعفری', phone: '09122223344', carPlates: '۵۶ج۷۸۹ایران۳۳', villaNumber: 201, status: 'غیر ساکن' },
+    { id: 'r001', name: 'علیرضا', familyName: 'عبادی', phone: '09123070435', carPlates: '', villaNumber: 1, status: 'ساکن' },
+    { id: 'r002', name: 'احمدی', familyName: 'گنج', phone: '09121143803', carPlates: '', villaNumber: 4, status: 'ساکن' },
+    { id: 'r003', name: 'مظفری', familyName: 'منفرد', phone: '09121122387', carPlates: '', villaNumber: 5, status: 'ساکن' },
+    { id: 'r004', name: 'احمدی', familyName: 'گنج', phone: '09124772848', carPlates: '', villaNumber: 6, status: 'ساکن' },
+    { id: 'r005', name: 'تهرانی', familyName: '', phone: '09124506178', carPlates: '', villaNumber: 7, status: 'ساکن' },
+    { id: 'r006', name: 'عبدالهی', familyName: '', phone: '09122387053', carPlates: '', villaNumber: 10, status: 'ساکن' },
+    { id: 'r007', name: 'نوید', familyName: 'شمار', phone: '09121114885', carPlates: '', villaNumber: 11, status: 'ساکن' },
+    { id: 'r008', name: 'جعفری', familyName: '', phone: '09121219871', carPlates: '', villaNumber: 12, status: 'ساکن' },
+    { id: 'r009', name: 'دانشور', familyName: '', phone: '09122830616', carPlates: '', villaNumber: 13, status: 'ساکن' },
+    { id: 'r010', name: 'مقدادی', familyName: '', phone: '09121162187', carPlates: '', villaNumber: 14, status: 'ساکن' },
+    { id: 'r011', name: 'فورادی', familyName: '', phone: '09183344995', carPlates: '', villaNumber: 15, status: 'ساکن' },
+    { id: 'r012', name: 'شجاعی', familyName: '', phone: '09121063777', carPlates: '', villaNumber: 17, status: 'ساکن' },
+    { id: 'r013', name: 'روحانی', familyName: '', phone: '09121195271', carPlates: '', villaNumber: 18, status: 'ساکن' },
+    { id: 'r014', name: 'هاشمی', familyName: 'جو', phone: '09131112799', carPlates: '', villaNumber: 19, status: 'ساکن' },
+    { id: 'r015', name: 'مقصودی', familyName: '', phone: '09119021145', carPlates: '', villaNumber: 20, status: 'ساکن' },
 ];
 
 export const initialBoardMembers: BoardMember[] = [
-  { id: 'b001', name: 'احمد', familyName: 'کریمی', isResident: true, villaNumber: 101, phone: '09125556677' },
-  { id: 'b002', name: 'مجید', familyName: 'ابراهیمی', isResident: false, phone: '09120001122' },
+  { id: 'b001', name: 'احمدی', familyName: 'گنج', isResident: true, villaNumber: 4, phone: '09121122387' },
 ];
 
-export const initialVillas: Villa[] = Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    name: `ویلا ${101 + i}`,
-    owner: 'مالک ثبت نشده',
-    area: Math.floor(Math.random() * 150) + 150,
-    residentInfo: 'ساکن ثبت نشده'
-}));
+export const initialVillas: Villa[] = [
+  { id: 1, name: "ویلا 1", owner: "علیرضا عبادی", area: 150, residentInfo: "علیرضا عبادی" },
+  { id: 2, name: "ویلا 2", owner: "شهمیری (احمدی)", area: 200, residentInfo: "شهمیری (احمدی)" },
+  { id: 3, name: "ویلا 3", owner: "احمدی گنج", area: 180, residentInfo: "احمدی گنج" },
+  { id: 4, name: "ویلا 4", owner: "احمدی گنج", area: 220, residentInfo: "احمدی گنج" },
+  { id: 5, name: "ویلا 5", owner: "مظفری منفرد", area: 250, residentInfo: "مظفری منفرد" },
+  { id: 6, name: "ویلا 6", owner: "احمدی گنج", area: 170, residentInfo: "احمدی گنج" },
+  { id: 7, name: "ویلا 7", owner: "تهرانی", area: 190, residentInfo: "تهرانی" },
+  { id: 8, name: "ویلا 8", owner: "ظفرمندی", area: 210, residentInfo: "ظفرمندی" },
+  { id: 9, name: "ویلا 9", owner: "مهدی احمدی گنج", area: 230, residentInfo: "مهدی احمدی گنج" },
+  { id: 10, name: "ویلا 10", owner: "عبدالهی", area: 160, residentInfo: "عبدالهی" },
+  { id: 11, name: "ویلا 11", owner: "نوید شمار", area: 240, residentInfo: "نوید شمار" },
+  { id: 12, name: "ویلا 12", owner: "جعفری", area: 180, residentInfo: "جعفری" },
+  { id: 13, name: "ویلا 13", owner: "دانشور", area: 200, residentInfo: "دانشور" },
+  { id: 14, name: "ویلا 14", owner: "مقدادی", area: 220, residentInfo: "مقدادی" },
+  { id: 15, name: "ویلا 15", owner: "فورادی", area: 250, residentInfo: "فورادی" },
+  { id: 16, name: "ویلا 16", owner: "خدیوزاده (قاجار)", area: 170, residentInfo: "خدیوزاده (قاجار)" },
+  { id: 17, name: "ویلا 17", owner: "شجاعی", area: 190, residentInfo: "شجاعی" },
+  { id: 18, name: "ویلا 18", owner: "روحانی", area: 210, residentInfo: "روحانی" },
+  { id: 19, name: "ویلا 19", owner: "هاشمی جو", area: 230, residentInfo: "هاشمی جو" },
+  { id: 20, name: "ویلا 20", owner: "مقصودی", area: 160, residentInfo: "مقصودی" },
+];
 
 export const initialTransactions: Transaction[] = [
-  { id: 't001', type: 'دریافتی', party: 'ویلا ۱۰۱', reason: 'شارژ ماهانه', amount: 500000, date: '1403-04-01' },
+  { id: 't001', type: 'دریافتی', party: 'ویلا ۱', reason: 'شارژ ماهانه', amount: 500000, date: '1403-04-01' },
   { id: 't002', type: 'پرداختی', party: 'شرکت باغبانی', reason: 'خدمات فضای سبز', amount: 1200000, date: '1403-04-05' },
   { id: 't003', type: 'پرداختی', party: 'علی رضایی', reason: 'حقوق ماهانه', amount: 8000000, date: '1403-04-30' },
 ];
