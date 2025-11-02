@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useData } from '@/context/data-context';
-import { Users, Home, UserCheck, FileDown, FileUp } from 'lucide-react';
+import { Users, Home, UserCheck, FileDown, FileUp, Briefcase } from 'lucide-react';
 import type { Resident } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -80,7 +80,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">اعضای هیئت مدیره</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
+            <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{boardMembers.length} نفر</div>
@@ -147,7 +147,7 @@ export default function DashboardPage() {
                         <TableRow>
                             <TableHead>نام و نام خانوادگی</TableHead>
                             <TableHead>شماره تماس</TableHead>
-                            <TableHead>وضعیت سکونت</TableHead>
+                            <TableHead>سمت</TableHead>
                             <TableHead>شماره ویلا</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -156,12 +156,8 @@ export default function DashboardPage() {
                             <TableRow key={member.id}>
                                 <TableCell className="font-medium">{member.name} {member.familyName}</TableCell>
                                 <TableCell>{member.phone}</TableCell>
-                                <TableCell>
-                                    <Badge variant={member.isResident ? 'default' : 'secondary'}>
-                                        {member.isResident ? 'ساکن' : 'خیر'}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>{member.isResident ? member.villaNumber : '-'}</TableCell>
+                                <TableCell>{member.position}</TableCell>
+                                <TableCell>{member.villaNumber}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

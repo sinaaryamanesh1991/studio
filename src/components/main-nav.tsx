@@ -10,6 +10,7 @@ import {
   CircleDollarSign,
   FileText,
   Building,
+  Briefcase,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/dashboard', label: 'داشبورد', icon: LayoutDashboard },
   { href: '/personnel', label: 'پرسنل', icon: Users },
   { href: '/residents', label: 'ساکنین', icon: Home },
+  { href: '/board-members', label: 'هیئت مدیره', icon: Briefcase },
   { href: '/map', label: 'نقشه شهرک', icon: Map },
   { href: '/financials', label: 'امور مالی', icon: CircleDollarSign },
   { href: '/documents', label: 'اسناد و مدارک', icon: FileText },
@@ -53,7 +55,7 @@ export function MainNav() {
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href}
+                    isActive={pathname.startsWith(item.href)}
                     tooltip={{ children: item.label, className: 'font-body' }}
                   >
                     <a>

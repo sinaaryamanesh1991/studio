@@ -27,7 +27,8 @@ export const initialResidents: Resident[] = [
 ];
 
 export const initialBoardMembers: BoardMember[] = [
-  { id: 'b001', name: 'احمدی', familyName: 'گنج', isResident: true, villaNumber: 4, phone: '09121122387' },
+  { id: 'b001', residentId: 'r002', name: 'احمدی', familyName: 'گنج', position: 'مدیر عامل', phone: '09121122387', villaNumber: 4 },
+  { id: 'b002', residentId: 'r003', name: 'مظفری', familyName: 'منفرد', position: 'رئیس هیئت مدیره', phone: '09121122387', villaNumber: 5 },
 ];
 
 export const initialVillas: Villa[] = [

@@ -21,11 +21,12 @@ export interface Resident {
 
 export interface BoardMember {
   id: string;
+  residentId: string;
   name: string;
   familyName: string;
-  isResident: boolean;
-  villaNumber?: number;
+  position: string;
   phone: string;
+  villaNumber?: number;
 }
 
 export interface Villa {
