@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { initialPersonnel, initialResidents, initialBoardMembers, initialVillas, initialTransactions, initialDocuments } from '@/lib/data';
 import type { Personnel, Resident, BoardMember, Villa, Transaction, Document } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -23,18 +23,77 @@ interface DataContextType extends AppData {
   setDocuments: React.Dispatch<React.SetStateAction<Document[]>>;
   importData: (file: File) => void;
   exportData: () => void;
+  isLoading: boolean;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
+const APP_DATA_STORAGE_KEY = 'sina_estate_app_data';
+
+const initialData: AppData = {
+    personnel: initialPersonnel,
+    residents: initialResidents,
+    boardMembers: initialBoardMembers,
+    villas: initialVillas,
+    transactions: initialTransactions,
+    documents: initialDocuments,
+};
+
 export const DataProvider = ({ children }: { children: ReactNode }) => {
-  const [personnel, setPersonnel] = useState<Personnel[]>(initialPersonnel);
-  const [residents, setResidents] = useState<Resident[]>(initialResidents);
-  const [boardMembers, setBoardMembers] = useState<BoardMember[]>(initialBoardMembers);
-  const [villas, setVillas] = useState<Villa[]>(initialVillas);
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
+  const [personnel, setPersonnel] = useState<Personnel[]>([]);
+  const [residents, setResidents] = useState<Resident[]>([]);
+  const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
+  const [villas, setVillas] = useState<Villa[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    try {
+      const storedData = localStorage.getItem(APP_DATA_STORAGE_KEY);
+      if (storedData) {
+        const parsedData: AppData = JSON.parse(storedData);
+        setPersonnel(parsedData.personnel || initialPersonnel);
+        setResidents(parsedData.residents || initialResidents);
+        setBoardMembers(parsedData.boardMembers || initialBoardMembers);
+        setVillas(parsedData.villas || initialVillas);
+        setTransactions(parsedData.transactions || initialTransactions);
+        setDocuments(parsedData.documents || initialDocuments);
+      } else {
+        // If no data in storage, use initial data
+        setPersonnel(initialPersonnel);
+        setResidents(initialResidents);
+        setBoardMembers(initialBoardMembers);
+        setVillas(initialVillas);
+        setTransactions(initialTransactions);
+        setDocuments(initialDocuments);
+      }
+    } catch (error) {
+        console.error("Failed to load data from localStorage", error);
+        // Load initial data in case of error
+        setPersonnel(initialPersonnel);
+        setResidents(initialResidents);
+        setBoardMembers(initialBoardMembers);
+        setVillas(initialVillas);
+        setTransactions(initialTransactions);
+        setDocuments(initialDocuments);
+    } finally {
+        setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+        try {
+            const appData: AppData = { personnel, residents, boardMembers, villas, transactions, documents };
+            localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
+        } catch (error) {
+            console.error("Failed to save data to localStorage", error);
+        }
+    }
+  }, [personnel, residents, boardMembers, villas, transactions, documents, isLoading]);
+
 
   const exportData = useCallback(() => {
     const appData: AppData = { personnel, residents, boardMembers, villas, transactions, documents };
@@ -94,6 +153,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     transactions, setTransactions,
     documents, setDocuments,
     importData, exportData,
+    isLoading,
   };
 
   return (

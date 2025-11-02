@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useRef } from 'react';
 import { Switch } from '@/components/ui/switch';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const statusVariant = {
   'ساکن': 'default',
@@ -24,7 +25,7 @@ const ownerStatusVariant = {
 
 
 export default function DashboardPage() {
-  const { personnel, residents, setResidents, boardMembers, villas, exportData, importData } = useData();
+  const { personnel, residents, setResidents, boardMembers, villas, exportData, importData, isLoading } = useData();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImportClick = () => {
@@ -64,6 +65,34 @@ export default function DashboardPage() {
     }
     return { text: 'ویلا خالی است', variant: 'ویلا خالی است' };
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <PageHeader title="داشبورد">
+           <Skeleton className="h-10 w-28" />
+           <Skeleton className="h-10 w-28" />
+        </PageHeader>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card><CardHeader><Skeleton className="h-4 w-2/3" /></CardHeader><CardContent><Skeleton className="h-8 w-1/3" /></CardContent></Card>
+          <Card><CardHeader><Skeleton className="h-4 w-2/3" /></CardHeader><CardContent><Skeleton className="h-8 w-1/3" /></CardContent></Card>
+          <Card><CardHeader><Skeleton className="h-4 w-2/3" /></CardHeader><CardContent><Skeleton className="h-8 w-1/3" /></CardContent></Card>
+        </div>
+         <div className="mt-6">
+            <Card>
+                <CardHeader><CardTitle><Skeleton className="h-6 w-1/4" /></CardTitle><CardDescription><Skeleton className="h-4 w-1/2" /></CardDescription></CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+      </>
+    )
+  }
 
 
   return (
@@ -181,7 +210,7 @@ export default function DashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {villas.map((villa) => {
+                        {villas.sort((a, b) => a.id - b.id).map((villa) => {
                             const status = getOwnerStatus(villa.id);
                             return (
                                 <TableRow key={villa.id}>
