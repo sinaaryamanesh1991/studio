@@ -97,14 +97,6 @@ export function MainNav() {
                                     </SidebarMenuSubButton>
                                 </Link>
                             </SidebarMenuItem>
-                             <SidebarMenuItem>
-                                <Link href="/financials/payroll/payslip">
-                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll/payslip'}>
-                                        <Receipt />
-                                        <span>فیش حقوقی</span>
-                                    </SidebarMenuSubButton>
-                                </Link>
-                            </SidebarMenuItem>
                         </SidebarMenuSub>
                     </CollapsibleContent>
                 </Collapsible>
