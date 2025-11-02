@@ -4,6 +4,10 @@ import { collection, doc, writeBatch, Firestore } from 'firebase/firestore';
 import type { Personnel, Resident, Villa, BoardMember, Transaction, Document, CompanyInfo, PayrollSettings } from '@/lib/types';
 
 const initialPersonnel: Omit<Personnel, 'estateId'>[] = [
+  { id: 'p1', name: 'اسحاق', familyName: 'بهادری', phone: '09103053794', hireDate: '1403-01-01', position: 'نگهبان', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
+  { id: 'p2', name: 'رضا', familyName: 'کابچی', phone: '09117444694', hireDate: '1402-05-10', position: 'خدمات', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
+  { id: 'p3', name: 'علی', familyName: 'فرهنگ', phone: '09334881914', hireDate: '1401-11-20', position: 'سرایدار', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
+  { id: 'p4', name: 'ناصر', familyName: 'رمضانی', phone: '09120000000', hireDate: '1400-01-01', position: 'مدیر شهرک', status: 'اتمام کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
 ];
 
 const initialResidents: Omit<Resident, 'estateId' | 'villaId'>[] = [
