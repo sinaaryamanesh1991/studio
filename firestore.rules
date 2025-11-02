@@ -9,7 +9,7 @@
  *
  * Key Security Decisions:
  * - All data access requires authentication (`isSignedIn()`).
- * - A user can only access data within the estate document that matches their UID (`request.auth.uid == estateId`).
+ * - A user can only access data within the estate document that matches their own UID (`request.auth.uid == estateId`).
  * - No public listing of all estates is allowed.
  * - Strong validation on create/update to ensure data integrity and prevent cross-estate data manipulation.
  */
