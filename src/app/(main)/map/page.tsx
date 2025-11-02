@@ -195,7 +195,7 @@ export default function MapPage() {
                             <Card 
                                 key={villa.id} 
                                 className={`cursor-pointer hover:shadow-lg hover:border-primary transition-all flex flex-col ${isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                onClick={() => handleCardClick(villa)}
+                                onClick={() => !isEditMode && handleCardClick(villa)}
                             >
                                 <CardHeader className="flex-row gap-4 items-center p-4">
                                     <div className="p-2 bg-primary/10 rounded-md">
