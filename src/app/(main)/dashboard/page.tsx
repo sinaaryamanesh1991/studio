@@ -4,15 +4,15 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { collection, doc, writeBatch } from 'firebase/firestore';
-import { Users, Home, UserCheck, FileDown, FileUp, Briefcase } from 'lucide-react';
-import type { Resident, Villa } from '@/lib/types';
+import { collection, doc } from 'firebase/firestore';
+import { Users, Home, Briefcase } from 'lucide-react';
+import type { Resident, Villa, BoardMember, Personnel } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useRef } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { seedDatabase } from '@/firebase/seed';
 import { useToast } from '@/hooks/use-toast';
 
 const statusVariant = {
@@ -33,69 +33,31 @@ export default function DashboardPage() {
   const estateId = user?.uid;
 
   const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
-  const { data: personnel, isLoading: loadingPersonnel } = useCollection(personnelQuery);
+  const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
 
   const residentsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'residents') : null, [firestore, estateId]);
   const { data: residents, isLoading: loadingResidents } = useCollection<Resident>(residentsQuery);
 
   const boardMembersQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'boardMembers') : null, [firestore, estateId]);
-  const { data: boardMembers, isLoading: loadingBoardMembers } = useCollection(boardMembersQuery);
+  const { data: boardMembers, isLoading: loadingBoardMembers } = useCollection<BoardMember>(boardMembersQuery);
 
   const villasQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'villas') : null, [firestore, estateId]);
   const { data: villas, isLoading: loadingVillas } = useCollection<Villa>(villasQuery);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const isLoading = loadingPersonnel || loadingResidents || loadingBoardMembers || loadingVillas;
 
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && estateId) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const text = e.target?.result;
-                if (typeof text !== 'string') return;
-                const data = JSON.parse(text);
-                const batch = writeBatch(firestore);
-
-                // Assuming data structure from old context
-                if(data.personnel) data.personnel.forEach((p: any) => batch.set(doc(firestore, 'estates', estateId, 'personnel', p.id), { ...p, estateId }));
-                if(data.residents) data.residents.forEach((r: any) => batch.set(doc(firestore, 'estates', estateId, 'residents', r.id), { ...r, estateId }));
-                if(data.boardMembers) data.boardMembers.forEach((b: any) => batch.set(doc(firestore, 'estates', estateId, 'boardMembers', b.id), { ...b, estateId }));
-                if(data.villas) data.villas.forEach((v: any) => batch.set(doc(firestore, 'estates', estateId, 'villas', v.id.toString()), { ...v, estateId, villaNumber: v.id, id: v.id.toString() }));
-                if(data.transactions) data.transactions.forEach((t: any) => batch.set(doc(firestore, 'estates', estateId, 'financialTransactions', t.id), { ...t, estateId }));
-                if(data.documents) data.documents.forEach((d: any) => batch.set(doc(firestore, 'estates', estateId, 'documents', d.id), { ...d, estateId }));
-                if(data.payrollRecords) data.payrollRecords.forEach((p: any) => batch.set(doc(firestore, 'estates', estateId, 'payrollRecords', p.id), { ...p, estateId }));
-                if(data.workLogs) data.workLogs.forEach((w: any) => batch.set(doc(firestore, 'estates', estateId, 'workLogs', w.id), { ...w, estateId }));
-
-                await batch.commit();
-                toast({ title: 'موفقیت', description: 'اطلاعات با موفقیت وارد شد.' });
-            } catch (error) {
-                console.error("Import error: ", error);
-                toast({ variant: 'destructive', title: 'خطا', description: 'خطا در وارد کردن اطلاعات.' });
-            }
-        };
-        reader.readAsText(file);
+  const handleSeed = async () => {
+    if (!firestore || !estateId) {
+      toast({ variant: 'destructive', title: 'خطا', description: 'اتصال به دیتابیس برقرار نیست.' });
+      return;
     }
-  };
-
-  const exportData = () => {
-    const dataToExport = {
-        personnel,
-        residents,
-        boardMembers,
-        villas,
-    };
-    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(dataToExport, null, 2))}`;
-    const link = document.createElement("a");
-    link.href = jsonString;
-    link.download = "sina_estate_data.json";
-    link.click();
+    try {
+      await seedDatabase(firestore, estateId);
+      toast({ title: 'موفقیت', description: 'داده‌های اولیه با موفقیت در دیتابیس ثبت شد.' });
+    } catch (error) {
+      console.error("Seeding error: ", error);
+      toast({ variant: 'destructive', title: 'خطا', description: 'خطا در ثبت داده‌های اولیه.' });
+    }
   };
 
   const handleStatusChange = (resident: Resident, isPresent: boolean) => {
@@ -105,7 +67,6 @@ export default function DashboardPage() {
     setDocumentNonBlocking(residentRef, updatedData, { merge: true });
   };
   
-  const residentCount = residents?.length ?? 0;
   const presentCount = residents?.filter(r => r.status === 'ساکن').length ?? 0;
 
   const getOwnerStatus = (villaNumber: number): { text: string; variant: keyof typeof ownerStatusVariant } => {
@@ -113,7 +74,7 @@ export default function DashboardPage() {
     const villa = villas?.find(v => v.villaNumber === villaNumber);
 
     if (resident && resident.status === 'ساکن') {
-      if (villa && (resident.name.includes(villa.owner) || resident.familyName.includes(villa.owner) || villa.owner.includes(resident.name) || villa.owner.includes(resident.familyName))) {
+      if (villa && villa.owner && (resident.name.includes(villa.owner) || resident.familyName.includes(villa.owner) || villa.owner.includes(resident.name) || villa.owner.includes(resident.familyName))) {
         return { text: 'مالک ساکن است', variant: 'مالک ساکن است' };
       }
       return { text: 'ساکن مستاجر است', variant: 'ساکن مستاجر است' };
@@ -125,8 +86,7 @@ export default function DashboardPage() {
     return (
       <>
         <PageHeader title="داشبورد">
-           <Skeleton className="h-10 w-28" />
-           <Skeleton className="h-10 w-28" />
+           <Skeleton className="h-10 w-40" />
         </PageHeader>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card><CardHeader><Skeleton className="h-4 w-2/3" /></CardHeader><CardContent><Skeleton className="h-8 w-1/3" /></CardContent></Card>
@@ -153,20 +113,8 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader title="داشبورد">
-        <Button variant="outline" onClick={handleImportClick}>
-            <FileUp className="ms-2 h-4 w-4" />
-            ورود اطلاعات
-        </Button>
-        <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            accept=".json"
-        />
-        <Button onClick={exportData}>
-            <FileDown className="ms-2 h-4 w-4" />
-            خروجی اطلاعات
+        <Button onClick={handleSeed}>
+            اعمال داده های اولیه
         </Button>
       </PageHeader>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -187,7 +135,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{presentCount} خانوار</div>
-            <p className="text-xs text-muted-foreground">از مجموع {residentCount} واحد</p>
+            <p className="text-xs text-muted-foreground">از مجموع {residents?.length ?? 0} واحد</p>
           </CardContent>
         </Card>
         <Card>
@@ -221,7 +169,7 @@ export default function DashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {residents?.map((resident: Resident) => (
+                        {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident: Resident) => (
                             <TableRow key={resident.id}>
                                 <TableCell className="font-medium">{resident.villaNumber}</TableCell>
                                 <TableCell>{resident.name}</TableCell>
@@ -318,5 +266,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
-    
