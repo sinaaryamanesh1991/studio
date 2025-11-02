@@ -15,9 +15,9 @@ import { useState, useMemo, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns-jalali';
+import { format, getDaysInMonth, startOfMonth } from 'date-fns-jalali';
 import { faIR } from 'date-fns-jalali/locale';
-import { format as formatEn, parse as parseEn, getDaysInMonth, startOfMonth } from 'date-fns';
+import { format as formatEn, parse as parseEn } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
@@ -106,14 +106,21 @@ const calculateHours = (entry: string, exit: string): number => {
 function WorkHoursContent() {
     const { firestore, user } = useFirebase();
     const estateId = user?.uid;
+    
+    const today = new Date();
+    const currentJalaliYear = parseInt(format(today, 'yyyy'));
+    const currentJalaliMonth = parseInt(format(today, 'M'));
 
     const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
     const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
 
+    const companyInfoQuery = useMemoFirebase(() => estateId ? doc(firestore, 'estates', estateId, 'companyInfo', 'default') : null, [firestore, estateId]);
+    const { data: companyInfo, isLoading: loadingCompanyInfo } = useDoc<CompanyInfo>(companyInfoQuery);
+
     const { toast } = useToast();
     const [selectedPersonnelId, setSelectedPersonnelId] = useState<string>('');
-    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+    const [selectedYear, setSelectedYear] = useState<number>(currentJalaliYear);
+    const [selectedMonth, setSelectedMonth] = useState<number>(currentJalaliMonth);
 
     const workLogId = selectedPersonnelId ? `${selectedPersonnelId}-${selectedYear}-${String(selectedMonth).padStart(2, '0')}` : null;
     const workLogQuery = useMemoFirebase(() => (estateId && workLogId) ? doc(firestore, 'estates', estateId, 'workLogs', workLogId) : null, [estateId, workLogId]);
@@ -121,8 +128,13 @@ function WorkHoursContent() {
 
     const [monthlyLogs, setMonthlyLogs] = useState<WorkLog['days']>([]);
     
+    const standardWorkHours = useMemo(() => {
+        if (!companyInfo) return 8; // Default to 8 hours
+        return calculateHours(companyInfo.defaultEntryTime, companyInfo.defaultExitTime);
+    }, [companyInfo]);
+
     useEffect(() => {
-        if (selectedPersonnelId && !loadingWorkLog) {
+        if (selectedPersonnelId && !loadingWorkLog && !loadingCompanyInfo) {
             const daysInMonth = getDaysInMonth(new Date(selectedYear, selectedMonth - 1));
             const newLogs = Array.from({ length: daysInMonth }, (_, i) => {
                 const day = i + 1;
@@ -140,15 +152,31 @@ function WorkHoursContent() {
         } else if (!selectedPersonnelId) {
             setMonthlyLogs([]);
         }
-    }, [selectedPersonnelId, selectedYear, selectedMonth, workLog, loadingWorkLog]);
+    }, [selectedPersonnelId, selectedYear, selectedMonth, workLog, loadingWorkLog, loadingCompanyInfo]);
 
 
-    const handleTimeChange = (day: number, field: 'entryTime' | 'exitTime' | 'overtimeHours' | 'holidayHours', value: string | number) => {
+    const handleTimeChange = (day: number, field: 'entryTime' | 'exitTime', value: string) => {
         setMonthlyLogs(prev => prev.map(log => {
             if (log.day === day) {
                 const updatedLog = { ...log, [field]: value };
                 const hoursWorked = calculateHours(updatedLog.entryTime, updatedLog.exitTime);
-                return { ...updatedLog, hoursWorked };
+
+                const date = new Date(selectedYear, selectedMonth - 1, day);
+                const dayName = format(date, 'EEEE', { locale: faIR });
+                const isHoliday = dayName === 'جمعه';
+
+                let overtimeHours = 0;
+                let holidayHours = 0;
+
+                if (isHoliday) {
+                    holidayHours = hoursWorked;
+                } else {
+                    if (hoursWorked > standardWorkHours) {
+                        overtimeHours = hoursWorked - standardWorkHours;
+                    }
+                }
+                
+                return { ...updatedLog, hoursWorked, overtimeHours, holidayHours };
             }
             return log;
         }));
@@ -170,12 +198,10 @@ function WorkHoursContent() {
         toast({ title: 'موفقیت', description: 'ساعات کاری ماه با موفقیت ذخیره شد.' });
     };
 
-    const isLoading = loadingPersonnel || loadingWorkLog;
+    const isLoading = loadingPersonnel || loadingWorkLog || loadingCompanyInfo;
     
-    const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
-    const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, name: format(new Date(0, i), 'LLLL', { locale: faIR }) }));
-    const daysInMonth = getDaysInMonth(new Date(selectedYear, selectedMonth - 1));
-    const firstDayOfMonth = startOfMonth(new Date(selectedYear, selectedMonth - 1));
+    const years = Array.from({ length: 5 }, (_, i) => currentJalaliYear - i);
+    const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, name: format(new Date(2000, i, 1), 'LLLL', { locale: faIR }) }));
 
     return (
         <Card>
@@ -233,6 +259,7 @@ function WorkHoursContent() {
                 {isLoading && <p>در حال بارگذاری اطلاعات...</p>}
 
                 {!isLoading && selectedPersonnelId && (
+                     <div className='overflow-x-auto'>
                      <Table>
                         <TableHeader>
                             <TableRow>
@@ -240,8 +267,8 @@ function WorkHoursContent() {
                                 <TableHead>تاریخ</TableHead>
                                 <TableHead>ساعت ورود</TableHead>
                                 <TableHead>ساعت خروج</TableHead>
-                                <TableHead>اضافه‌کاری</TableHead>
-                                <TableHead>تعطیل‌کاری</TableHead>
+                                <TableHead>اضافه‌کاری (خودکار)</TableHead>
+                                <TableHead>تعطیل‌کاری (خودکار)</TableHead>
                                 <TableHead>جمع ساعات</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -275,22 +302,10 @@ function WorkHoursContent() {
                                             />
                                         </TableCell>
                                          <TableCell>
-                                            <Input 
-                                                type="number" 
-                                                className="w-24"
-                                                value={log.overtimeHours}
-                                                step="0.1"
-                                                onChange={(e) => handleTimeChange(log.day, 'overtimeHours', Number(e.target.value))}
-                                            />
+                                            <span className="font-mono text-base">{log.overtimeHours > 0 ? log.overtimeHours.toFixed(2) : '-'}</span>
                                         </TableCell>
                                          <TableCell>
-                                            <Input 
-                                                type="number" 
-                                                className="w-24"
-                                                value={log.holidayHours}
-                                                step="0.1"
-                                                onChange={(e) => handleTimeChange(log.day, 'holidayHours', Number(e.target.value))}
-                                            />
+                                            <span className="font-mono text-base">{log.holidayHours > 0 ? log.holidayHours.toFixed(2) : '-'}</span>
                                         </TableCell>
                                          <TableCell>
                                             <span className="font-mono text-lg">{log.hoursWorked.toFixed(2)}</span>
@@ -301,6 +316,7 @@ function WorkHoursContent() {
                            })}
                         </TableBody>
                     </Table>
+                    </div>
                 )}
 
                  {!isLoading && !selectedPersonnelId && (
@@ -631,3 +647,5 @@ export default function PayrollSystemPage() {
         </>
     );
 }
+
+    
