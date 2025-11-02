@@ -31,31 +31,37 @@ export default function LoginPage() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth || !firestore) {
+        toast({ variant: 'destructive', title: 'خطا', description: 'سرویس Firebase در دسترس نیست.' });
+        return;
+    }
     setIsSigningIn(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      toast({ title: 'ورود موفق', description: 'خوش آمدید!' });
       // Let the useEffect handle redirection
     } catch (error: any) {
       if (error.code === 'auth/user-not-found') {
-        // If user not found, create a new user
+        // If user not found, create a new user and make them the estate owner
         try {
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const estateId = userCredential.user.uid;
           
-          // Create the initial estate document for the new user
+          // Create the initial estate document for the new user, making them the owner.
           const estateRef = doc(firestore, 'estates', estateId);
           await setDoc(estateRef, {
             id: estateId,
             name: 'شهرک سینا',
+            ownerId: estateId, // Explicitly set owner
             createdAt: new Date().toISOString(),
           });
-          toast({ title: 'حساب کاربری جدید ایجاد شد', description: 'به سامانه مدیریت شهرک خوش آمدید.' });
+          toast({ title: 'حساب کاربری جدید ایجاد شد', description: 'به سامانه مدیریت شهرک خوش آمدید. شما به عنوان ادمین ثبت شدید.' });
 
         } catch (creationError) {
            toast({ variant: 'destructive', title: 'خطا در ایجاد حساب', description: 'خطایی در ایجاد حساب کاربری جدید رخ داد.' });
         }
       } else {
-         toast({ variant: 'destructive', title: 'خطا در ورود', description: error.message });
+         toast({ variant: 'destructive', title: 'خطا در ورود', description: 'ایمیل یا رمز عبور اشتباه است.' });
       }
     } finally {
         setIsSigningIn(false);
@@ -63,6 +69,10 @@ export default function LoginPage() {
   };
   
   const handleAnonymousSignIn = async () => {
+    if (!auth || !firestore) {
+      toast({ variant: 'destructive', title: 'خطا', description: 'سرویس Firebase در دسترس نیست.' });
+      return;
+    }
     setIsSigningIn(true);
     try {
       const userCredential = await signInAnonymously(auth);
@@ -72,6 +82,7 @@ export default function LoginPage() {
       await setDoc(estateRef, {
         id: estateId,
         name: 'شهرک سینا (مهمان)',
+        ownerId: estateId,
         createdAt: new Date().toISOString(),
       });
 
@@ -130,7 +141,7 @@ export default function LoginPage() {
             </div>
             <Button type="submit" className="w-full" disabled={isSigningIn}>
               {isSigningIn && <Loader2 className="ms-2 h-4 w-4 animate-spin" />}
-              ورود
+              ورود یا ایجاد حساب ادمین
             </Button>
           </form>
 
@@ -144,7 +155,7 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter>
             <p className="text-xs text-muted-foreground text-center w-full">
-                حساب کاربری ادمین به صورت خودکار ایجاد خواهد شد.
+                حساب کاربری ادمین در اولین ورود به صورت خودکار ایجاد خواهد شد.
             </p>
         </CardFooter>
       </Card>

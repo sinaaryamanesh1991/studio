@@ -2,19 +2,16 @@
  * @file Firestore Security Rules for Sina Estate Manager.
  *
  * Core Philosophy:
- * This ruleset enforces a strict owner-only access model within each estate. Only authenticated users can access the database, and all data is scoped to a specific estate. Every collection within an estate is secured to ensure that only members or authorized personnel of that estate can read or modify its data. Authorization is performed by requiring that the 'estateId' field within each document matches the {estateId} parameter in the path.
+ * This ruleset enforces a strict owner-only access model within each estate. Only authenticated users can access the database, and all data is scoped to a specific estate. The owner of an estate is the user whose UID matches the estateId.
  *
  * Data Structure:
- * The database is structured hierarchically under the /estates/{estateId} path. Each estate has its own collections for personnel, residents, board members, villas, financial transactions, documents, payroll information, and attendance records.
+ * The database is structured hierarchically under the /estates/{estateId} path. Each estate has its own collections for personnel, residents, etc.
  *
  * Key Security Decisions:
  * - All data access requires authentication (`isSignedIn()`).
- * - All collections are estate-scoped and enforce that the document's 'estateId' matches the path.
- * - No listing of Estates is allowed to prevent unauthorized enumeration.
- * - Strong validation on create/update operations to prevent cross-estate data manipulation.
- *
- * Denormalization for Authorization:
- * To avoid complex queries and ensure authorization independence, each document in the subcollections (personnel, residents, etc.) includes a denormalized 'estateId' field. This allows direct validation against the path without needing additional reads.
+ * - A user can only access data within the estate document that matches their UID (`request.auth.uid == estateId`).
+ * - No public listing of all estates is allowed.
+ * - Strong validation on create/update to ensure data integrity and prevent cross-estate data manipulation.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -30,6 +27,7 @@ service cloud.firestore {
 
     /**
      * @description Checks if the incoming data's 'estateId' matches the 'estateId' in the path.
+     * This is crucial for ensuring that data is not accidentally written to the wrong estate.
      * @param {string} estateId - The estate ID from the path.
      * @returns {boolean} True if the 'estateId' values match, false otherwise.
      */
@@ -39,6 +37,7 @@ service cloud.firestore {
 
     /**
      * @description Validates that the 'estateId' field cannot be changed during an update.
+     * This prevents moving a document from one estate to another.
      * @returns {boolean} True if the 'estateId' field remains the same, false otherwise.
      */
     function estateIdIsImmutable() {
@@ -47,26 +46,26 @@ service cloud.firestore {
 
     /**
      * @description
-     * This rule applies to the root estates collection.
-     * It only allows creation of an estate if the authenticated user's UID matches the estateId,
-     * effectively making the creator the owner. Reads of single documents are allowed only for the owner.
-     * Listing is disallowed for security.
+     * This rule applies to the root /estates collection.
+     * - A user can create an estate document only if the document's ID matches their own UID.
+     * - A user can only read, update, or delete an estate document if its ID matches their own UID.
+     * - Listing all estates is disallowed for security.
      */
     match /estates/{estateId} {
-      allow get: if isSignedIn() && request.auth.uid == estateId;
+      allow get, update, delete: if isSignedIn() && request.auth.uid == estateId;
       allow list: if false;
       allow create: if isSignedIn() && request.auth.uid == estateId;
-      allow update: if isSignedIn() && request.auth.uid == estateId;
-      allow delete: if isSignedIn() && request.auth.uid == estateId;
-    }
 
-    /**
-     * @description
-     * This rule applies to all subcollections within an estate.
-     * It allows list/read/write operations only for the user whose UID matches the estateId.
-     */
-    match /estates/{estateId}/{collection}/{docId} {
+      /**
+       * @description
+       * This rule applies to all subcollections within a specific estate (e.g., personnel, residents).
+       * It grants full read and write access (including list) only to the user whose UID matches the estateId in the path.
+       * This is the core rule that scopes all data access to the owner of the estate.
+       * On create and update, we also validate that the document's internal 'estateId' field matches the path.
+       */
+      match /{collection}/{docId} {
         allow read, write: if isSignedIn() && request.auth.uid == estateId;
+      }
     }
   }
 }
