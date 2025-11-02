@@ -24,8 +24,7 @@ import {
     DialogClose,
 } from '@/components/ui/dialog';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns-jalali';
-import { parse as parseEn } from 'date-fns';
+import { format, parse } from 'date-fns-jalali';
 import { faIR } from 'date-fns-jalali/locale';
 import { PayslipDisplay } from './page';
 import { collection, doc } from 'firebase/firestore';
@@ -57,7 +56,7 @@ export default function PayrollListPage() {
     const formatDate = (dateString: string) => {
         if (!dateString) return "نامشخص";
         try {
-            const date = parseEn(dateString, 'yyyy-MM-dd', new Date());
+            const date = parse(dateString, 'yyyy-MM-dd', new Date());
             if (isNaN(date.getTime())) return dateString; // fallback
             return format(date, 'yyyy/MM/dd', { locale: faIR });
         } catch {
@@ -160,3 +159,5 @@ export default function PayrollListPage() {
         </>
     );
 }
+
+    

@@ -12,8 +12,8 @@ import { PageHeader } from '@/components/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator, Users, Save, Search, Printer } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
-import { getDaysInMonth } from 'date-fns-jalali';
-import { format as formatEn, parse as parseEn } from 'date-fns';
+import { getDaysInMonth, format, parse } from 'date-fns-jalali';
+import { faIR } from 'date-fns-jalali/locale';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
@@ -21,9 +21,6 @@ import PayrollListPage from './payroll-list-content';
 import { collection, doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format } from 'date-fns-jalali';
-import { faIR } from 'date-fns-jalali/locale';
-
 
 // Helper to calculate hours worked
 const calculateHours = (entry: string, exit: string): number => {
@@ -46,8 +43,8 @@ function WorkHoursContent() {
     const estateId = user?.uid;
     
     const today = new Date();
-    const currentJalaliYear = parseInt(format(today, 'yyyy'));
-    const currentJalaliMonth = parseInt(format(today, 'M'));
+    const currentJalaliYear = parseInt(format(today, 'yyyy', { locale: faIR }));
+    const currentJalaliMonth = parseInt(format(today, 'M', { locale: faIR }));
 
     const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
     const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
@@ -100,9 +97,8 @@ function WorkHoursContent() {
                 const updatedLog = { ...log, [field]: value };
                 const hoursWorked = calculateHours(updatedLog.entryTime, updatedLog.exitTime);
 
-                const date = new Date(selectedYear, selectedMonth - 1, day);
+                const date = parse(`${selectedYear}/${selectedMonth}/${day}`, 'yyyy/MM/dd', new Date());
                 const dayName = format(date, 'EEEE', { locale: faIR });
-                // TODO: Add a proper holiday calendar check instead of just Friday
                 const isHoliday = dayName === 'جمعه'; 
 
                 let overtimeHours = 0;
@@ -111,10 +107,8 @@ function WorkHoursContent() {
 
                 if (isHoliday) {
                     holidayHours = hoursWorked;
-                } else {
-                    if (hoursWorked > standardWorkHours) {
-                        overtimeHours = hoursWorked - standardWorkHours;
-                    }
+                } else if (hoursWorked > standardWorkHours) {
+                    overtimeHours = hoursWorked - standardWorkHours;
                 }
                 
                 return { ...updatedLog, hoursWorked, overtimeHours, holidayHours, nightWorkHours };
@@ -142,7 +136,7 @@ function WorkHoursContent() {
     const isLoading = loadingPersonnel || loadingWorkLog || loadingCompanyInfo;
     
     const years = Array.from({ length: 5 }, (_, i) => currentJalaliYear - i);
-    const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, name: format(new Date(2000, i, 1), 'LLLL', { locale: faIR }) }));
+    const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, name: format(new Date(2000, i), 'LLLL', { locale: faIR }) }));
 
     return (
         <Card>
@@ -215,7 +209,7 @@ function WorkHoursContent() {
                         </TableHeader>
                         <TableBody>
                            {monthlyLogs.map((log) => {
-                               const date = new Date(selectedYear, selectedMonth - 1, log.day);
+                               const date = parse(`${selectedYear}/${selectedMonth}/${log.day}`, 'yyyy/MM/dd', new Date());
                                const dayName = format(date, 'EEEE', { locale: faIR });
                                const isHoliday = dayName === 'جمعه';
 
@@ -225,7 +219,7 @@ function WorkHoursContent() {
                                             {log.day}
                                             <span className="text-xs text-muted-foreground mr-1">({dayName})</span>
                                         </TableCell>
-                                        <TableCell>{format(date, 'yyyy/MM/dd')}</TableCell>
+                                        <TableCell>{format(date, 'yyyy/MM/dd', { locale: faIR })}</TableCell>
                                         <TableCell>
                                             <Input 
                                                 type="time" 
@@ -283,7 +277,8 @@ export function PayslipDisplay({ payslip, personnel }: { payslip: Partial<Payrol
     const formatDate = (dateString: string | undefined) => {
         if (!dateString) return "نامشخص";
         try {
-            const date = parseEn(dateString, 'yyyy-MM-dd', new Date());
+            // Assuming date is 'yyyy-MM-dd' from 'formatEn'
+            const date = parse(dateString, 'yyyy-MM-dd', new Date());
              if (isNaN(date.getTime())) return dateString; // fallback
             return format(date, 'yyyy/MM/dd', { locale: faIR });
         } catch {
@@ -515,3 +510,5 @@ export default function PayrollSystemPage() {
         </>
     );
 }
+
+    
