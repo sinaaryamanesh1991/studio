@@ -94,17 +94,24 @@ export default function PayrollCalculatorPage() {
             toast({ variant: 'destructive', title: 'خطا', description: 'لطفا یکی از پرسنل را انتخاب کنید.' });
             return;
         }
+        if (!companyInfo || !payrollSettings) {
+             toast({ variant: 'destructive', title: 'خطا', description: 'اطلاعات پایه شرکت یا تنظیمات حقوق یافت نشد.' });
+            return;
+        }
         setIsLoading(true);
         setCalculationResult(null);
         
         const input = {
             hourlyRate: Number(formState.hourlyRate),
+            defaultEntryTime: companyInfo.defaultEntryTime,
             entryTime: formState.entryTime,
             exitTime: formState.exitTime,
             overtimeHours: Number(formState.overtimeHours),
             overtimeMultiplier: Number(formState.overtimeMultiplier),
             holidayPay: Number(formState.holidayPay),
             deductions: Number(formState.deductions),
+            maxAllowedLateness: payrollSettings.maxAllowedLateness,
+            latenessPenaltyAmount: payrollSettings.latenessPenaltyAmount
         };
 
         try {
@@ -144,6 +151,7 @@ export default function PayrollCalculatorPage() {
             overtimeMultiplier: calculationResult.overtimeMultiplier,
             holidayPay: calculationResult.holidayPay,
             deductions: calculationResult.deductions,
+            latenessDeduction: calculationResult.latenessDeduction,
             grossPay: calculationResult.grossPay,
             netPay: calculationResult.netPay,
             overtimePay: calculationResult.overtimePay,
@@ -217,7 +225,7 @@ export default function PayrollCalculatorPage() {
                                     <Input id="holidayPay" name="holidayPay" type="number" value={formState.holidayPay} onChange={handleInputChange} required />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="deductions">کسورات (تومان)</Label>
+                                    <Label htmlFor="deductions">سایر کسورات (تومان)</Label>
                                     <Input id="deductions" name="deductions" type="number" value={formState.deductions} onChange={handleInputChange} required />
                                 </div>
 
@@ -263,7 +271,8 @@ export default function PayrollCalculatorPage() {
                                     <div className="flex justify-between items-center"><span className="text-muted-foreground">مبلغ تعطیل کاری:</span><span className="font-mono text-green-600">{`+ ${calculationResult.holidayPay.toLocaleString('fa-IR')}`}</span></div>
                                     <div className="flex justify-between items-center font-bold"><span className="text-muted-foreground">حقوق ناخالص:</span><span className="font-mono">{calculationResult.grossPay.toLocaleString('fa-IR')} تومان</span></div>
                                     <Separator />
-                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">مجموع کسورات:</span><span className="font-mono text-destructive">{`- ${calculationResult.deductions.toLocaleString('fa-IR')}`}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">کسر بابت تأخیر:</span><span className="font-mono text-destructive">{`- ${calculationResult.latenessDeduction.toLocaleString('fa-IR')}`}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">سایر کسورات:</span><span className="font-mono text-destructive">{`- ${calculationResult.deductions.toLocaleString('fa-IR')}`}</span></div>
                                     <Separator />
                                     <div className="flex justify-between items-center font-extrabold text-lg bg-muted -mx-6 px-6 py-3"><span >پرداختی نهایی:</span><span className="font-mono text-primary">{calculationResult.netPay.toLocaleString('fa-IR')} تومان</span></div>
                                     

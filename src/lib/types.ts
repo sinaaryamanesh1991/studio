@@ -85,6 +85,7 @@ export interface PayrollRecord {
   overtimeMultiplier: number;
   holidayPay: number;
   deductions: number;
+  latenessDeduction: number;
   // Outputs
   grossPay: number;
   netPay: number;
@@ -112,5 +113,7 @@ export interface WorkLog {
 export interface PayrollSettings {
     baseHourlyRate: number;
     overtimeMultiplier: number;
+    maxAllowedLateness: number; // in minutes
+    latenessPenaltyAmount: number; // deduction amount
     estateId: string;
 }

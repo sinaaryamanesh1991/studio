@@ -134,9 +134,11 @@
       "properties": {
         "baseHourlyRate": { "type": "number" },
         "overtimeMultiplier": { "type": "number" },
+        "maxAllowedLateness": { "type": "number", "description": "Maximum allowed lateness in minutes before penalty." },
+        "latenessPenaltyAmount": { "type": "number", "description": "Deduction amount for being late." },
         "estateId": { "type": "string" }
       },
-      "required": ["baseHourlyRate", "overtimeMultiplier", "estateId"]
+      "required": ["baseHourlyRate", "overtimeMultiplier", "maxAllowedLateness", "latenessPenaltyAmount", "estateId"]
     },
      "WorkLog": {
       "title": "WorkLog",
@@ -170,6 +172,7 @@
         "overtimeMultiplier": { "type": "number" },
         "holidayPay": { "type": "number" },
         "deductions": { "type": "number" },
+        "latenessDeduction": { "type": "number" },
         "grossPay": { "type": "number" },
         "netPay": { "type": "number" },
         "overtimePay": { "type": "number" },

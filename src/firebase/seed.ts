@@ -60,8 +60,10 @@ const initialCompanyInfo: Omit<CompanyInfo, 'estateId'> = {
 };
 
 const initialPayrollSettings: Omit<PayrollSettings, 'estateId'> = {
-    baseHourlyRate: 33299, // Example rate, can be adjusted
-    overtimeMultiplier: 1.4
+    baseHourlyRate: 33299, 
+    overtimeMultiplier: 1.4,
+    maxAllowedLateness: 15, // default 15 minutes
+    latenessPenaltyAmount: 0 // default 0
 };
 
 

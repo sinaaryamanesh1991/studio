@@ -343,7 +343,11 @@ export function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord,
                 </div>
                  <Separator />
                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">مجموع کسورات:</span>
+                    <span className="text-muted-foreground">کسر بابت تأخیر:</span>
+                    <span className="font-mono text-destructive">{`- ${payslip.latenessDeduction.toLocaleString('fa-IR')}`}</span>
+                </div>
+                 <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">سایر کسورات:</span>
                     <span className="font-mono text-destructive">{`- ${payslip.deductions.toLocaleString('fa-IR')}`}</span>
                 </div>
                  <Separator />
@@ -438,7 +442,12 @@ function PayrollSettingsForm() {
     const payrollSettingsQuery = useMemoFirebase(() => estateId ? doc(firestore, 'estates', estateId, 'payrollSettings', 'default') : null, [firestore, estateId]);
     const { data: payrollSettings, isLoading } = useDoc<PayrollSettings>(payrollSettingsQuery);
     const { toast } = useToast();
-    const [formData, setFormData] = useState<Partial<PayrollSettings>>({});
+    const [formData, setFormData] = useState<Partial<PayrollSettings>>({
+        baseHourlyRate: 33299,
+        overtimeMultiplier: 1.4,
+        maxAllowedLateness: 15,
+        latenessPenaltyAmount: 0
+    });
 
     useEffect(() => {
         if(payrollSettings) {
@@ -447,14 +456,22 @@ function PayrollSettingsForm() {
     }, [payrollSettings]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (!estateId) return;
         const settingsRef = doc(firestore, 'estates', estateId, 'payrollSettings', 'default');
-        const dataToSave = { ...formData, estateId, baseHourlyRate: Number(formData.baseHourlyRate), overtimeMultiplier: Number(formData.overtimeMultiplier) };
+        const dataToSave = { 
+            ...formData, 
+            estateId, 
+            baseHourlyRate: Number(formData.baseHourlyRate), 
+            overtimeMultiplier: Number(formData.overtimeMultiplier),
+            maxAllowedLateness: Number(formData.maxAllowedLateness),
+            latenessPenaltyAmount: Number(formData.latenessPenaltyAmount),
+        };
         setDocumentNonBlocking(settingsRef, dataToSave, { merge: true });
         toast({ title: 'موفقیت', description: 'تنظیمات حقوق و دستمزد با موفقیت ذخیره شد.' });
     };
@@ -471,15 +488,27 @@ function PayrollSettingsForm() {
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="baseHourlyRate">پایه حقوق قانون کار (ساعتی)</Label>
-                        <Input id="baseHourlyRate" name="baseHourlyRate" type="number" value={formData.baseHourlyRate || ''} onChange={handleChange} placeholder="مثال: 33299" />
-                        <p className="text-xs text-muted-foreground">این مبلغ به عنوان نرخ پیش‌فرض ساعتی در محاسبه‌گر حقوق استفاده می‌شود.</p>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="overtimeMultiplier">ضریب اضافه کاری</Label>
-                        <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.1" value={formData.overtimeMultiplier || ''} onChange={handleChange} placeholder="مثال: 1.4" />
-                         <p className="text-xs text-muted-foreground">طبق قانون کار، این ضریب معمولا ۱.۴ است.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="baseHourlyRate">پایه حقوق قانون کار (ساعتی)</Label>
+                            <Input id="baseHourlyRate" name="baseHourlyRate" type="number" value={formData.baseHourlyRate || ''} onChange={handleChange} placeholder="مثال: 33299" />
+                            <p className="text-xs text-muted-foreground">این مبلغ به عنوان نرخ پیش‌فرض ساعتی در محاسبه‌گر حقوق استفاده می‌شود.</p>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="overtimeMultiplier">ضریب اضافه کاری</Label>
+                            <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.1" value={formData.overtimeMultiplier || ''} onChange={handleChange} placeholder="مثال: 1.4" />
+                             <p className="text-xs text-muted-foreground">طبق قانون کار، این ضریب معمولا ۱.۴ است.</p>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="maxAllowedLateness">حداکثر تأخیر مجاز (دقیقه)</Label>
+                            <Input id="maxAllowedLateness" name="maxAllowedLateness" type="number" value={formData.maxAllowedLateness || ''} onChange={handleChange} placeholder="مثال: 15" />
+                             <p className="text-xs text-muted-foreground">تأخیر بیشتر از این مقدار شامل جریمه می‌شود.</p>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="latenessPenaltyAmount">مبلغ جریمه تأخیر (تومان)</Label>
+                            <Input id="latenessPenaltyAmount" name="latenessPenaltyAmount" type="number" value={formData.latenessPenaltyAmount || ''} onChange={handleChange} placeholder="مثال: 50000" />
+                             <p className="text-xs text-muted-foreground">این مبلغ در صورت تأخیر غیرمجاز از حقوق کسر می‌شود.</p>
+                        </div>
                     </div>
                     <Button type="submit">ذخیره تنظیمات</Button>
                 </form>
