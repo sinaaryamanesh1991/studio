@@ -61,8 +61,10 @@ export const initialVillas: Villa[] = [
 
 export const initialTransactions: Transaction[] = [
   { id: 't001', type: 'دریافتی', party: 'ویلا ۱', reason: 'شارژ ماهانه', amount: 500000, date: '1403-04-01' },
-  { id: 't002', type: 'پرداختی', party: 'شرکت باغبانی', reason: 'خدمات فضای سبز', amount: 1200000, date: '1403-04-05' },
-  { id: 't003', type: 'پرداختی', party: 'علی رضایی', reason: 'حقوق ماهانه', amount: 8000000, date: '1403-04-30' },
+  { id: 't002', type: 'پرداختی', party: 'شرکت باغبانی', reason: 'هزینه های دیگر شهرک', amount: 1200000, date: '1403-04-05' },
+  { id: 't003', type: 'پرداختی', party: 'پرسنل', reason: 'حقوق و دستمزد', amount: 8000000, date: '1403-04-30' },
+  { id: 't004', type: 'دریافتی', party: 'ویلا ۵', reason: 'شارژ ماهانه', amount: 500000, date: '1403-04-02' },
+  { id: 't005', type: 'دریافتی', party: 'صندوق', reason: 'درآمدهای دیگر', amount: 250000, date: '1403-04-10' },
 ];
 
 export const initialDocuments: Document[] = [
