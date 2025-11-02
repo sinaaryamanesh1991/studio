@@ -18,17 +18,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Home, Phone } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const MapBlock = ({ label, className, onClick, clickable = false }: { label: string | number, className?: string, onClick?: () => void, clickable?: boolean }) => (
     <div
         className={cn(
-            "flex items-center justify-center p-2 border border-destructive/50 text-center text-sm bg-white",
-            clickable && "cursor-pointer hover:bg-primary/10 hover:border-primary",
+            "flex items-center justify-center p-2 border border-destructive/50 text-center text-xs sm:text-sm bg-white h-12",
+            clickable && "cursor-pointer hover:bg-primary/10 hover:border-primary transition-colors",
             className
         )}
         onClick={onClick}
     >
-        {typeof label === 'number' ? `ویلای ${label}` : label}
+        {typeof label === 'number' ? `ویلا ${label}` : label}
     </div>
 );
 
@@ -37,7 +38,7 @@ const Street = ({ className }: { className?: string }) => (
 );
 
 const EntranceLabel = ({ label, className }: { label: string, className?: string }) => (
-    <div className={cn("flex items-center justify-center text-sm text-muted-foreground", className)}>
+    <div className={cn("flex items-center justify-center text-xs sm:text-sm text-muted-foreground", className)}>
         {label}
     </div>
 );
@@ -54,48 +55,42 @@ const SchematicMap = ({ onVillaClick }: { onVillaClick: (villa: Villa) => void }
     }
 
     return (
-        <div className="bg-card p-4 md:p-6 rounded-lg border w-full max-w-6xl mx-auto font-body" dir="rtl">
-            <div className="grid grid-cols-[auto_1fr] gap-y-1">
-                {/* Empty Cell for alignment */}
-                <div></div>
-                {/* Residents Entrance Label */}
-                <div className="flex justify-start">
-                    <EntranceLabel label="درب ورود ساکنین" className="w-40 text-right pr-4" />
-                </div>
-            </div>
-
-            <div className="grid grid-cols-[100px_50px_1fr] grid-rows-[60px_40px_60px_40px_60px] gap-1">
-                {/* Row 1 */}
-                <div />
-                <Street className="row-start-1 row-span-2" />
-                <div className="grid grid-cols-6 gap-1 col-start-3">
-                    {[6, 5, 4, 3, 2, 1].map(id => <MapBlock key={id} label={id} clickable onClick={() => findAndClick(id)}/>)}
+        <div className="bg-card p-2 sm:p-4 md:p-6 rounded-lg border w-full max-w-7xl mx-auto font-body" dir="rtl">
+            <div className="grid grid-cols-[80px_1fr] md:grid-cols-[120px_1fr] gap-2">
+                {/* Left Column for Side Buildings */}
+                <div className="grid grid-rows-3 gap-2">
+                   <div className="grid grid-rows-2 gap-2">
+                     <MapBlock label="سرایداری" />
+                     <MapBlock label="استخر" />
+                   </div>
+                   <MapBlock label="نگهبانی" />
+                   <EntranceLabel label="درب ورودی عمومی" className="rotate-180" style={{ writingMode: 'vertical-rl' }}/>
                 </div>
 
-                {/* Row 2 - Street */}
-                <div className="col-span-1 grid grid-rows-2 gap-1">
-                    <MapBlock label="سرایداری" />
-                    <MapBlock label="استخر" />
-                </div>
-                <Street className="col-start-2 col-span-2" />
+                {/* Right Column for Map */}
+                <div className="grid grid-rows-[auto_40px_auto_40px_auto] gap-2">
+                    {/* Top Section */}
+                    <div className="space-y-2">
+                        <EntranceLabel label="درب ورود ساکنین" className="h-8" />
+                        <div className="flex flex-wrap-reverse justify-end gap-2">
+                             {[6, 5, 4, 3, 2, 1].map(id => <MapBlock key={id} label={id} clickable onClick={() => findAndClick(id)} className="flex-grow min-w-[60px]" />)}
+                        </div>
+                    </div>
+                    
+                    <Street/>
 
-                {/* Row 3 */}
-                <MapBlock label="نگهبانی" />
-                <Street />
-                <div className="grid grid-cols-6 gap-1">
-                     <div /> {/* Empty block for alignment */}
-                     {[11, 10, 9, 8, 7].map(id => <MapBlock key={id} label={id} clickable onClick={() => findAndClick(id)}/>)}
-                </div>
+                    {/* Middle Section */}
+                     <div className="flex flex-wrap-reverse justify-end gap-2">
+                        <div className="flex-grow min-w-[60px]"></div>
+                        {[11, 10, 9, 8, 7].map(id => <MapBlock key={id} label={id} clickable onClick={() => findAndClick(id)} className="flex-grow min-w-[60px]" />)}
+                     </div>
 
-                {/* Row 4 - Street */}
-                <EntranceLabel label="درب ورودی عمومی" className="rotate-180" style={{ writingMode: 'vertical-rl' }} />
-                <Street className="col-span-2" />
+                    <Street/>
 
-                {/* Row 5 */}
-                <div />
-                <div className="grid grid-cols-8 gap-1 col-span-2">
-                     {[20, 19, 18, 17, 16, 15, 14, 13, 12].filter(id => id <= 20).map(id => <MapBlock key={id} label={id} clickable onClick={() => findAndClick(id)}/>)}
-                     {villas.length > 20 && [21, 22].map(id => <MapBlock key={id} label={id} clickable onClick={() => findAndClick(id)}/>)}
+                    {/* Bottom Section */}
+                    <div className="flex flex-wrap-reverse justify-end gap-2">
+                         {[20, 19, 18, 17, 16, 15, 14, 13, 12].map(id => <MapBlock key={id} label={id} clickable onClick={() => findAndClick(id)} className="flex-grow min-w-[60px]" />)}
+                    </div>
                 </div>
             </div>
         </div>
@@ -226,9 +221,4 @@ export default function MapPage() {
             </Dialog>
         </>
     );
-}
-
-function cn(...inputs: any[]) {
-    // A simplified version of the original cn utility
-    return inputs.filter(Boolean).join(' ');
 }
