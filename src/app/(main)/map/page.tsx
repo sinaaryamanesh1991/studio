@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Home, Phone, Edit, Trash2, PlusCircle, XCircle } from 'lucide-react';
+import { Home, Phone, PlusCircle, XCircle } from 'lucide-react';
 import './map.css';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
