@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useData } from '@/context/data-context';
@@ -36,20 +35,22 @@ export default function PayrollListPage() {
 
     return (
         <>
-            <PageHeader title="لیست حقوق و دستمزد">
-                 <Link href="/financials/payroll-calculator" passHref>
-                    <Button>
-                        <Calculator className="ms-2 h-4 w-4" />
-                        محاسبه حقوق جدید
-                    </Button>
-                </Link>
-            </PageHeader>
             <Card>
                 <CardHeader>
-                    <CardTitle>مدیریت حقوق و دستمزد</CardTitle>
-                    <CardDescription>
-                        مشاهده و مدیریت حقوق و دستمزد محاسبه شده برای پرسنل.
-                    </CardDescription>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <CardTitle>مدیریت حقوق و دستمزد</CardTitle>
+                            <CardDescription>
+                                مشاهده و مدیریت حقوق و دستمزد محاسبه شده برای پرسنل.
+                            </CardDescription>
+                        </div>
+                        <Link href="/financials/payroll-calculator" passHref>
+                            <Button>
+                                <Calculator className="ms-2 h-4 w-4" />
+                                محاسبه حقوق جدید
+                            </Button>
+                        </Link>
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                      <Table>

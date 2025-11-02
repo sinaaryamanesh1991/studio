@@ -12,10 +12,8 @@ import {
   Building,
   Briefcase,
   ChevronDown,
-  Calculator,
-  List,
-  FilePlus,
   Settings,
+  List,
 } from 'lucide-react';
 import {
   SidebarHeader,

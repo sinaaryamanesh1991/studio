@@ -10,9 +10,8 @@ import { useData } from '@/context/data-context';
 import { useToast } from '@/hooks/use-toast';
 import type { CompanyInfo } from '@/lib/types';
 import Link from 'next/link';
-import { Calculator, List, Users } from 'lucide-react';
-import PersonnelPage from '../../personnel/page';
-import PayrollListPage from '../payroll-list/page';
+import { Calculator, Users } from 'lucide-react';
+import PayrollListPage from './payroll-list-content';
 
 function CompanyInfoForm() {
     const { companyInfo, setCompanyInfo } = useData();
