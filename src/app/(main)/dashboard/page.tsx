@@ -19,6 +19,7 @@ import {
     AlertDescription,
     AlertTitle,
 } from "@/components/ui/alert"
+import { useEffect, useState } from 'react';
 
 
 const statusVariant = {
@@ -38,6 +39,8 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const estateId = user?.uid;
 
+  const [isSeeding, setIsSeeding] = useState(false);
+
   const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
   const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
 
@@ -50,13 +53,26 @@ export default function DashboardPage() {
   const villasQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'villas') : null, [firestore, estateId]);
   const { data: villas, isLoading: loadingVillas } = useCollection<Villa>(villasQuery);
 
-  const isLoading = loadingPersonnel || loadingResidents || loadingBoardMembers || loadingVillas;
+  const globalLoading = loadingPersonnel || loadingResidents || loadingBoardMembers || loadingVillas || isUserLoading;
+
+  useEffect(() => {
+    // Ensure we are not loading, have a user, and the data has been checked
+    if (!globalLoading && estateId) {
+        const isDataEmpty = !personnel?.length && !residents?.length && !villas?.length;
+        if (isDataEmpty && !isSeeding) {
+            handleSeed();
+        }
+    }
+  }, [globalLoading, estateId, personnel, residents, villas, isSeeding]);
+
 
   const handleSeed = async () => {
     if (!firestore || !estateId) {
       toast({ variant: 'destructive', title: 'خطا', description: 'اتصال به دیتابیس برقرار نیست.' });
       return;
     }
+    setIsSeeding(true);
+    toast({ title: 'انتقال داده‌های اولیه', description: 'دیتابیس شما خالی است. در حال انتقال داده‌های نمونه...' });
     try {
       await seedDatabase(firestore, estateId);
       toast({ title: 'موفقیت', description: 'داده‌های اولیه با موفقیت در دیتابیس ثبت شد. صفحه به زودی تازه‌سازی می‌شود...' });
@@ -64,6 +80,7 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Seeding error: ", error);
       toast({ variant: 'destructive', title: 'خطا', description: 'خطا در ثبت داده‌های اولیه.' });
+      setIsSeeding(false);
     }
   };
 
@@ -89,28 +106,17 @@ export default function DashboardPage() {
     return { text: 'ویلا خالی است', variant: 'ویلا خالی است' };
   };
 
-  const isDataEmpty = !personnel?.length && !residents?.length && !villas?.length;
 
-  if (isLoading && !isDataEmpty) {
+  if (globalLoading || isSeeding) {
     return (
       <>
         <PageHeader title="داشبورد" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card><CardHeader><Skeleton className="h-4 w-2/3" /></CardHeader><CardContent><Skeleton className="h-8 w-1/3" /></CardContent></Card>
-          <Card><CardHeader><Skeleton className="h-4 w-2/3" /></CardHeader><CardContent><Skeleton className="h-8 w-1/3" /></CardContent></Card>
-          <Card><CardHeader><Skeleton className="h-4 w-2/3" /></CardHeader><CardContent><Skeleton className="h-8 w-1/3" /></CardContent></Card>
-        </div>
-         <div className="mt-6">
-            <Card>
-                <CardHeader><CardTitle><Skeleton className="h-6 w-1/4" /></CardTitle><CardDescription><Skeleton className="h-4 w-1/2" /></CardDescription></CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                        <Skeleton className="h-12 w-full" />
-                    </div>
-                </CardContent>
-            </Card>
+        <div className="flex items-center justify-center flex-col text-center gap-4 py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <h3 className="text-lg font-semibold">
+                {isSeeding ? 'در حال انتقال داده‌های اولیه به دیتابیس...' : 'در حال بارگذاری اطلاعات...'}
+            </h3>
+            <p className="text-muted-foreground">لطفا کمی صبر کنید.</p>
         </div>
       </>
     )
@@ -120,20 +126,6 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader title="داشبورد" />
-
-      {isDataEmpty && (
-         <Alert className="mb-6 border-primary text-primary">
-            <DatabaseZap className="h-4 w-4 !text-primary" />
-            <AlertTitle>دیتابیس شما خالی است!</AlertTitle>
-            <AlertDescription>
-                برای شروع کار با برنامه و مشاهده قابلیت‌ها، می‌توانید داده‌های اولیه نمونه را به دیتابیس خود اضافه کنید.
-                <Button onClick={handleSeed} disabled={isUserLoading} className="mt-4">
-                    {isUserLoading && <Loader2 className="ms-2 h-4 w-4 animate-spin" />}
-                    {isUserLoading ? 'در حال اتصال...' : 'اعمال داده های اولیه'}
-                </Button>
-            </AlertDescription>
-        </Alert>
-      )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
@@ -284,5 +276,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
-    
