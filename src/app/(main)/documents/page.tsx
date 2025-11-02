@@ -94,11 +94,16 @@ export default function DocumentsPage() {
         toast({ title: 'سند حذف شد' });
     };
 
-    const handleView = () => {
-        toast({
-            title: 'قابلیت در دست ساخت',
-            description: 'امکان مشاهده فایل در نسخه نهایی اضافه خواهد شد.',
-        });
+    const handleView = (url: string) => {
+        if (url && (url.startsWith('http') || url.startsWith('blob:'))) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        } else {
+             toast({
+                title: 'فایل نامعتبر',
+                description: 'آدرس این فایل معتبر نیست یا هنوز آپلود نشده است.',
+                variant: 'destructive'
+            });
+        }
     };
 
     const renderRelatedEntity = (docItem: Document) => {
@@ -171,7 +176,7 @@ export default function DocumentsPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="start" className="font-body">
-                                                <DropdownMenuItem onClick={handleView}>
+                                                <DropdownMenuItem onClick={() => handleView(docItem.url)}>
                                                     <Eye className="ms-2 h-4 w-4" />
                                                     مشاهده
                                                 </DropdownMenuItem>
