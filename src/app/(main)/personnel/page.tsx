@@ -130,6 +130,7 @@ export default function PersonnelPage() {
             insuranceNumber: formData.get('insuranceNumber') as string,
             photoUrl: photoUrl,
             estateId: estateId,
+            childrenCount: Number(formData.get('childrenCount') || 0),
         };
         
         const personRef = doc(firestore, 'estates', estateId, 'personnel', personId);
@@ -290,6 +291,10 @@ export default function PersonnelPage() {
                                 <Label htmlFor="photoUrl" className="text-right">عکس پروفایل</Label>
                                 <Input id="photoUrl" name="photoUrl" type="file" className="col-span-3" accept="image/*" />
                             </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="childrenCount" className="text-right">تعداد فرزندان</Label>
+                                <Input id="childrenCount" name="childrenCount" type="number" defaultValue={editingPersonnel?.childrenCount || 0} className="col-span-3" />
+                            </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="hireDate" className="text-right">تاریخ استخدام</Label>
                                 <Popover>
@@ -367,4 +372,3 @@ export default function PersonnelPage() {
     );
 }
 
-    

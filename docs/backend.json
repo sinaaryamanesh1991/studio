@@ -28,6 +28,7 @@
         "position": { "type": "string", "enum": ["سرایدار", "خدمات", "نگهبان", "حسابدار", "مدیر شهرک"] },
         "status": { "type": "string", "enum": ["مشغول کار", "اتمام کار", "مرخصی", "غیبت"] },
         "photoUrl": { "type": "string", "format": "uri", "description": "URL of the personnel's profile photo." },
+        "childrenCount": { "type": "number", "description": "Number of children for payroll calculations." },
         "estateId": { "type": "string", "description": "FK to Estate" }
       },
       "required": ["id", "name", "familyName", "position", "status", "estateId"]
@@ -130,15 +131,22 @@
     "PayrollSettings": {
       "title": "PayrollSettings",
       "type": "object",
-      "description": "Stores payroll calculation settings.",
+      "description": "Stores payroll calculation settings based on labor laws.",
       "properties": {
-        "baseHourlyRate": { "type": "number" },
-        "overtimeMultiplier": { "type": "number" },
+        "baseSalaryOfMonth": { "type": "number", "description": "Base salary for a full month of work." },
+        "overtimeMultiplier": { "type": "number", "description": "Multiplier for overtime hours (e.g., 1.4)." },
+        "nightWorkMultiplier": { "type": "number", "description": "Multiplier for night work hours (e.g., 1.35)." },
+        "holidayWorkMultiplier": { "type": "number", "description": "Multiplier for holiday work hours (e.g., 1.9)." },
+        "childAllowance": { "type": "number", "description": "Fixed amount for child allowance per child." },
+        "housingAllowance": { "type": "number", "description": "Fixed amount for housing allowance." },
+        "foodAllowance": { "type": "number", "description": "Fixed amount for food allowance." },
+        "insuranceDeductionPercentage": { "type": "number", "description": "Employee's insurance deduction percentage (e.g., 7)." },
+        "taxDeductionPercentage": { "type": "number", "description": "Simplified tax deduction percentage (e.g., 10)." },
         "maxAllowedLateness": { "type": "number", "description": "Maximum allowed lateness in minutes before penalty." },
         "latenessPenaltyAmount": { "type": "number", "description": "Deduction amount for being late." },
         "estateId": { "type": "string" }
       },
-      "required": ["baseHourlyRate", "overtimeMultiplier", "maxAllowedLateness", "latenessPenaltyAmount", "estateId"]
+      "required": ["baseSalaryOfMonth", "overtimeMultiplier", "childAllowance", "housingAllowance", "foodAllowance", "insuranceDeductionPercentage", "taxDeductionPercentage", "estateId"]
     },
      "WorkLog": {
       "title": "WorkLog",
@@ -159,9 +167,10 @@
                     "exitTime": {"type": "string"},
                     "hoursWorked": {"type": "number"},
                     "overtimeHours": {"type": "number"},
-                    "holidayHours": {"type": "number"}
+                    "holidayHours": {"type": "number"},
+                    "nightWorkHours": {"type": "number"}
                 },
-                 "required": ["day", "entryTime", "exitTime", "hoursWorked"]
+                 "required": ["day"]
             }
         },
         "estateId": { "type": "string" }
@@ -177,21 +186,27 @@
         "personnelId": { "type": "string" },
         "personnelName": { "type": "string" },
         "calculationDate": { "type": "string", "format": "date" },
-        "hourlyRate": { "type": "number" },
-        "entryTime": { "type": "string" },
-        "exitTime": { "type": "string" },
-        "hoursWorked": { "type": "number" },
-        "overtimeHours": { "type": "number" },
-        "overtimeMultiplier": { "type": "number" },
-        "holidayPay": { "type": "number" },
-        "deductions": { "type": "number" },
-        "latenessDeduction": { "type": "number" },
-        "grossPay": { "type": "number" },
-        "netPay": { "type": "number" },
+        "estateId": { "type": "string" },
+        "workLogId": { "type": "string" },
+        "totalHoursWorked": { "type": "number" },
+        "totalOvertimeHours": { "type": "number" },
+        "totalHolidayHours": { "type": "number" },
+        "totalNightWorkHours": { "type": "number" },
+        "housingAllowance": { "type": "number" },
+        "foodAllowance": { "type": "number" },
+        "childAllowance": { "type": "number" },
+        "baseSalaryPay": { "type": "number" },
         "overtimePay": { "type": "number" },
-        "estateId": { "type": "string" }
+        "holidayPay": { "type": "number" },
+        "nightWorkPay": { "type": "number" },
+        "taxDeduction": { "type": "number" },
+        "insuranceDeduction": { "type": "number" },
+        "latenessDeduction": { "type": "number" },
+        "otherDeductions": { "type": "number" },
+        "grossPay": { "type": "number" },
+        "netPay": { "type": "number" }
       },
-      "required": ["id", "personnelId", "calculationDate", "netPay", "estateId"]
+      "required": ["id", "personnelId", "calculationDate", "grossPay", "netPay", "estateId"]
     }
   },
   "auth": {
@@ -259,3 +274,4 @@
     ]
   }
 }
+

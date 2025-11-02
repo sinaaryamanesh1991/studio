@@ -145,7 +145,8 @@ function WorkHoursContent() {
                     exitTime: '',
                     hoursWorked: 0,
                     overtimeHours: 0,
-                    holidayHours: 0
+                    holidayHours: 0,
+                    nightWorkHours: 0,
                 };
             });
             setMonthlyLogs(newLogs);
@@ -163,10 +164,12 @@ function WorkHoursContent() {
 
                 const date = new Date(selectedYear, selectedMonth - 1, day);
                 const dayName = format(date, 'EEEE', { locale: faIR });
-                const isHoliday = dayName === 'جمعه';
+                // TODO: Add a proper holiday calendar check instead of just Friday
+                const isHoliday = dayName === 'جمعه'; 
 
                 let overtimeHours = 0;
                 let holidayHours = 0;
+                let nightWorkHours = 0; // Simplified night work calculation
 
                 if (isHoliday) {
                     holidayHours = hoursWorked;
@@ -176,7 +179,7 @@ function WorkHoursContent() {
                     }
                 }
                 
-                return { ...updatedLog, hoursWorked, overtimeHours, holidayHours };
+                return { ...updatedLog, hoursWorked, overtimeHours, holidayHours, nightWorkHours };
             }
             return log;
         }));
@@ -329,7 +332,7 @@ function WorkHoursContent() {
     );
 }
 
-export function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord, personnel: Personnel | null | undefined }) {
+export function PayslipDisplay({ payslip, personnel }: { payslip: Partial<PayrollRecord>, personnel: Personnel | null | undefined }) {
     const { toast } = useToast();
 
     const handlePrint = () => {
@@ -339,7 +342,7 @@ export function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord,
         });
     };
     
-    const formatDate = (dateString: string) => {
+    const formatDate = (dateString: string | undefined) => {
         if (!dateString) return "نامشخص";
         try {
             const date = parseEn(dateString, 'yyyy-MM-dd', new Date());
@@ -377,55 +380,72 @@ export function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord,
                 </div>
 
                 <Separator />
-                <div className="font-bold text-base my-4">اطلاعات کارکرد:</div>
+                <div className="font-bold text-base my-4">خلاصه کارکرد:</div>
                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">نرخ ساعتی:</span>
-                    <span className="font-mono">{payslip.hourlyRate.toLocaleString('fa-IR')} تومان</span>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">ساعت ورود:</span>
-                    <span className="font-mono">{payslip.entryTime}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">ساعت خروج:</span>
-                    <span className="font-mono">{payslip.exitTime}</span>
+                    <span className="text-muted-foreground">کل ساعات کاری:</span>
+                    <span className="font-mono">{payslip.totalHoursWorked?.toFixed(2)}</span>
                 </div>
                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">ساعات کارکرد عادی:</span>
-                    <span className="font-mono">{payslip.hoursWorked}</span>
+                    <span className="text-muted-foreground">کل ساعات اضافه‌کاری:</span>
+                    <span className="font-mono">{payslip.totalOvertimeHours?.toFixed(2)}</span>
                 </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">ساعات اضافه کاری:</span>
-                    <span className="font-mono">{payslip.overtimeHours}</span>
+                 <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">کل ساعات تعطیل‌کاری:</span>
+                    <span className="font-mono">{payslip.totalHolidayHours?.toFixed(2)}</span>
                 </div>
-                <Separator />
-                <div className="font-bold text-base my-4">محاسبات حقوق:</div>
 
+                <Separator />
+                <div className="font-bold text-base my-4">مزایا و پرداخت‌ها:</div>
                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">مبلغ تعطیل کاری:</span>
-                    <span className="font-mono text-green-600">{`+ ${payslip.holidayPay.toLocaleString('fa-IR')}`}</span>
+                    <span className="text-muted-foreground">حقوق پایه:</span>
+                    <span className="font-mono text-green-600">{`+ ${payslip.baseSalaryPay?.toLocaleString('fa-IR') || 0}`}</span>
                 </div>
                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">مبلغ اضافه کاری:</span>
-                    <span className="font-mono text-green-600">{`+ ${payslip.overtimePay.toLocaleString('fa-IR')}`}</span>
+                    <span className="text-muted-foreground">مبلغ اضافه‌کاری:</span>
+                    <span className="font-mono text-green-600">{`+ ${payslip.overtimePay?.toLocaleString('fa-IR') || 0}`}</span>
+                </div>
+                 <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">مبلغ تعطیل‌کاری:</span>
+                    <span className="font-mono text-green-600">{`+ ${payslip.holidayPay?.toLocaleString('fa-IR') || 0}`}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">حق مسکن:</span>
+                    <span className="font-mono text-green-600">{`+ ${payslip.housingAllowance?.toLocaleString('fa-IR') || 0}`}</span>
+                </div>
+                 <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">حق خوار و بار:</span>
+                    <span className="font-mono text-green-600">{`+ ${payslip.foodAllowance?.toLocaleString('fa-IR') || 0}`}</span>
+                </div>
+                 <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">حق اولاد:</span>
+                    <span className="font-mono text-green-600">{`+ ${payslip.childAllowance?.toLocaleString('fa-IR') || 0}`}</span>
                 </div>
                 <div className="flex justify-between items-center font-bold">
                     <span className="text-muted-foreground">حقوق ناخالص:</span>
-                    <span className="font-mono">{payslip.grossPay.toLocaleString('fa-IR')} تومان</span>
+                    <span className="font-mono">{payslip.grossPay?.toLocaleString('fa-IR')} تومان</span>
                 </div>
                  <Separator />
+                <div className="font-bold text-base my-4">کسورات:</div>
+                 <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">کسر بیمه (7%):</span>
+                    <span className="font-mono text-destructive">{`- ${payslip.insuranceDeduction?.toLocaleString('fa-IR') || 0}`}</span>
+                </div>
+                 <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">کسر مالیات:</span>
+                    <span className="font-mono text-destructive">{`- ${payslip.taxDeduction?.toLocaleString('fa-IR') || 0}`}</span>
+                </div>
                  <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">کسر بابت تأخیر:</span>
-                    <span className="font-mono text-destructive">{`- ${payslip.latenessDeduction.toLocaleString('fa-IR')}`}</span>
+                    <span className="font-mono text-destructive">{`- ${payslip.latenessDeduction?.toLocaleString('fa-IR') || 0}`}</span>
                 </div>
                  <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">سایر کسورات:</span>
-                    <span className="font-mono text-destructive">{`- ${payslip.deductions.toLocaleString('fa-IR')}`}</span>
+                    <span className="font-mono text-destructive">{`- ${payslip.otherDeductions?.toLocaleString('fa-IR') || 0}`}</span>
                 </div>
                  <Separator />
                  <div className="flex justify-between items-center font-extrabold text-lg bg-muted -mx-6 px-6 py-3">
                     <span>پرداختی نهایی:</span>
-                    <span className="font-mono text-primary">{payslip.netPay.toLocaleString('fa-IR')} تومان</span>
+                    <span className="font-mono text-primary">{payslip.netPay?.toLocaleString('fa-IR')} تومان</span>
                 </div>
             </CardContent>
         </Card>
@@ -515,8 +535,15 @@ function PayrollSettingsForm() {
     const { data: payrollSettings, isLoading } = useDoc<PayrollSettings>(payrollSettingsQuery);
     const { toast } = useToast();
     const [formData, setFormData] = useState<Partial<PayrollSettings>>({
-        baseHourlyRate: 33299,
+        baseSalaryOfMonth: 71661840, // For 1403
         overtimeMultiplier: 1.4,
+        nightWorkMultiplier: 1.35,
+        holidayWorkMultiplier: 1.9,
+        childAllowance: 7166184,
+        housingAllowance: 9000000,
+        foodAllowance: 14000000,
+        insuranceDeductionPercentage: 7,
+        taxDeductionPercentage: 10,
         maxAllowedLateness: 15,
         latenessPenaltyAmount: 0
     });
@@ -536,15 +563,12 @@ function PayrollSettingsForm() {
         event.preventDefault();
         if (!estateId) return;
         const settingsRef = doc(firestore, 'estates', estateId, 'payrollSettings', 'default');
-        const dataToSave = { 
-            ...formData, 
-            estateId, 
-            baseHourlyRate: Number(formData.baseHourlyRate), 
-            overtimeMultiplier: Number(formData.overtimeMultiplier),
-            maxAllowedLateness: Number(formData.maxAllowedLateness),
-            latenessPenaltyAmount: Number(formData.latenessPenaltyAmount),
-        };
-        setDocumentNonBlocking(settingsRef, dataToSave, { merge: true });
+        
+        const dataToSave = Object.fromEntries(
+             Object.entries(formData).map(([key, value]) => [key, Number(value)])
+        );
+
+        setDocumentNonBlocking(settingsRef, { ...dataToSave, estateId }, { merge: true });
         toast({ title: 'موفقیت', description: 'تنظیمات حقوق و دستمزد با موفقیت ذخیره شد.' });
     };
 
@@ -553,33 +577,80 @@ function PayrollSettingsForm() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>تنظیمات حقوق و دستمزد</CardTitle>
+                <CardTitle>تنظیمات جامع حقوق و دستمزد</CardTitle>
                 <CardDescription>
-                    پارامترهای پایه برای محاسبه حقوق را بر اساس قوانین کار تنظیم کنید.
+                    پارامترهای پایه برای محاسبه حقوق را بر اساس قوانین کار سال جاری تنظیم کنید.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="baseHourlyRate">پایه حقوق قانون کار (ساعتی)</Label>
-                            <Input id="baseHourlyRate" name="baseHourlyRate" type="number" value={formData.baseHourlyRate || ''} onChange={handleChange} placeholder="مثال: 33299" />
-                            <p className="text-xs text-muted-foreground">این مبلغ به عنوان نرخ پیش‌فرض ساعتی در محاسبه‌گر حقوق استفاده می‌شود.</p>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                     {/* Allowances */}
+                    <div>
+                        <h3 className="text-lg font-medium mb-4 border-b pb-2">مزایا (مبالغ ماهانه به ریال)</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="baseSalaryOfMonth">پایه حقوق قانون کار (ماهانه)</Label>
+                                <Input id="baseSalaryOfMonth" name="baseSalaryOfMonth" type="number" value={formData.baseSalaryOfMonth || ''} onChange={handleChange} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="housingAllowance">حق مسکن</Label>
+                                <Input id="housingAllowance" name="housingAllowance" type="number" value={formData.housingAllowance || ''} onChange={handleChange} />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="foodAllowance">بن خوار و بار</Label>
+                                <Input id="foodAllowance" name="foodAllowance" type="number" value={formData.foodAllowance || ''} onChange={handleChange} />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="childAllowance">حق اولاد (به ازای هر فرزند)</Label>
+                                <Input id="childAllowance" name="childAllowance" type="number" value={formData.childAllowance || ''} onChange={handleChange} />
+                            </div>
                         </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="overtimeMultiplier">ضریب اضافه کاری</Label>
-                            <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.1" value={formData.overtimeMultiplier || ''} onChange={handleChange} placeholder="مثال: 1.4" />
-                             <p className="text-xs text-muted-foreground">طبق قانون کار، این ضریب معمولا ۱.۴ است.</p>
+                    </div>
+                    
+                    {/* Multipliers */}
+                    <div>
+                        <h3 className="text-lg font-medium mb-4 border-b pb-2">ضرایب</h3>
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="overtimeMultiplier">ضریب اضافه کاری</Label>
+                                <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.01" value={formData.overtimeMultiplier || ''} onChange={handleChange} />
+                                <p className="text-xs text-muted-foreground">معمولاً 1.4</p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="holidayWorkMultiplier">ضریب تعطیل کاری</Label>
+                                <Input id="holidayWorkMultiplier" name="holidayWorkMultiplier" type="number" step="0.01" value={formData.holidayWorkMultiplier || ''} onChange={handleChange} />
+                                <p className="text-xs text-muted-foreground">معمولاً 1.9 (1.4 برای تعطیل + 0.5 برای جمعه)</p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="nightWorkMultiplier">ضریب شب کاری</Label>
+                                <Input id="nightWorkMultiplier" name="nightWorkMultiplier" type="number" step="0.01" value={formData.nightWorkMultiplier || ''} onChange={handleChange} />
+                                <p className="text-xs text-muted-foreground">معمولاً 1.35</p>
+                            </div>
                         </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="maxAllowedLateness">حداکثر تأخیر مجاز (دقیقه)</Label>
-                            <Input id="maxAllowedLateness" name="maxAllowedLateness" type="number" value={formData.maxAllowedLateness || ''} onChange={handleChange} placeholder="مثال: 15" />
-                             <p className="text-xs text-muted-foreground">تأخیر بیشتر از این مقدار شامل جریمه می‌شود.</p>
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="latenessPenaltyAmount">مبلغ جریمه تأخیر (تومان)</Label>
-                            <Input id="latenessPenaltyAmount" name="latenessPenaltyAmount" type="number" value={formData.latenessPenaltyAmount || ''} onChange={handleChange} placeholder="مثال: 50000" />
-                             <p className="text-xs text-muted-foreground">این مبلغ در صورت تأخیر غیرمجاز از حقوق کسر می‌شود.</p>
+                    </div>
+
+                    {/* Deductions & Penalties */}
+                    <div>
+                        <h3 className="text-lg font-medium mb-4 border-b pb-2">کسورات و جرائم</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                             <div className="space-y-2">
+                                <Label htmlFor="insuranceDeductionPercentage">درصد بیمه سهم کارگر</Label>
+                                <Input id="insuranceDeductionPercentage" name="insuranceDeductionPercentage" type="number" step="0.1" value={formData.insuranceDeductionPercentage || ''} onChange={handleChange} />
+                                <p className="text-xs text-muted-foreground">معمولاً 7 درصد</p>
+                            </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="taxDeductionPercentage">درصد مالیات (ساده شده)</Label>
+                                <Input id="taxDeductionPercentage" name="taxDeductionPercentage" type="number" step="0.1" value={formData.taxDeductionPercentage || ''} onChange={handleChange} />
+                                <p className="text-xs text-muted-foreground">برای محاسبه ساده. معمولا پلکانی است.</p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="maxAllowedLateness">حداکثر تأخیر مجاز (دقیقه)</Label>
+                                <Input id="maxAllowedLateness" name="maxAllowedLateness" type="number" value={formData.maxAllowedLateness || ''} onChange={handleChange} />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="latenessPenaltyAmount">مبلغ جریمه تأخیر (ریال)</Label>
+                                <Input id="latenessPenaltyAmount" name="latenessPenaltyAmount" type="number" value={formData.latenessPenaltyAmount || ''} onChange={handleChange} />
+                            </div>
                         </div>
                     </div>
                     <Button type="submit">ذخیره تنظیمات</Button>
@@ -602,7 +673,7 @@ export default function PayrollSystemPage() {
                 </Button>
             </PageHeader>
             
-            <Tabs defaultValue="info" className="w-full">
+            <Tabs defaultValue="payroll-settings" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 md:grid-cols-3 lg:grid-cols-6 mb-6">
                     <TabsTrigger value="info">اطلاعات پایه</TabsTrigger>
                     <TabsTrigger value="payroll-settings">تنظیمات حقوق</TabsTrigger>
@@ -648,4 +719,3 @@ export default function PayrollSystemPage() {
     );
 }
 
-    

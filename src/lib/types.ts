@@ -11,6 +11,7 @@ export interface Personnel {
   status: 'مشغول کار' | 'اتمام کار' | 'مرخصی' | 'غیبت';
   photoUrl?: string;
   estateId: string;
+  childrenCount?: number; // Added for payroll calculation
 }
 
 export interface Resident {
@@ -72,26 +73,44 @@ export interface Document {
 }
 
 export interface PayrollRecord {
-  id: string;
-  personnelId: string;
-  personnelName: string;
-  calculationDate: string;
-  // Inputs
-  hourlyRate: number;
-  entryTime: string;
-  exitTime: string;
-  hoursWorked: number;
-  overtimeHours: number;
-  overtimeMultiplier: number;
-  holidayPay: number;
-  deductions: number;
-  latenessDeduction: number;
-  // Outputs
-  grossPay: number;
-  netPay: number;
-  overtimePay: number;
-  estateId: string;
+    id: string;
+    personnelId: string;
+    personnelName: string;
+    calculationDate: string;
+    estateId: string;
+  
+    // Inputs
+    baseSalary: number;
+    workLogId: string; // To link to the monthly work log
+    
+    // Calculated values from WorkLog
+    totalHoursWorked: number;
+    totalOvertimeHours: number;
+    totalHolidayHours: number;
+    totalNightWorkHours: number;
+
+    // Allowances
+    housingAllowance: number;
+    foodAllowance: number;
+    childAllowance: number;
+
+    // Payments
+    baseSalaryPay: number;
+    overtimePay: number;
+    holidayPay: number;
+    nightWorkPay: number;
+
+    // Deductions
+    taxDeduction: number;
+    insuranceDeduction: number;
+    latenessDeduction: number;
+    otherDeductions: number;
+
+    // Summary
+    grossPay: number; // Total earnings before any deductions
+    netPay: number; // Final take-home pay
 }
+  
 
 export interface CompanyInfo {
     name: string;
@@ -112,13 +131,24 @@ export interface WorkLog {
       hoursWorked: number;
       overtimeHours: number;
       holidayHours: number;
+      nightWorkHours: number; // Added for night work
   }[];
   estateId: string;
 }
 
 export interface PayrollSettings {
-    baseHourlyRate: number;
+    baseSalaryOfMonth: number;
     overtimeMultiplier: number;
+    nightWorkMultiplier: number;
+    holidayWorkMultiplier: number;
+    
+    childAllowance: number;
+    housingAllowance: number;
+    foodAllowance: number;
+
+    insuranceDeductionPercentage: number; // e.g. 7 for 7%
+    taxDeductionPercentage: number; // Simplified as a single rate, e.g. 10 for 10%
+    
     maxAllowedLateness: number; // in minutes
     latenessPenaltyAmount: number; // deduction amount
     estateId: string;

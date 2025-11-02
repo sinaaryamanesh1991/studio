@@ -9,10 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCollection, useDoc, useFirebase, useMemoFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import type { PayrollRecord, Personnel, PayrollSettings, CompanyInfo } from '@/lib/types';
+import type { PayrollRecord, Personnel, PayrollSettings, CompanyInfo, WorkLog } from '@/lib/types';
 import { automatedPayrollCalculation } from '@/ai/flows/automated-payroll-calculation';
 import { Wand2, Loader2, Save } from 'lucide-react';
-import { format as formatEn } from 'date-fns';
+import { format, format as formatEn, parse } from 'date-fns';
+import { faIR } from 'date-fns-jalali/locale';
+import { format as formatJalali, getDaysInMonth } from 'date-fns-jalali';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { collection, doc } from 'firebase/firestore';
@@ -29,94 +31,87 @@ export default function PayrollCalculatorPage() {
     const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
     const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
 
-    const companyInfoQuery = useMemoFirebase(() => estateId ? doc(firestore, 'estates', estateId, 'companyInfo', 'default') : null, [firestore, estateId]);
-    const { data: companyInfo, isLoading: loadingCompanyInfo } = useDoc<CompanyInfo>(companyInfoQuery);
-
     const payrollSettingsQuery = useMemoFirebase(() => estateId ? doc(firestore, 'estates', estateId, 'payrollSettings', 'default') : null, [firestore, estateId]);
     const { data: payrollSettings, isLoading: loadingPayrollSettings } = useDoc<PayrollSettings>(payrollSettingsQuery);
 
     const payrollRecordToEditQuery = useMemoFirebase(() => (estateId && payrollIdToEdit) ? doc(firestore, 'estates', estateId, 'payrollRecords', payrollIdToEdit) : null, [firestore, estateId, payrollIdToEdit]);
     const { data: payrollRecordToEdit, isLoading: loadingRecordToEdit } = useDoc<PayrollRecord>(payrollRecordToEditQuery);
 
-
     const [selectedPersonnelId, setSelectedPersonnelId] = useState<string>('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [calculationResult, setCalculationResult] = useState<Omit<PayrollRecord, 'id' | 'personnelId' | 'personnelName' | 'calculationDate' | 'estateId'> | null>(null);
+    const [selectedYear, setSelectedYear] = useState<number>(parseInt(formatJalali(new Date(), 'yyyy')));
+    const [selectedMonth, setSelectedMonth] = useState<number>(parseInt(formatJalali(new Date(), 'M')));
     
-    const [formState, setFormState] = useState({
-        hourlyRate: 0,
-        entryTime: '08:00',
-        exitTime: '17:00',
-        overtimeHours: 0,
-        overtimeMultiplier: 1.4,
-        holidayPay: 0,
-        deductions: 0,
-    });
+    const [isLoading, setIsLoading] = useState(false);
+    const [calculationResult, setCalculationResult] = useState<Partial<PayrollRecord> | null>(null);
+    const [formState, setFormState] = useState({ otherDeductions: 0 });
 
+    const workLogId = selectedPersonnelId ? `${selectedPersonnelId}-${selectedYear}-${String(selectedMonth).padStart(2, '0')}` : null;
+    const workLogQuery = useMemoFirebase(() => (estateId && workLogId) ? doc(firestore, 'estates', estateId, 'workLogs', workLogId) : null, [estateId, workLogId]);
+    const { data: workLog, isLoading: loadingWorkLog } = useDoc<WorkLog>(workLogQuery);
+    
     useEffect(() => {
-        if (payrollIdToEdit && payrollRecordToEdit) {
+        if (payrollIdToEdit && payrollRecordToEdit && personnel) {
             setSelectedPersonnelId(payrollRecordToEdit.personnelId);
-            const newFormState = {
-                hourlyRate: payrollRecordToEdit.hourlyRate,
-                entryTime: payrollRecordToEdit.entryTime,
-                exitTime: payrollRecordToEdit.exitTime,
-                overtimeHours: payrollRecordToEdit.overtimeHours,
-                overtimeMultiplier: payrollRecordToEdit.overtimeMultiplier,
-                holidayPay: payrollRecordToEdit.holidayPay,
-                deductions: payrollRecordToEdit.deductions,
-            };
-            setFormState(newFormState);
-            setCalculationResult({ ...payrollRecordToEdit });
-        } else if (!payrollIdToEdit && payrollSettings && companyInfo) {
-             const defaultState = {
-                hourlyRate: payrollSettings.baseHourlyRate || 0,
-                entryTime: companyInfo.defaultEntryTime || '08:00',
-                exitTime: companyInfo.defaultExitTime || '17:00',
-                overtimeHours: 0,
-                overtimeMultiplier: payrollSettings.overtimeMultiplier || 1.4,
-                holidayPay: 0,
-                deductions: 0,
-            };
-            setFormState(defaultState);
+            const date = parse(payrollRecordToEdit.calculationDate, 'yyyy-MM-dd', new Date());
+            setSelectedYear(parseInt(formatJalali(date, 'yyyy')));
+            setSelectedMonth(parseInt(formatJalali(date, 'M')));
+            setFormState({ otherDeductions: payrollRecordToEdit.otherDeductions || 0 });
+            setCalculationResult(payrollRecordToEdit);
+        } else if (!payrollIdToEdit) {
             setCalculationResult(null);
             setSelectedPersonnelId('');
+            setFormState({ otherDeductions: 0 });
         }
-    }, [payrollIdToEdit, payrollRecordToEdit, payrollSettings, companyInfo]);
+    }, [payrollIdToEdit, payrollRecordToEdit, personnel]);
     
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormState(prev => ({ ...prev, [name]: value }));
+        setFormState(prev => ({ ...prev, [name]: Number(value) }));
     };
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!selectedPersonnelId) {
-            toast({ variant: 'destructive', title: 'خطا', description: 'لطفا یکی از پرسنل را انتخاب کنید.' });
-            return;
-        }
-        if (!companyInfo || !payrollSettings) {
-             toast({ variant: 'destructive', title: 'خطا', description: 'اطلاعات پایه شرکت یا تنظیمات حقوق یافت نشد.' });
+        const selectedPerson = personnel?.find(p => p.id === selectedPersonnelId);
+
+        if (!selectedPerson || !workLog || !payrollSettings) {
+            toast({ variant: 'destructive', title: 'خطا', description: 'لطفا پرسنل و ماه کارکرد را انتخاب کنید یا از وجود تنظیمات حقوق و کارکرد ثبت شده اطمینان حاصل کنید.' });
             return;
         }
         setIsLoading(true);
         setCalculationResult(null);
+
+        const totalOvertimeHours = workLog.days.reduce((acc, day) => acc + (day.overtimeHours || 0), 0);
+        const totalHolidayHours = workLog.days.reduce((acc, day) => acc + (day.holidayHours || 0), 0);
+        const totalNightWorkHours = workLog.days.reduce((acc, day) => acc + (day.nightWorkHours || 0), 0);
+        const totalHoursWorked = workLog.days.reduce((acc, day) => acc + (day.hoursWorked || 0), 0);
         
+        // Simplified lateness check: check first day with entry time
+        const firstWorkDay = workLog.days.find(d => d.entryTime);
+        const entryTime = firstWorkDay?.entryTime || '00:00';
+
         const input = {
-            hourlyRate: Number(formState.hourlyRate),
-            defaultEntryTime: companyInfo.defaultEntryTime,
-            entryTime: formState.entryTime,
-            exitTime: formState.exitTime,
-            overtimeHours: Number(formState.overtimeHours),
-            overtimeMultiplier: Number(formState.overtimeMultiplier),
-            holidayPay: Number(formState.holidayPay),
-            deductions: Number(formState.deductions),
-            maxAllowedLateness: payrollSettings.maxAllowedLateness,
-            latenessPenaltyAmount: payrollSettings.latenessPenaltyAmount
+            baseSalaryOfMonth: payrollSettings.baseSalaryOfMonth,
+            totalHoursWorked,
+            totalOvertimeHours,
+            totalHolidayHours,
+            totalNightWorkHours,
+            childrenCount: selectedPerson.childrenCount || 0,
+            ...payrollSettings,
+            otherDeductions: formState.otherDeductions,
+            entryTime: entryTime, // For lateness calculation
         };
 
         try {
             const result = await automatedPayrollCalculation(input);
-            setCalculationResult({ ...input, ...result });
+            setCalculationResult({ 
+                ...result,
+                workLogId: workLog.id,
+                totalHoursWorked,
+                totalOvertimeHours,
+                totalHolidayHours,
+                totalNightWorkHours,
+                otherDeductions: formState.otherDeductions,
+             });
         } catch (error) {
             console.error('AI payroll calculation failed:', error);
             toast({
@@ -130,7 +125,7 @@ export default function PayrollCalculatorPage() {
     };
 
     const handleSaveRecord = () => {
-        if (!calculationResult || !selectedPersonnelId || !estateId || !personnel) return;
+        if (!calculationResult || !selectedPersonnelId || !estateId || !personnel || !workLogId) return;
 
         const selectedPerson = personnel.find(p => p.id === selectedPersonnelId);
         if (!selectedPerson) return;
@@ -143,20 +138,10 @@ export default function PayrollCalculatorPage() {
             personnelId: selectedPersonnelId,
             personnelName: `${selectedPerson.name} ${selectedPerson.familyName}`,
             calculationDate: formatEn(new Date(), 'yyyy-MM-dd'),
-            hourlyRate: calculationResult.hourlyRate,
-            entryTime: calculationResult.entryTime,
-            exitTime: calculationResult.exitTime,
-            hoursWorked: calculationResult.hoursWorked,
-            overtimeHours: calculationResult.overtimeHours,
-            overtimeMultiplier: calculationResult.overtimeMultiplier,
-            holidayPay: calculationResult.holidayPay,
-            deductions: calculationResult.deductions,
-            latenessDeduction: calculationResult.latenessDeduction,
-            grossPay: calculationResult.grossPay,
-            netPay: calculationResult.netPay,
-            overtimePay: calculationResult.overtimePay,
             estateId: estateId,
-        };
+            workLogId: workLogId,
+            ...calculationResult,
+        } as PayrollRecord;
 
         setDocumentNonBlocking(recordRef, recordData, { merge: true });
         
@@ -164,11 +149,10 @@ export default function PayrollCalculatorPage() {
         router.push('/financials/payroll');
     };
     
-    const pageIsLoading = loadingPersonnel || loadingCompanyInfo || loadingPayrollSettings || loadingRecordToEdit;
-    
-    if (pageIsLoading) {
-        return <div>در حال بارگذاری...</div>;
-    }
+    const pageIsLoading = loadingPersonnel || loadingPayrollSettings || loadingRecordToEdit || loadingWorkLog;
+    const years = Array.from({ length: 5 }, (_, i) => parseInt(formatJalali(new Date(), 'yyyy')) - i);
+    const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, name: formatJalali(new Date(2000, i, 1), 'LLLL', { locale: faIR }) }));
+
 
     return (
         <>
@@ -179,12 +163,12 @@ export default function PayrollCalculatorPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>فرم محاسبه حقوق</CardTitle>
-                            <CardDescription>اطلاعات کارکرد پرسنل را برای محاسبه حقوق وارد کنید.</CardDescription>
+                            <CardDescription>پرسنل و ماه مورد نظر برای محاسبه را انتخاب کنید.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="personnelId">انتخاب پرسنل</Label>
+                                    <Label>انتخاب پرسنل</Label>
                                     <Select name="personnelId" onValueChange={setSelectedPersonnelId} value={selectedPersonnelId} required>
                                         <SelectTrigger>
                                             <SelectValue placeholder="یکی از پرسنل را انتخاب کنید" />
@@ -196,40 +180,36 @@ export default function PayrollCalculatorPage() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="hourlyRate">نرخ ساعتی (تومان)</Label>
-                                    <Input id="hourlyRate" name="hourlyRate" type="number" value={formState.hourlyRate} onChange={handleInputChange} required />
-                                </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="entryTime">ساعت ورود</Label>
-                                        <Input id="entryTime" name="entryTime" type="time" value={formState.entryTime} onChange={handleInputChange} required />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="exitTime">ساعت خروج</Label>
-                                        <Input id="exitTime" name="exitTime" type="time" value={formState.exitTime} onChange={handleInputChange} required />
-                                    </div>
-                                </div>
-                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="overtimeHours">ساعات اضافه کاری</Label>
-                                        <Input id="overtimeHours" name="overtimeHours" type="number" step="0.1" value={formState.overtimeHours} onChange={handleInputChange} required />
+                                     <div className="space-y-2">
+                                        <Label>انتخاب سال</Label>
+                                        <Select onValueChange={(v) => setSelectedYear(Number(v))} value={String(selectedYear)}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                      <div className="space-y-2">
-                                        <Label htmlFor="overtimeMultiplier">ضریب اضافه کاری</Label>
-                                        <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.1" value={formState.overtimeMultiplier} onChange={handleInputChange} required />
+                                        <Label>انتخاب ماه</Label>
+                                         <Select onValueChange={(v) => setSelectedMonth(Number(v))} value={String(selectedMonth)}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {months.map(m => <SelectItem key={m.value} value={String(m.value)}>{m.name}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
+                                
+                                {workLog && <div className="text-sm text-green-600">کارکرد ماه انتخاب شده یافت شد.</div>}
+                                {selectedPersonnelId && !workLog && !loadingWorkLog && <div className="text-sm text-red-600">کارکردی برای این ماه ثبت نشده است.</div>}
+
                                 <div className="space-y-2">
-                                    <Label htmlFor="holidayPay">مبلغ تعطیل کاری (تومان)</Label>
-                                    <Input id="holidayPay" name="holidayPay" type="number" value={formState.holidayPay} onChange={handleInputChange} required />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="deductions">سایر کسورات (تومان)</Label>
-                                    <Input id="deductions" name="deductions" type="number" value={formState.deductions} onChange={handleInputChange} required />
+                                    <Label htmlFor="otherDeductions">سایر کسورات (تومان)</Label>
+                                    <Input id="otherDeductions" name="otherDeductions" type="number" value={formState.otherDeductions} onChange={handleInputChange} />
                                 </div>
 
-                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                <Button type="submit" className="w-full" disabled={isLoading || !workLog}>
                                     {isLoading ? (
                                         <Loader2 className="ms-2 h-4 w-4 animate-spin" />
                                     ) : (
@@ -249,32 +229,49 @@ export default function PayrollCalculatorPage() {
                             <CardDescription>نتیجه محاسبه حقوق در این بخش نمایش داده می‌شود.</CardDescription>
                         </CardHeader>
                         <CardContent>
+                            {pageIsLoading && (
+                                <div className="flex items-center justify-center py-16">
+                                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                    <p className="mr-4 text-muted-foreground">در حال بارگذاری اطلاعات اولیه...</p>
+                                </div>
+                            )}
                             {isLoading && (
                                 <div className="flex items-center justify-center py-16">
                                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                                     <p className="mr-4 text-muted-foreground">در حال محاسبه...</p>
                                 </div>
                             )}
-                            {!isLoading && !calculationResult && (
+                            {!isLoading && !pageIsLoading && !calculationResult && (
                                 <div className="text-center py-16 text-muted-foreground">
                                     پس از پر کردن فرم، نتیجه محاسبه اینجا نمایش داده می‌شود.
                                 </div>
                             )}
                             {calculationResult && (
                                 <div className="space-y-4 text-sm">
-                                    <div className="font-bold text-base mb-4">اطلاعات کارکرد:</div>
-                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">ساعات کارکرد عادی:</span><span className="font-mono">{calculationResult.hoursWorked} ساعت</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">ساعات اضافه کاری:</span><span className="font-mono">{calculationResult.overtimeHours} ساعت</span></div>
+                                    <div className="font-bold text-base mb-4">خلاصه کارکرد:</div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">کل ساعات کاری:</span><span className="font-mono">{calculationResult.totalHoursWorked?.toFixed(2)} ساعت</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">کل ساعات اضافه‌کاری:</span><span className="font-mono">{calculationResult.totalOvertimeHours?.toFixed(2)} ساعت</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">کل ساعات تعطیل‌کاری:</span><span className="font-mono">{calculationResult.totalHolidayHours?.toFixed(2)} ساعت</span></div>
+
                                     <Separator />
-                                    <div className="font-bold text-base my-4">محاسبات حقوق:</div>
-                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">مبلغ اضافه کاری:</span><span className="font-mono text-green-600">{`+ ${calculationResult.overtimePay.toLocaleString('fa-IR')}`}</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">مبلغ تعطیل کاری:</span><span className="font-mono text-green-600">{`+ ${calculationResult.holidayPay.toLocaleString('fa-IR')}`}</span></div>
-                                    <div className="flex justify-between items-center font-bold"><span className="text-muted-foreground">حقوق ناخالص:</span><span className="font-mono">{calculationResult.grossPay.toLocaleString('fa-IR')} تومان</span></div>
+                                    <div className="font-bold text-base my-4">مزایا و پرداخت‌ها:</div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">حقوق پایه:</span><span className="font-mono text-green-600">{`+ ${calculationResult.baseSalaryPay?.toLocaleString('fa-IR') || 0}`}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">مبلغ اضافه‌کاری:</span><span className="font-mono text-green-600">{`+ ${calculationResult.overtimePay?.toLocaleString('fa-IR') || 0}`}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">مبلغ تعطیل‌کاری:</span><span className="font-mono text-green-600">{`+ ${calculationResult.holidayPay?.toLocaleString('fa-IR') || 0}`}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">حق مسکن:</span><span className="font-mono text-green-600">{`+ ${calculationResult.housingAllowance?.toLocaleString('fa-IR') || 0}`}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">حق خوار و بار:</span><span className="font-mono text-green-600">{`+ ${calculationResult.foodAllowance?.toLocaleString('fa-IR') || 0}`}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">حق اولاد:</span><span className="font-mono text-green-600">{`+ ${calculationResult.childAllowance?.toLocaleString('fa-IR') || 0}`}</span></div>
+                                    <div className="flex justify-between items-center font-bold"><span className="text-muted-foreground">حقوق ناخالص:</span><span className="font-mono">{calculationResult.grossPay?.toLocaleString('fa-IR') || 0} تومان</span></div>
+                                    
                                     <Separator />
-                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">کسر بابت تأخیر:</span><span className="font-mono text-destructive">{`- ${calculationResult.latenessDeduction.toLocaleString('fa-IR')}`}</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">سایر کسورات:</span><span className="font-mono text-destructive">{`- ${calculationResult.deductions.toLocaleString('fa-IR')}`}</span></div>
+                                    <div className="font-bold text-base my-4">کسورات:</div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">کسر بیمه:</span><span className="font-mono text-destructive">{`- ${calculationResult.insuranceDeduction?.toLocaleString('fa-IR') || 0}`}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">کسر مالیات:</span><span className="font-mono text-destructive">{`- ${calculationResult.taxDeduction?.toLocaleString('fa-IR') || 0}`}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">کسر بابت تأخیر:</span><span className="font-mono text-destructive">{`- ${calculationResult.latenessDeduction?.toLocaleString('fa-IR') || 0}`}</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-muted-foreground">سایر کسورات:</span><span className="font-mono text-destructive">{`- ${calculationResult.otherDeductions?.toLocaleString('fa-IR') || 0}`}</span></div>
+
                                     <Separator />
-                                    <div className="flex justify-between items-center font-extrabold text-lg bg-muted -mx-6 px-6 py-3"><span >پرداختی نهایی:</span><span className="font-mono text-primary">{calculationResult.netPay.toLocaleString('fa-IR')} تومان</span></div>
+                                    <div className="flex justify-between items-center font-extrabold text-lg bg-muted -mx-6 px-6 py-3"><span >پرداختی نهایی:</span><span className="font-mono text-primary">{calculationResult.netPay?.toLocaleString('fa-IR') || 0} تومان</span></div>
                                     
                                     <div className="pt-6">
                                         <Button onClick={handleSaveRecord} className="w-full">
@@ -291,3 +288,4 @@ export default function PayrollCalculatorPage() {
         </>
     );
 }
+
