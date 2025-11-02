@@ -33,7 +33,6 @@ import { useState } from 'react';
 import { useFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { seedDatabase } from '@/firebase/seed';
-import { Button } from './ui/button';
 
 const navItems = [
   { href: '/dashboard', label: 'داشبورد', icon: LayoutDashboard },
@@ -129,31 +128,32 @@ export function MainNav() {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-         <SidebarGroup>
-          <SidebarGroupLabel>تنظیمات</SidebarGroupLabel>
-            <SidebarMenu>
-                 <SidebarMenuItem>
-                    <Link href="/settings">
-                        <SidebarMenuButton
-                            isActive={pathname === '/settings'}
-                            tooltip={{ children: 'تنظیمات عمومی', className: 'font-body' }}
-                        >
-                            <Settings />
-                            <span>تنظیمات عمومی</span>
-                        </SidebarMenuButton>
-                    </Link>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="mt-auto">
+       <SidebarFooter className="mt-auto">
         <SidebarMenu>
-            <SidebarMenuItem>
-                <SidebarMenuButton onClick={handleSeed} tooltip={{ children: 'بارگذاری داده‌های نمونه', className: 'font-body' }}>
-                    <DatabaseZap />
-                    <span>بارگذاری داده‌های نمونه</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
+          <SidebarMenuItem>
+            <Link href="/settings">
+              <SidebarMenuButton
+                isActive={pathname === '/settings'}
+                tooltip={{ children: 'تنظیمات عمومی', className: 'font-body' }}
+              >
+                <Settings />
+                <span>تنظیمات عمومی</span>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={handleSeed}
+              tooltip={{
+                children: 'بارگذاری داده‌های نمونه',
+                className: 'font-body',
+              }}
+            >
+              <DatabaseZap />
+              <span>بارگذاری داده‌های نمونه</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </>
