@@ -94,9 +94,9 @@ export default function MapPage() {
                     <CardTitle>شماتیک نقشه شهرک</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="relative w-full aspect-[4/3]">
+                    <div className="relative w-full aspect-[2/1]">
                         <Image
-                            src="https://picsum.photos/seed/map/800/600"
+                            src="https://firebasestudio.ai/api/files/2b8429b8-d249-4113-913a-694b79119615/image"
                             alt="نقشه شماتیک شهرک"
                             layout="fill"
                             objectFit="contain"
@@ -107,7 +107,7 @@ export default function MapPage() {
                 </CardContent>
                  <CardFooter>
                     <p className="text-xs text-muted-foreground">
-                        این یک تصویر جایگزین است. شما می‌توانید تصویر نقشه اصلی را در کد جایگزین کنید.
+                        این نقشه شماتیک شهرک است.
                     </p>
                 </CardFooter>
             </Card>
