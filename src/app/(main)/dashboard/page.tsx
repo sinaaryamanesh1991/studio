@@ -26,6 +26,11 @@ const personnelStatusVariant = {
   'غیبت': 'outline',
 } as const;
 
+const residentStatusVariant = {
+  'ساکن': 'default',
+  'خالی': 'secondary',
+} as const;
+
 
 function ClockAndDate() {
     const [time, setTime] = useState('');
@@ -194,6 +199,14 @@ export default function DashboardPage() {
 
   const globalLoading = loadingPersonnel || loadingResidents || loadingVillas || isUserLoading || loadingTransactions;
 
+  const handleStatusChange = (resident: Resident, isPresent: boolean) => {
+    if (!estateId) return;
+    const residentRef = doc(firestore, 'estates', estateId, 'residents', resident.id);
+    const updatedData = { ...resident, isPresent, status: isPresent ? 'ساکن' : 'خالی' };
+    setDocumentNonBlocking(residentRef, updatedData, { merge: true });
+  };
+
+
   if (globalLoading) {
     return (
       <>
@@ -222,60 +235,110 @@ export default function DashboardPage() {
       </div>
 
 
-       <div className="mt-6">
-        <Card>
-            <CardHeader>
-                <div className="flex justify-between items-center">
-                    <div>
-                        <CardTitle>لیست پرسنل</CardTitle>
-                        <CardDescription>نمای کلی از کارکنان شهرک</CardDescription>
+       <div className="grid gap-6 md:grid-cols-2 mt-6">
+            <Card>
+                <CardHeader>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <CardTitle>لیست پرسنل</CardTitle>
+                            <CardDescription>نمای کلی از کارکنان شهرک</CardDescription>
+                        </div>
+                        <Button asChild variant="outline" size="sm">
+                            <Link href="/personnel">
+                                <ArrowLeft className="ms-2 h-4 w-4" />
+                                مشاهده همه
+                            </Link>
+                        </Button>
                     </div>
-                     <Button asChild variant="outline" size="sm">
-                        <Link href="/personnel">
-                             <ArrowLeft className="ms-2 h-4 w-4" />
-                            مشاهده همه
-                        </Link>
-                    </Button>
-                </div>
-            </CardHeader>
-            <CardContent>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>عکس</TableHead>
+                                <TableHead>نام و نام خانوادگی</TableHead>
+                                <TableHead>سمت</TableHead>
+                                <TableHead>وضعیت</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {personnel?.slice(0, 5).map((person) => (
+                                <TableRow key={person.id}>
+                                    <TableCell>
+                                        <Avatar>
+                                            <AvatarImage src={person.photoUrl} alt={`${person.name} ${person.familyName}`} />
+                                            <AvatarFallback>
+                                                <Users className="h-5 w-5"/>
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </TableCell>
+                                    <TableCell className="font-medium">{person.name} {person.familyName}</TableCell>
+                                    <TableCell>{person.position}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={personnelStatusVariant[person.status]}>{person.status}</Badge>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    {(personnel?.length ?? 0) === 0 && (
+                        <p className="text-center text-muted-foreground py-8">
+                            هنوز هیچ پرسنلی ثبت نشده است.
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <CardTitle>ورود و خروج ساکنین</CardTitle>
+                            <CardDescription>وضعیت حضور ساکنین در شهرک</CardDescription>
+                        </div>
+                        <Button asChild variant="outline" size="sm">
+                            <Link href="/residents">
+                                <ArrowLeft className="ms-2 h-4 w-4" />
+                                مشاهده همه
+                            </Link>
+                        </Button>
+                    </div>
+                </CardHeader>
+                <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>عکس</TableHead>
+                            <TableHead>شماره ویلا</TableHead>
                             <TableHead>نام و نام خانوادگی</TableHead>
-                            <TableHead>سمت</TableHead>
-                            <TableHead>وضعیت</TableHead>
+                            <TableHead>وضعیت حضور</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {personnel?.slice(0, 5).map((person) => (
-                             <TableRow key={person.id}>
+                        {residents?.filter(r => r.status === 'ساکن').slice(0, 5).map((resident) => (
+                            <TableRow key={resident.id}>
+                                <TableCell className="font-mono">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
+                                <TableCell className="font-medium">{resident.name} {resident.familyName}</TableCell>
                                 <TableCell>
-                                    <Avatar>
-                                        <AvatarImage src={person.photoUrl} alt={`${person.name} ${person.familyName}`} />
-                                        <AvatarFallback>
-                                            <Users className="h-5 w-5"/>
-                                        </AvatarFallback>
-                                    </Avatar>
-                                </TableCell>
-                                <TableCell className="font-medium">{person.name} {person.familyName}</TableCell>
-                                <TableCell>{person.position}</TableCell>
-                                <TableCell>
-                                    <Badge variant={personnelStatusVariant[person.status]}>{person.status}</Badge>
+                                    <div className="flex items-center space-x-2 space-x-reverse">
+                                        <Switch
+                                            checked={resident.isPresent}
+                                            onCheckedChange={(checked) => handleStatusChange(resident, checked)}
+                                            aria-label="وضعیت حضور"
+                                        />
+                                        <Badge variant={resident.isPresent ? 'default' : 'secondary'}>{resident.isPresent ? 'حاضر' : 'خارج از شهرک'}</Badge>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
-                 {(personnel?.length ?? 0) === 0 && (
+                 {(residents?.length ?? 0) === 0 && (
                     <p className="text-center text-muted-foreground py-8">
-                        هنوز هیچ پرسنلی ثبت نشده است.
+                        هنوز هیچ ساکنی ثبت نشده است.
                     </p>
                  )}
-            </CardContent>
-        </Card>
-      </div>
+                </CardContent>
+            </Card>
+       </div>
     </>
   );
 }
