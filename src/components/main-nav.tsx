@@ -126,36 +126,33 @@ export function MainNav() {
                     </CollapsibleContent>
                 </Collapsible>
             </SidebarMenuItem>
+             <SidebarMenuItem>
+              <Link href="/settings">
+                <SidebarMenuButton
+                  isActive={pathname === '/settings'}
+                  tooltip={{ children: 'تنظیمات عمومی', className: 'font-body' }}
+                >
+                  <Settings />
+                  <span>تنظیمات عمومی</span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={handleSeed}
+                tooltip={{
+                  children: 'بارگذاری داده‌های نمونه',
+                  className: 'font-body',
+                }}
+              >
+                <DatabaseZap />
+                <span>بارگذاری داده‌های نمونه</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-       <SidebarFooter className="mt-auto">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link href="/settings">
-              <SidebarMenuButton
-                isActive={pathname === '/settings'}
-                tooltip={{ children: 'تنظیمات عمومی', className: 'font-body' }}
-              >
-                <Settings />
-                <span>تنظیمات عمومی</span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={handleSeed}
-              tooltip={{
-                children: 'بارگذاری داده‌های نمونه',
-                className: 'font-body',
-              }}
-            >
-              <DatabaseZap />
-              <span>بارگذاری داده‌های نمونه</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+       <SidebarFooter className="mt-auto" />
     </>
   );
 }
