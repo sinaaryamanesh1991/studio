@@ -37,13 +37,15 @@ export default function LoginPage() {
     }
     setIsSigningIn(true);
     try {
+      // First, try to sign in.
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: 'ورود موفق', description: 'خوش آمدید!' });
-      // Let the useEffect handle redirection
+      // The useEffect will handle redirection to /dashboard
     } catch (error: any) {
+      // If the user is not found, it means they are a new user.
       if (error.code === 'auth/user-not-found') {
-        // If user not found, create a new user and make them the estate owner
         try {
+          // Create a new user with the provided email and password.
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const estateId = userCredential.user.uid;
           
@@ -56,12 +58,21 @@ export default function LoginPage() {
             createdAt: new Date().toISOString(),
           });
           toast({ title: 'حساب کاربری جدید ایجاد شد', description: 'به سامانه مدیریت شهرک خوش آمدید. شما به عنوان ادمین ثبت شدید.' });
-
-        } catch (creationError) {
-           toast({ variant: 'destructive', title: 'خطا در ایجاد حساب', description: 'خطایی در ایجاد حساب کاربری جدید رخ داد.' });
+          // Redirection will be handled by the useEffect after state update
+        } catch (creationError: any) {
+           toast({ 
+               variant: 'destructive', 
+               title: 'خطا در ایجاد حساب', 
+               description: creationError.message || 'خطایی در ایجاد حساب کاربری جدید رخ داد.' 
+            });
         }
       } else {
-         toast({ variant: 'destructive', title: 'خطا در ورود', description: 'ایمیل یا رمز عبور اشتباه است.' });
+         // Handle other sign-in errors (e.g., wrong password)
+         toast({ 
+             variant: 'destructive', 
+             title: 'خطا در ورود', 
+             description: 'ایمیل یا رمز عبور اشتباه است.' 
+        });
       }
     } finally {
         setIsSigningIn(false);

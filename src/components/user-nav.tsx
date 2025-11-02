@@ -12,8 +12,28 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, LogOut, Settings } from 'lucide-react';
+import { useFirebase } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export function UserNav() {
+  const { auth } = useFirebase();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    if (!auth) return;
+    try {
+      await signOut(auth);
+      router.push('/login');
+      toast({ title: 'خروج موفق', description: 'شما با موفقیت از حساب خود خارج شدید.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'خطا در خروج', description: 'مشکلی در هنگام خروج از حساب پیش آمد.' });
+    }
+  };
+
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -31,23 +51,23 @@ export function UserNav() {
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">مدیر سیستم</p>
             <p className="text-xs leading-none text-muted-foreground">
-              admin@example.com
+              sinakaleji@gmail.com
             </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/settings')}>
             <User className="ms-2 h-4 w-4" />
             <span>پروفایل</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/settings')}>
             <Settings className="ms-2 h-4 w-4" />
             <span>تنظیمات</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="ms-2 h-4 w-4" />
           <span>خروج</span>
         </DropdownMenuItem>
