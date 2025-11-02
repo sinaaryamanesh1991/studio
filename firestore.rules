@@ -95,7 +95,7 @@ service cloud.firestore {
      */
     match /estates/{estateId}/personnel/{personnelId} {
       allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn() && resource.data.estateId == estateId;
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isValidEstateId();
       allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
@@ -114,7 +114,7 @@ service cloud.firestore {
      */
     match /estates/{estateId}/residents/{residentId} {
       allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn() && resource.data.estateId == estateId;
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isValidEstateId();
       allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
@@ -133,7 +133,7 @@ service cloud.firestore {
      */
     match /estates/{estateId}/boardMembers/{boardMemberId} {
       allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn() && resource.data.estateId == estateId;
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isValidEstateId();
       allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
@@ -152,7 +152,7 @@ service cloud.firestore {
      */
     match /estates/{estateId}/villas/{villaId} {
       allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn() && resource.data.estateId == estateId;
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isValidEstateId();
       allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
@@ -171,7 +171,7 @@ service cloud.firestore {
      */
     match /estates/{estateId}/financialTransactions/{transactionId} {
       allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn() && resource.data.estateId == estateId;
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isValidEstateId();
       allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
@@ -190,7 +190,7 @@ service cloud.firestore {
      */
     match /estates/{estateId}/documents/{documentId} {
       allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn() && resource.data.estateId == estateId;
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isValidEstateId();
       allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
@@ -209,7 +209,7 @@ service cloud.firestore {
      */
     match /estates/{estateId}/payrollInformation/{payrollInformationId} {
       allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn() && resource.data.estateId == estateId;
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isValidEstateId();
       allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
@@ -228,10 +228,12 @@ service cloud.firestore {
      */
     match /estates/{estateId}/attendanceRecords/{attendanceRecordId} {
       allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn() && resource.data.estateId == estateId;
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isValidEstateId();
       allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
   }
 }
+
+    
