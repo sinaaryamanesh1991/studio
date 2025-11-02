@@ -27,6 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
 const statusVariant = {
   'ساکن': 'default',
@@ -64,6 +65,11 @@ export default function ResidentsPage() {
         setEditingResident(null);
     };
 
+    const handlePresenceChange = (residentId: string, isPresent: boolean) => {
+        setResidents(prev =>
+            prev.map(r => (r.id === residentId ? { ...r, isPresent } : r))
+        );
+    };
 
     return (
         <>
@@ -79,6 +85,7 @@ export default function ResidentsPage() {
                                 <TableHead>شماره تماس</TableHead>
                                 <TableHead>پلاک خودرو</TableHead>
                                 <TableHead>وضعیت</TableHead>
+                                <TableHead>حضور</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -92,6 +99,13 @@ export default function ResidentsPage() {
                                     <TableCell>{resident.carPlates}</TableCell>
                                     <TableCell>
                                         <Badge variant={statusVariant[resident.status]}>{resident.status}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Switch
+                                            checked={resident.isPresent}
+                                            onCheckedChange={(checked) => handlePresenceChange(resident.id, checked)}
+                                            aria-label="وضعیت حضور"
+                                        />
                                     </TableCell>
                                     <TableCell className="text-left">
                                         <DropdownMenu>

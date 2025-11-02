@@ -9,21 +9,21 @@ export const initialPersonnel: Personnel[] = [
 ];
 
 export const initialResidents: Resident[] = [
-    { id: 'r001', name: 'علیرضا', familyName: 'عبادی', phone: '09123070435', carPlates: '', villaNumber: 1, status: 'ساکن' },
-    { id: 'r002', name: 'احمدی', familyName: 'گنج', phone: '09121143803', carPlates: '', villaNumber: 4, status: 'ساکن' },
-    { id: 'r003', name: 'مظفری', familyName: 'منفرد', phone: '09121122387', carPlates: '', villaNumber: 5, status: 'ساکن' },
-    { id: 'r004', name: 'احمدی', familyName: 'گنج', phone: '09124772848', carPlates: '', villaNumber: 6, status: 'ساکن' },
-    { id: 'r005', name: 'تهرانی', familyName: '', phone: '09124506178', carPlates: '', villaNumber: 7, status: 'ساکن' },
-    { id: 'r006', name: 'عبدالهی', familyName: '', phone: '09122387053', carPlates: '', villaNumber: 10, status: 'ساکن' },
-    { id: 'r007', name: 'نوید', familyName: 'شمار', phone: '09121114885', carPlates: '', villaNumber: 11, status: 'ساکن' },
-    { id: 'r008', name: 'جعفری', familyName: '', phone: '09121219871', carPlates: '', villaNumber: 12, status: 'ساکن' },
-    { id: 'r009', name: 'دانشور', familyName: '', phone: '09122830616', carPlates: '', villaNumber: 13, status: 'ساکن' },
-    { id: 'r010', name: 'مقدادی', familyName: '', phone: '09121162187', carPlates: '', villaNumber: 14, status: 'ساکن' },
-    { id: 'r011', name: 'فورادی', familyName: '', phone: '09183344995', carPlates: '', villaNumber: 15, status: 'ساکن' },
-    { id: 'r012', name: 'شجاعی', familyName: '', phone: '09121063777', carPlates: '', villaNumber: 17, status: 'ساکن' },
-    { id: 'r013', name: 'روحانی', familyName: '', phone: '09121195271', carPlates: '', villaNumber: 18, status: 'ساکن' },
-    { id: 'r014', name: 'هاشمی', familyName: 'جو', phone: '09131112799', carPlates: '', villaNumber: 19, status: 'ساکن' },
-    { id: 'r015', name: 'مقصودی', familyName: '', phone: '09119021145', carPlates: '', villaNumber: 20, status: 'ساکن' },
+    { id: 'r001', name: 'علیرضا', familyName: 'عبادی', phone: '09123070435', carPlates: '', villaNumber: 1, status: 'ساکن', isPresent: true },
+    { id: 'r002', name: 'احمدی', familyName: 'گنج', phone: '09121143803', carPlates: '', villaNumber: 4, status: 'ساکن', isPresent: true },
+    { id: 'r003', name: 'مظفری', familyName: 'منفرد', phone: '09121122387', carPlates: '', villaNumber: 5, status: 'ساکن', isPresent: true },
+    { id: 'r004', name: 'احمدی', familyName: 'گنج', phone: '09124772848', carPlates: '', villaNumber: 6, status: 'ساکن', isPresent: true },
+    { id: 'r005', name: 'تهرانی', familyName: '', phone: '09124506178', carPlates: '', villaNumber: 7, status: 'ساکن', isPresent: true },
+    { id: 'r006', name: 'عبدالهی', familyName: '', phone: '09122387053', carPlates: '', villaNumber: 10, status: 'ساکن', isPresent: true },
+    { id: 'r007', name: 'نوید', familyName: 'شمار', phone: '09121114885', carPlates: '', villaNumber: 11, status: 'ساکن', isPresent: true },
+    { id: 'r008', name: 'جعفری', familyName: '', phone: '09121219871', carPlates: '', villaNumber: 12, status: 'ساکن', isPresent: true },
+    { id: 'r009', name: 'دانشور', familyName: '', phone: '09122830616', carPlates: '', villaNumber: 13, status: 'ساکن', isPresent: true },
+    { id: 'r010', name: 'مقدادی', familyName: '', phone: '09121162187', carPlates: '', villaNumber: 14, status: 'ساکن', isPresent: true },
+    { id: 'r011', name: 'فورادی', familyName: '', phone: '09183344995', carPlates: '', villaNumber: 15, status: 'ساکن', isPresent: true },
+    { id: 'r012', name: 'شجاعی', familyName: '', phone: '09121063777', carPlates: '', villaNumber: 17, status: 'ساکن', isPresent: true },
+    { id: 'r013', name: 'روحانی', familyName: '', phone: '09121195271', carPlates: '', villaNumber: 18, status: 'ساکن', isPresent: true },
+    { id: 'r014', name: 'هاشمی', familyName: 'جو', phone: '09131112799', carPlates: '', villaNumber: 19, status: 'ساکن', isPresent: true },
+    { id: 'r015', name: 'مقصودی', familyName: '', phone: '09119021145', carPlates: '', villaNumber: 20, status: 'خالی', isPresent: false },
 ];
 
 export const initialBoardMembers: BoardMember[] = [

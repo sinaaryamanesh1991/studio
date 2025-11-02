@@ -16,6 +16,7 @@ export interface Resident {
   carPlates: string;
   villaNumber: number;
   status: 'ساکن' | 'خالی';
+  isPresent: boolean;
 }
 
 export interface BoardMember {
