@@ -106,20 +106,7 @@ export default function PayrollSystemPage() {
                     {/* Work hours component will go here */}
                 </TabsContent>
                 <TabsContent value="payroll-list">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>لیست حقوق</CardTitle>
-                            <CardDescription>برای مشاهده و مدیریت حقوق های محاسبه شده، به صفحه لیست حقوق مراجعه کنید.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Link href="/financials/payroll-list" passHref>
-                                <Button>
-                                    <List className="ms-2 h-4 w-4" />
-                                    رفتن به صفحه لیست حقوق
-                                </Button>
-                            </Link>
-                        </CardContent>
-                    </Card>
+                    <PayrollListPage />
                 </TabsContent>
                 <TabsContent value="payslip">
                     {/* Payslip component will go here */}
