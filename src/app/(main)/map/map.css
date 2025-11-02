@@ -28,7 +28,7 @@
     right:0;
   }
   .road.top{
-    top:60px;
+    top:100px;
     height:38px;
     left:260px;
     right:18px;
@@ -36,7 +36,7 @@
     border-bottom:3px solid var(--border);
   }
   .road.mid{
-    top:170px;
+    top:210px;
     height:38px;
     left:18px;
     right:18px;
@@ -44,7 +44,7 @@
     border-bottom:3px solid var(--border);
   }
   .road.left-vertical{
-    top:18px;
+    top:210px;
     bottom:18px;
     width:110px;
     left:18px;
@@ -55,9 +55,9 @@
   .road.entrance-up{
     position:absolute;
     top:18px;
-    left:260px;
+    left:280px;
     width:110px;
-    height:120px;
+    height:130px;
     background:var(--road);
     border-left:3px solid var(--border);
     border-right:3px solid var(--border);
@@ -86,35 +86,35 @@
   }
 
   /* Villa positions */
-  .v1 { top:18px; left:384px; width:88px; height:78px; }
-  .v2 { top:18px; left:482px; width:88px; height:78px; }
-  .v3 { top:18px; left:580px; width:88px; height:78px; }
-  .v4 { top:18px; left:678px; width:88px; height:78px; }
-  .v5 { top:18px; left:776px; width:88px; height:78px; }
-  .v6 { top:18px; left:874px; width:88px; height:78px; }
+  .v1 { top:18px; left:400px; width:88px; height:78px; }
+  .v2 { top:18px; left:498px; width:88px; height:78px; }
+  .v3 { top:18px; left:596px; width:88px; height:78px; }
+  .v4 { top:18px; left:694px; width:88px; height:78px; }
+  .v5 { top:18px; left:792px; width:88px; height:78px; }
+  .v6 { top:18px; left:890px; width:88px; height:78px; }
 
-  .v7  { top:110px; left:384px; width:88px; height:78px; }
-  .v8  { top:110px; left:482px; width:88px; height:78px; }
-  .v9  { top:110px; left:580px; width:88px; height:78px; }
-  .v10 { top:110px; left:678px; width:88px; height:78px; }
-  .v11 { top:110px; left:776px; width:88px; height:78px; }
+  .v7  { top:142px; left:498px; width:88px; height:64px; }
+  .v8  { top:142px; left:596px; width:88px; height:64px; }
+  .v9  { top:142px; left:694px; width:88px; height:64px; }
+  .v10 { top:142px; left:792px; width:88px; height:64px; }
+  .v11 { top:142px; left:890px; width:88px; height:64px; }
 
-  .v12 { top:220px; left:874px; width:88px; height:78px; }
-  .v13 { top:220px; left:776px; width:88px; height:78px; }
-  .v14 { top:220px; left:678px; width:88px; height:78px; }
-  .v15 { top:220px; left:580px; width:88px; height:78px; }
-  .v16 { top:220px; left:482px; width:88px; height:78px; }
-  .v17 { top:220px; left:384px; width:88px; height:78px; }
-  .v18 { top:220px; left:286px; width:88px; height:78px; }
-  .v19 { top:220px; left:188px; width:88px; height:78px; }
-  .v20 { top:220px; left:90px;  width:88px; height:78px; }
+  .v12 { top:252px; left:890px; width:88px; height:78px; }
+  .v13 { top:252px; left:792px; width:88px; height:78px; }
+  .v14 { top:252px; left:694px; width:88px; height:78px; }
+  .v15 { top:252px; left:596px; width:88px; height:78px; }
+  .v16 { top:252px; left:498px; width:88px; height:78px; }
+  .v17 { top:252px; left:400px; width:88px; height:78px; }
+  .v18 { top:252px; left:302px; width:88px; height:78px; }
+  .v19 { top:252px; left:204px; width:88px; height:78px; }
+  .v20 { top:252px; left:106px;  width:88px; height:78px; }
 
   .pool{
     position:absolute;
-    top:70px;
-    left:188px;
-    width:88px;
-    height:78px;
+    top:142px;
+    left:168px;
+    width:102px;
+    height:64px;
     border:1px solid var(--villa-border);
     background:linear-gradient(180deg,#eaf6ff,#fff);
     display:flex;
@@ -126,12 +126,27 @@
   }
   .guard{
     position:absolute;
-    top:70px;
-    left:90px;
-    width:88px;
-    height:78px;
+    top:142px;
+    left:56px;
+    width:102px;
+    height:64px;
     border:1px solid var(--villa-border);
     background:#fffef6;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    box-sizing:border-box;
+    border-radius:4px;
+  }
+   .janitorial{
+    position:absolute;
+    top:142px;
+    left:280px;
+    width:110px;
+    height:64px;
+    border:1px solid var(--villa-border);
+    background:#f6fff8;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -147,8 +162,8 @@
     font-weight:600;
     z-index: 10;
   }
-  .label.left-entr{ transform:rotate(-90deg); left:6px; top:150px; color:#111; font-weight:700; }
-  .label.entrance-up{ top:6px; left:360px; color:#111; font-weight:700; }
+  .label.left-entr{ transform:rotate(-90deg); left:-40px; top:270px; color:#111; font-weight:700; }
+  .label.entrance-up{ top:0px; left:394px; color:#111; font-weight:700; }
 
   @media (max-width:1100px){
     .map{ transform:scale(0.9); transform-origin: top left; margin-left: -55px; }

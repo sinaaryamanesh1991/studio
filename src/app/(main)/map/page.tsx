@@ -56,6 +56,8 @@ const SchematicMap = ({ villas, onVillaClick, isEditMode, onAddVilla, onDeleteVi
                 {/* Buildings */}
                 <div className="guard">نگهبانی</div>
                 <div className="pool">استخر</div>
+                <div className="janitorial">سرایداری</div>
+
 
                 {/* Villas */}
                 {villas.map((villa) => (
