@@ -1,11 +1,11 @@
 import type { Personnel, Resident, BoardMember, Villa, Transaction, Document, PayrollRecord, CompanyInfo } from './types';
 
 export const initialPersonnel: Personnel[] = [
-  { id: 'p001', name: 'اسحاق', familyName: '', hireDate: '1403-01-01', phone: '0910-305-3794', position: 'نگهبان', status: 'مشغول کار' },
-  { id: 'p002', name: 'کابچی', familyName: '', hireDate: '1403-01-01', phone: '0911-744-4694', position: 'نگهبان', status: 'مشغول کار' },
-  { id: 'p003', name: 'فرهنگ', familyName: '', hireDate: '1403-01-01', phone: '0933-488-1914', position: 'نگهبان', status: 'مشغول کار' },
-  { id: 'p004', name: 'ناصر', familyName: 'رمضان', hireDate: '1403-01-01', phone: '09', position: 'خدمات', status: 'مشغول کار' },
-  { id: 'p005', name: 'احمدی', familyName: 'گنج', hireDate: '1400-01-01', phone: '09121122387', position: 'مدیر شهرک', status: 'مشغول کار' },
+  { id: 'p001', name: 'اسحاق', familyName: '', hireDate: '1403-01-01', phone: '0910-305-3794', position: 'نگهبان', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
+  { id: 'p002', name: 'کابچی', familyName: '', hireDate: '1403-01-01', phone: '0911-744-4694', position: 'نگهبان', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
+  { id: 'p003', name: 'فرهنگ', familyName: '', hireDate: '1403-01-01', phone: '0933-488-1914', position: 'نگهبان', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
+  { id: 'p004', name: 'ناصر', familyName: 'رمضان', hireDate: '1403-01-01', phone: '09', position: 'خدمات', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
+  { id: 'p005', name: 'احمدی', familyName: 'گنج', hireDate: '1400-01-01', phone: '09121122387', position: 'مدیر شهرک', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
 ];
 
 export const initialResidents: Resident[] = [

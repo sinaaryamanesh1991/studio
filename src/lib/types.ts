@@ -2,6 +2,9 @@ export interface Personnel {
   id: string;
   name: string;
   familyName: string;
+  nationalId: string;
+  accountNumber: string;
+  insuranceNumber: string;
   hireDate: string;
   phone: string;
   position: 'سرایدار' | 'خدمات' | 'نگهبان' | 'حسابدار' | 'مدیر شهرک';

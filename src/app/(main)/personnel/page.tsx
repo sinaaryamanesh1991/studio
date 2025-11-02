@@ -71,6 +71,9 @@ export default function PersonnelPage() {
             hireDate: formData.get('hireDate') as string,
             position: formData.get('position') as Personnel['position'],
             status: formData.get('status') as Personnel['status'],
+            nationalId: formData.get('nationalId') as string,
+            accountNumber: formData.get('accountNumber') as string,
+            insuranceNumber: formData.get('insuranceNumber') as string,
         };
 
         if (editingPersonnel) {
@@ -146,7 +149,7 @@ export default function PersonnelPage() {
             </Card>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] font-body">
+                <DialogContent className="sm:max-w-md font-body">
                     <form onSubmit={handleSave}>
                         <DialogHeader>
                             <DialogTitle>{editingPersonnel ? 'ویرایش پرسنل' : 'افزودن پرسنل جدید'}</DialogTitle>
@@ -154,7 +157,7 @@ export default function PersonnelPage() {
                                 اطلاعات فرد مورد نظر را وارد یا ویرایش کنید.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="grid gap-4 py-4">
+                        <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto px-2">
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="name" className="text-right">نام</Label>
                                 <Input id="name" name="name" defaultValue={editingPersonnel?.name} className="col-span-3" />
@@ -163,6 +166,10 @@ export default function PersonnelPage() {
                                 <Label htmlFor="familyName" className="text-right">نام خانوادگی</Label>
                                 <Input id="familyName" name="familyName" defaultValue={editingPersonnel?.familyName} className="col-span-3" />
                             </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="nationalId" className="text-right">کد ملی</Label>
+                                <Input id="nationalId" name="nationalId" defaultValue={editingPersonnel?.nationalId} className="col-span-3" />
+                            </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="phone" className="text-right">شماره تماس</Label>
                                 <Input id="phone" name="phone" defaultValue={editingPersonnel?.phone} className="col-span-3" />
@@ -170,6 +177,14 @@ export default function PersonnelPage() {
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="hireDate" className="text-right">تاریخ استخدام</Label>
                                 <Input id="hireDate" name="hireDate" defaultValue={editingPersonnel?.hireDate} className="col-span-3" placeholder="مثال: 1403-01-20" />
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="accountNumber" className="text-right">شماره حساب</Label>
+                                <Input id="accountNumber" name="accountNumber" defaultValue={editingPersonnel?.accountNumber} className="col-span-3" />
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="insuranceNumber" className="text-right">شماره بیمه</Label>
+                                <Input id="insuranceNumber" name="insuranceNumber" defaultValue={editingPersonnel?.insuranceNumber} className="col-span-3" />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="position" className="text-right">سمت</Label>
