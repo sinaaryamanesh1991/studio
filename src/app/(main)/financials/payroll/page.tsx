@@ -7,16 +7,19 @@ import { z } from 'zod';
 
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Calculator } from 'lucide-react';
 import { automatedPayrollCalculation } from '@/ai/flows/automated-payroll-calculation';
 import type { AutomatedPayrollCalculationOutput } from '@/ai/flows/automated-payroll-calculation';
+import { useData } from '@/context/data-context';
 
 const formSchema = z.object({
+  personnelId: z.string().min(1, { message: "لطفا یک پرسنل را انتخاب کنید." }),
   hourlyRate: z.coerce.number().min(0, { message: "نرخ ساعتی باید مثبت باشد." }),
   hoursWorked: z.coerce.number().min(0, { message: "ساعات کار باید مثبت باشد." }),
   overtimeHours: z.coerce.number().min(0, { message: "ساعات اضافه کاری باید مثبت باشد." }),
@@ -28,10 +31,12 @@ export default function PayrollCalculatorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AutomatedPayrollCalculationOutput | null>(null);
   const { toast } = useToast();
+  const { personnel } = useData();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      personnelId: '',
       hourlyRate: 0,
       hoursWorked: 0,
       overtimeHours: 0,
@@ -44,7 +49,8 @@ export default function PayrollCalculatorPage() {
     setIsLoading(true);
     setResult(null);
     try {
-      const response = await automatedPayrollCalculation(values);
+      const { personnelId, ...calculationInput } = values;
+      const response = await automatedPayrollCalculation(calculationInput);
       setResult(response);
       toast({
         title: "محاسبه موفق",
@@ -74,6 +80,30 @@ export default function PayrollCalculatorPage() {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="personnelId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>انتخاب پرسنل</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="یکی از پرسنل را انتخاب کنید" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {personnel.map(p => (
+                            <SelectItem key={p.id} value={p.id}>
+                              {p.name} {p.familyName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="hourlyRate"
