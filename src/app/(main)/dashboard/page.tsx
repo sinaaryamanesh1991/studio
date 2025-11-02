@@ -77,6 +77,24 @@ export default function DashboardPage() {
     return { text: 'ویلا خالی است', variant: 'ویلا خالی است' };
 };
 
+  const handleSeed = async () => {
+    if (!firestore || !estateId) return;
+    try {
+        await seedDatabase(firestore, estateId);
+        toast({
+            title: 'موفقیت',
+            description: 'داده‌های نمونه با موفقیت در دیتابیس بارگذاری شدند.',
+        });
+    } catch(e) {
+        console.error(e);
+        toast({
+            variant: 'destructive',
+            title: 'خطا',
+            description: 'خطایی در بارگذاری داده‌های نمونه رخ داد.',
+        });
+    }
+  }
+
 
   if (globalLoading) {
     return (
@@ -96,7 +114,12 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="داشبورد" />
+      <PageHeader title="داشبورد">
+        <Button onClick={handleSeed} variant="outline" size="sm">
+            <DatabaseZap className="ms-2 h-4 w-4" />
+            بارگذاری داده‌های نمونه
+        </Button>
+      </PageHeader>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
@@ -247,3 +270,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
