@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
+import { useCollection, useDoc, useFirebase, useMemoFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import type { Personnel, PayrollRecord, WorkLog } from '@/lib/types';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, Users, Save, Search } from 'lucide-react';
+import { Calculator, Users, Save, Search, Printer } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { getDaysInMonth } from 'date-fns-jalali';
 import { format as formatEn, parse as parseEn } from 'date-fns';
