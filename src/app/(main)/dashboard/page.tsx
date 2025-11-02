@@ -39,8 +39,6 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const estateId = user?.uid;
 
-  const [isSeeding, setIsSeeding] = useState(false);
-
   const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
   const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
 
@@ -54,36 +52,6 @@ export default function DashboardPage() {
   const { data: villas, isLoading: loadingVillas } = useCollection<Villa>(villasQuery);
 
   const globalLoading = loadingPersonnel || loadingResidents || loadingBoardMembers || loadingVillas || isUserLoading;
-
-  useEffect(() => {
-    // Ensure we are not loading, have a user, and the data has been checked
-    if (!globalLoading && estateId) {
-        const isDataEmpty = !personnel?.length || !residents?.length || !villas?.length;
-        if (isDataEmpty && !isSeeding) {
-            handleSeed();
-        }
-    }
-  }, [globalLoading, estateId, personnel, residents, villas]);
-
-
-  const handleSeed = async () => {
-    if (!firestore || !estateId) {
-      toast({ variant: 'destructive', title: 'خطا', description: 'اتصال به دیتابیس برقرار نیست.' });
-      return;
-    }
-    setIsSeeding(true);
-    toast({ title: 'انتقال داده‌های اولیه', description: 'دیتابیس شما خالی است. در حال انتقال داده‌های نمونه...' });
-    try {
-      await seedDatabase(firestore, estateId);
-      toast({ title: 'موفقیت', description: 'داده‌های اولیه با موفقیت در دیتابیس ثبت شد. صفحه به زودی تازه‌سازی می‌شود...' });
-      // We don't reload here anymore, the useCollection hooks will pick up the changes.
-    } catch (error) {
-      console.error("Seeding error: ", error);
-      toast({ variant: 'destructive', title: 'خطا', description: 'خطا در ثبت داده‌های اولیه.' });
-    } finally {
-        setIsSeeding(false);
-    }
-  };
 
   const handleStatusChange = (resident: Resident, isPresent: boolean) => {
     if (!estateId) return;
@@ -110,14 +78,14 @@ export default function DashboardPage() {
 };
 
 
-  if (globalLoading || isSeeding) {
+  if (globalLoading) {
     return (
       <>
         <PageHeader title="داشبورد" />
         <div className="flex items-center justify-center flex-col text-center gap-4 py-16">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             <h3 className="text-lg font-semibold">
-                {isSeeding ? 'در حال انتقال داده‌های اولیه به دیتابیس...' : 'در حال بارگذاری اطلاعات...'}
+                {'در حال بارگذاری اطلاعات...'}
             </h3>
             <p className="text-muted-foreground">لطفا کمی صبر کنید.</p>
         </div>
