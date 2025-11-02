@@ -131,7 +131,8 @@ export default function MapPage() {
             residentInfo: '',
             phone: '',
             estateId: estateId,
-            villaNumber: newNumber
+            villaNumber: newNumber,
+            occupantType: 'owner',
         };
         const villaRef = doc(firestore, 'estates', estateId, 'villas', newVillaId);
         setDocumentNonBlocking(villaRef, newVilla, {});
@@ -157,6 +158,7 @@ export default function MapPage() {
             area: parseInt(formData.get('area') as string, 10),
             residentInfo: formData.get('residentInfo') as string,
             phone: formData.get('phone') as string,
+            occupantType: formData.get('occupantType') === 'on' ? 'tenant' : 'owner',
         };
         
         const villaRef = doc(firestore, 'estates', estateId, 'villas', selectedVilla.id);
@@ -229,7 +231,8 @@ export default function MapPage() {
                                     </div>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0 text-sm text-muted-foreground">
-                                    مساحت: {villa.area} متر مربع
+                                    <p>مساحت: {villa.area} متر مربع</p>
+                                    <p className='mt-2 font-bold text-sm'>{villa.occupantType === 'tenant' ? 'ساکن: مستاجر' : 'ساکن: مالک'}</p>
                                 </CardContent>
                                 <CardFooter className="p-4 pt-0 mt-auto flex items-center gap-2 text-sm text-muted-foreground">
                                     <Phone className="w-4 h-4"/>
@@ -270,6 +273,15 @@ export default function MapPage() {
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="residentInfo" className="text-right">مشخصات ساکن</Label>
                                 <Input id="residentInfo" name="residentInfo" defaultValue={selectedVilla?.residentInfo} className="col-span-3" />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="occupantType" className="text-right">ساکن مستاجر است</Label>
+                                <Switch
+                                    id="occupantType"
+                                    name="occupantType"
+                                    defaultChecked={selectedVilla?.occupantType === 'tenant'}
+                                    className="col-span-3"
+                                />
                             </div>
                         </div>
                         <DialogFooter>
