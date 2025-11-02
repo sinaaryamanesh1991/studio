@@ -17,13 +17,21 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Home, Phone } from 'lucide-react';
+import { Home, Phone, Edit, Trash2, PlusCircle, XCircle } from 'lucide-react';
 import './map.css';
+import { Switch } from '@/components/ui/switch';
+import { toast } from '@/hooks/use-toast';
 
-const SchematicMap = ({ onVillaClick }: { onVillaClick: (villa: Villa) => void }) => {
+const SchematicMap = ({ onVillaClick, isEditMode, onAddVilla, onDeleteVilla }: { 
+    onVillaClick: (villa: Villa) => void, 
+    isEditMode: boolean,
+    onAddVilla: () => void,
+    onDeleteVilla: (id: number) => void
+}) => {
     const { villas } = useData();
 
     const findAndClick = (id: number) => {
+        if (isEditMode) return;
         const villa = villas.find(v => v.id === id);
         if (villa) {
             onVillaClick(villa);
@@ -48,14 +56,33 @@ const SchematicMap = ({ onVillaClick }: { onVillaClick: (villa: Villa) => void }
                 <div className="pool">استخر</div>
 
                 {/* Villas */}
-                {[...Array(20)].map((_, i) => {
-                    const villaId = i + 1;
-                    return (
-                        <div key={villaId} className={`villa v${villaId}`} onClick={() => findAndClick(villaId)}>
-                            ویلاى {villaId}
-                        </div>
-                    );
-                })}
+                {villas.map((villa) => (
+                    <div key={villa.id} className={`villa v${villa.id}`} onClick={() => findAndClick(villa.id)}>
+                        {`ویلاى ${villa.id}`}
+                         {isEditMode && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteVilla(villa.id);
+                                }}
+                                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 z-10 hover:bg-destructive/80"
+                                aria-label={`حذف ویلا ${villa.id}`}
+                            >
+                                <XCircle className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                ))}
+                {isEditMode && (
+                     <Button
+                        onClick={onAddVilla}
+                        variant="outline"
+                        className="absolute bottom-2 right-2 z-10"
+                    >
+                        <PlusCircle className="ms-2 h-4 w-4" />
+                        افزودن ویلا
+                    </Button>
+                )}
             </div>
         </div>
     );
@@ -66,10 +93,41 @@ export default function MapPage() {
     const { villas, setVillas } = useData();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedVilla, setSelectedVilla] = useState<Villa | null>(null);
+    const [isEditMode, setIsEditMode] = useState(false);
 
     const handleCardClick = (villa: Villa) => {
+        if (isEditMode) return;
         setSelectedVilla(villa);
         setIsDialogOpen(true);
+    };
+    
+    const handleAddVilla = () => {
+        const existingIds = villas.map(v => v.id);
+        let newId = 1;
+        while(existingIds.includes(newId)) {
+            newId++;
+        }
+
+        if (newId > 20) {
+            toast({ variant: 'destructive', title: 'خطا', description: 'ظرفیت نقشه برای افزودن ویلای جدید تکمیل است.' });
+            return;
+        }
+
+        const newVilla: Villa = {
+            id: newId,
+            name: `ویلا ${newId}`,
+            owner: 'نامشخص',
+            area: 100,
+            residentInfo: '',
+            phone: '',
+        };
+        setVillas(prev => [...prev, newVilla].sort((a,b) => a.id - b.id));
+        toast({ title: 'موفقیت', description: `ویلای شماره ${newId} با موفقیت اضافه شد.`});
+    };
+
+    const handleDeleteVilla = (id: number) => {
+        setVillas(prev => prev.filter(v => v.id !== id));
+        toast({ title: 'موفقیت', description: `ویلای شماره ${id} حذف شد.` });
     };
 
     const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
@@ -93,16 +151,34 @@ export default function MapPage() {
 
     return (
         <>
-            <PageHeader title="نقشه شهرک" />
+            <PageHeader title="نقشه شهرک">
+                <div className="flex items-center gap-4">
+                     <div className="flex items-center space-x-2 space-x-reverse">
+                        <Switch
+                            id="edit-mode-switch"
+                            checked={isEditMode}
+                            onCheckedChange={setIsEditMode}
+                        />
+                        <Label htmlFor="edit-mode-switch">حالت ویرایش</Label>
+                    </div>
+                </div>
+            </PageHeader>
              <Card className="mb-6">
                 <CardHeader>
                     <CardTitle>شماتیک نقشه شهرک</CardTitle>
                     <CardDescription>
-                        بر روی هر ویلا در نقشه کلیک کنید تا اطلاعات آن را مشاهده و ویرایش کنید.
+                        {isEditMode 
+                            ? 'در حالت ویرایش می‌توانید ویلاها را اضافه یا حذف کنید. برای ویرایش اطلاعات، حالت ویرایش را غیرفعال کنید.'
+                            : 'بر روی هر ویلا در نقشه کلیک کنید تا اطلاعات آن را مشاهده و ویرایش کنید.'}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
-                    <SchematicMap onVillaClick={handleCardClick} />
+                    <SchematicMap 
+                        onVillaClick={handleCardClick} 
+                        isEditMode={isEditMode}
+                        onAddVilla={handleAddVilla}
+                        onDeleteVilla={handleDeleteVilla}
+                    />
                 </CardContent>
             </Card>
 
@@ -118,7 +194,7 @@ export default function MapPage() {
                         {villas.sort((a,b) => a.id - b.id).map(villa => (
                             <Card 
                                 key={villa.id} 
-                                className="cursor-pointer hover:shadow-lg hover:border-primary transition-all flex flex-col"
+                                className={`cursor-pointer hover:shadow-lg hover:border-primary transition-all flex flex-col ${isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 onClick={() => handleCardClick(villa)}
                             >
                                 <CardHeader className="flex-row gap-4 items-center p-4">
