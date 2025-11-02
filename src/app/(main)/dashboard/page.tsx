@@ -40,6 +40,8 @@ export default function DashboardPage() {
       )
     );
   };
+  
+  const residentCount = residents.filter(r => r.status === 'ساکن').length;
 
   return (
     <>
@@ -77,8 +79,8 @@ export default function DashboardPage() {
             <Home className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{residents.filter(r => r.status === 'ساکن').length} خانوار</div>
-            <p className="text-xs text-muted-foreground">تعداد واحدهای دارای سکنه</p>
+            <div className="text-2xl font-bold">{residentCount} خانوار</div>
+            <p className="text-xs text-muted-foreground">از مجموع {residents.length} واحد</p>
           </CardContent>
         </Card>
         <Card>
