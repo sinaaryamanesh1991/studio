@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Personnel } from '@/lib/types';
+import type { Personnel, Document } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import {
     Dialog,
@@ -34,7 +34,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { collection, doc } from 'firebase/firestore';
-import { setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { setDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns-jalali';
@@ -100,22 +100,27 @@ export default function PersonnelPage() {
         const formData = new FormData(e.currentTarget);
         
         const personId = editingPersonnel ? editingPersonnel.id : `p${Date.now()}`;
+        const name = formData.get('name') as string;
+        const familyName = formData.get('familyName') as string;
         
         const hireDateForDb = selectedDate ? formatEn(selectedDate, 'yyyy-MM-dd') : '';
         
         const photoFile = formData.get('photoUrl') as File;
         let photoUrl = editingPersonnel?.photoUrl || '';
+        let isNewPhoto = false;
+        
         if (photoFile && photoFile.size > 0) {
             // In a real app, upload to Firebase Storage and get URL.
             // For now, we simulate this with a placeholder.
             photoUrl = `https://picsum.photos/seed/${personId}/200/200`;
             toast({title: "آپلود عکس", description: "عکس با موفقیت آپلود شد (شبیه‌سازی شده)."});
+            isNewPhoto = true;
         }
         
         const newPerson: Personnel = {
             id: personId,
-            name: formData.get('name') as string,
-            familyName: formData.get('familyName') as string,
+            name: name,
+            familyName: familyName,
             phone: formData.get('phone') as string,
             hireDate: hireDateForDb,
             position: formData.get('position') as Personnel['position'],
@@ -129,6 +134,27 @@ export default function PersonnelPage() {
         
         const personRef = doc(firestore, 'estates', estateId, 'personnel', personId);
         setDocumentNonBlocking(personRef, newPerson, { merge: true });
+
+        // If a new photo was uploaded, create a corresponding document
+        if (isNewPhoto && photoUrl) {
+            const documentData: Omit<Document, 'id'> = {
+                name: `عکس پروفایل ${name} ${familyName}`,
+                category: 'پرسنل',
+                uploadDate: format(new Date(), 'yyyy/MM/dd'),
+                url: photoUrl,
+                fileName: `profile_${personId}.jpg`,
+                relatedEntityId: personId,
+                description: `عکس پروفایل برای پرسنل ${name} ${familyName}`,
+                estateId: estateId,
+            };
+            const documentsCollection = collection(firestore, 'estates', estateId, 'documents');
+            addDocumentNonBlocking(documentsCollection, documentData);
+            toast({
+                title: 'سند خودکار ایجاد شد',
+                description: 'عکس پروفایل به عنوان یک سند در بخش اسناد و مدارک ثبت شد.',
+            });
+        }
+
 
         setIsDialogOpen(false);
         setEditingPersonnel(null);
@@ -340,3 +366,5 @@ export default function PersonnelPage() {
         </>
     );
 }
+
+    
