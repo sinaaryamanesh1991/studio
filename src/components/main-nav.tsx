@@ -14,7 +14,7 @@ import {
   ChevronDown,
   Settings,
   List,
-  Receipt,
+  DatabaseZap,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -26,9 +26,14 @@ import {
   SidebarGroupLabel,
   SidebarMenuSub,
   SidebarMenuSubButton,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useState } from 'react';
+import { useFirebase } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { seedDatabase } from '@/firebase/seed';
+import { Button } from './ui/button';
 
 const navItems = [
   { href: '/dashboard', label: 'داشبورد', icon: LayoutDashboard },
@@ -42,6 +47,27 @@ const navItems = [
 export function MainNav() {
   const pathname = usePathname();
   const [isFinancialOpen, setIsFinancialOpen] = useState(pathname.startsWith('/financials'));
+
+  const { firestore, user } = useFirebase();
+  const { toast } = useToast();
+
+  const handleSeed = async () => {
+    if (!firestore || !user?.uid) return;
+    try {
+        await seedDatabase(firestore, user.uid);
+        toast({
+            title: 'موفقیت',
+            description: 'داده‌های نمونه با موفقیت در دیتابیس بارگذاری شدند.',
+        });
+    } catch(e) {
+        console.error(e);
+        toast({
+            variant: 'destructive',
+            title: 'خطا',
+            description: 'خطایی در بارگذاری داده‌های نمونه رخ داد.',
+        });
+    }
+  }
 
   return (
     <>
@@ -104,6 +130,16 @@ export function MainNav() {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="mt-auto">
+        <SidebarMenu>
+            <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleSeed} tooltip={{ children: 'بارگذاری داده‌های نمونه', className: 'font-body' }}>
+                    <DatabaseZap />
+                    <span>بارگذاری داده‌های نمونه</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </>
   );
 }

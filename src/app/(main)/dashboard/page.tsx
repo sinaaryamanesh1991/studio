@@ -11,8 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { seedDatabase } from '@/firebase/seed';
-import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -37,7 +35,6 @@ const occupantTypeVariant = {
 
 export default function DashboardPage() {
   const { firestore, user, isUserLoading } = useFirebase();
-  const { toast } = useToast();
   const estateId = user?.uid;
 
   const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
@@ -46,13 +43,10 @@ export default function DashboardPage() {
   const residentsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'residents') : null, [firestore, estateId]);
   const { data: residents, isLoading: loadingResidents } = useCollection<Resident>(residentsQuery);
 
-  const boardMembersQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'boardMembers') : null, [firestore, estateId]);
-  const { data: boardMembers, isLoading: loadingBoardMembers } = useCollection<BoardMember>(boardMembersQuery);
-
   const villasQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'villas') : null, [firestore, estateId]);
   const { data: villas, isLoading: loadingVillas } = useCollection<Villa>(villasQuery);
 
-  const globalLoading = loadingPersonnel || loadingResidents || loadingBoardMembers || loadingVillas || isUserLoading;
+  const globalLoading = loadingPersonnel || loadingResidents || loadingVillas || isUserLoading;
 
   const handleStatusChange = (resident: Resident, isPresent: boolean) => {
     if (!estateId) return;
@@ -67,26 +61,6 @@ export default function DashboardPage() {
       const updatedData = { ...villa, occupantType: isOwner ? 'owner' : 'tenant' };
       setDocumentNonBlocking(villaRef, updatedData, { merge: true });
   };
-
-  const presentCount = residents?.filter(r => r.status === 'ساکن').length ?? 0;
-
-  const handleSeed = async () => {
-    if (!firestore || !estateId) return;
-    try {
-        await seedDatabase(firestore, estateId);
-        toast({
-            title: 'موفقیت',
-            description: 'داده‌های نمونه با موفقیت در دیتابیس بارگذاری شدند.',
-        });
-    } catch(e) {
-        console.error(e);
-        toast({
-            variant: 'destructive',
-            title: 'خطا',
-            description: 'خطایی در بارگذاری داده‌های نمونه رخ داد.',
-        });
-    }
-  }
 
 
   if (globalLoading) {
@@ -107,12 +81,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="داشبورد">
-        <Button onClick={handleSeed} variant="outline" size="sm">
-            <DatabaseZap className="ms-2 h-4 w-4" />
-            بارگذاری داده‌های نمونه
-        </Button>
-      </PageHeader>
+      <PageHeader title="داشبورد" />
 
        <div className="mt-6">
         <Card>
@@ -229,37 +198,6 @@ export default function DashboardPage() {
                                 </TableRow>
                             );
                         })}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
-      </div>
-      
-      <div className="mt-6">
-        <Card>
-            <CardHeader>
-                <CardTitle>لیست اعضای هیئت مدیره</CardTitle>
-                <CardDescription>اطلاعات تماس اعضای هیئت مدیره شهرک</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>نام و نام خانوادگی</TableHead>
-                            <TableHead>شماره تماس</TableHead>
-                            <TableHead>سمت</TableHead>
-                            <TableHead>شماره ویلا</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {boardMembers?.map((member) => (
-                            <TableRow key={member.id}>
-                                <TableCell className="font-medium">{member.name} {member.familyName}</TableCell>
-                                <TableCell>{member.phone}</TableCell>
-                                <TableCell>{member.position}</TableCell>
-                                <TableCell>{member.villaNumber}</TableCell>
-                            </TableRow>
-                        ))}
                     </TableBody>
                 </Table>
             </CardContent>
