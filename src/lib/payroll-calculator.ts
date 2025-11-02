@@ -16,6 +16,44 @@ export interface PayrollCalculationResult {
 }
 
 /**
+ * Calculates the monthly tax based on progressive tax brackets for the year 1403.
+ * @param monthlyGrossPay - The total gross pay for the month.
+ * @returns The calculated tax amount for the month.
+ */
+function calculateProgressiveTax(monthlyGrossPay: number): number {
+    const annualGrossPay = monthlyGrossPay * 12;
+
+    // Tax brackets for year 1403 (in Rials)
+    const brackets = [
+        { limit: 1440000000, rate: 0.10, base: 0 }, // Up to 144M is exempt, so we calculate tax on amount *over* this
+        { limit: 1980000000, rate: 0.15, base: 54000000 },
+        { limit: 3240000000, rate: 0.20, base: 243000000 },
+        { limit: 4800000000, rate: 0.30, base: 555000000 },
+    ];
+    
+    const taxExemptionLimit = 1440000000;
+
+    if (annualGrossPay <= taxExemptionLimit) {
+        return 0;
+    }
+
+    let annualTax = 0;
+
+    if (annualGrossPay > brackets[3].limit) {
+        annualTax = brackets[3].base + (annualGrossPay - brackets[3].limit) * brackets[3].rate;
+    } else if (annualGrossPay > brackets[2].limit) {
+        annualTax = brackets[2].base + (annualGrossPay - brackets[2].limit) * brackets[2].rate;
+    } else if (annualGrossPay > brackets[1].limit) {
+        annualTax = brackets[1].base + (annualGrossPay - brackets[1].limit) * brackets[1].rate;
+    } else if (annualGrossPay > brackets[0].limit) { // This is the first bracket above exemption
+        annualTax = brackets[0].base + (annualGrossPay - brackets[0].limit) * brackets[0].rate;
+    }
+
+    return annualTax / 12;
+}
+
+
+/**
  * Calculates the monthly payroll for an employee based on Iranian labor laws.
  * This function is a reliable, deterministic replacement for the AI-based calculation.
  * @param input - The payroll calculation inputs.
@@ -72,8 +110,8 @@ export function calculatePayroll(input: AutomatedPayrollCalculationInput): Payro
     const insuranceSubjectIncome = baseSalaryPay + overtimePay + nightWorkPay + holidayPay; 
     const insuranceDeduction = insuranceSubjectIncome * (input.insuranceDeductionPercentage / 100);
 
-    // Simplified tax calculation. Real tax is progressive (stepped).
-    const taxDeduction = grossPay > 0 ? grossPay * (input.taxDeductionPercentage / 100) : 0;
+    // Calculate tax using the progressive method
+    const taxDeduction = calculateProgressiveTax(grossPay);
 
     // 7. Calculate Net Pay
     const totalDeductions =

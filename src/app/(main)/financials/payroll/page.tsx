@@ -543,7 +543,6 @@ function PayrollSettingsForm() {
         housingAllowance: 9000000,
         foodAllowance: 14000000,
         insuranceDeductionPercentage: 7,
-        taxDeductionPercentage: 10,
         maxAllowedLateness: 15,
         latenessPenaltyAmount: 0
     });
@@ -632,16 +631,11 @@ function PayrollSettingsForm() {
                     {/* Deductions & Penalties */}
                     <div>
                         <h3 className="text-lg font-medium mb-4 border-b pb-2">کسورات و جرائم</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                              <div className="space-y-2">
                                 <Label htmlFor="insuranceDeductionPercentage">درصد بیمه سهم کارگر</Label>
                                 <Input id="insuranceDeductionPercentage" name="insuranceDeductionPercentage" type="number" step="0.1" value={formData.insuranceDeductionPercentage || ''} onChange={handleChange} />
                                 <p className="text-xs text-muted-foreground">معمولاً 7 درصد</p>
-                            </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="taxDeductionPercentage">درصد مالیات (ساده شده)</Label>
-                                <Input id="taxDeductionPercentage" name="taxDeductionPercentage" type="number" step="0.1" value={formData.taxDeductionPercentage || ''} onChange={handleChange} />
-                                <p className="text-xs text-muted-foreground">برای محاسبه ساده. معمولا پلکانی است.</p>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="maxAllowedLateness">حداکثر تأخیر مجاز (دقیقه)</Label>
@@ -718,4 +712,3 @@ export default function PayrollSystemPage() {
         </>
     );
 }
-

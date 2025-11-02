@@ -32,7 +32,6 @@ const AutomatedPayrollCalculationInputSchema = z.object({
 
   // Deductions and Penalties
   insuranceDeductionPercentage: z.number().describe("Employee's share of insurance deduction percentage (e.g., 7)."),
-  taxDeductionPercentage: z.number().describe("A simplified income tax deduction percentage (e.g., 10)."),
   maxAllowedLateness: z.number().describe("Maximum allowed lateness in minutes before penalty."),
   latenessPenaltyAmount: z.number().describe("Deduction amount if lateness exceeds the allowed limit."),
   otherDeductions: z.number().describe("Any other deductions to be applied."),
@@ -54,7 +53,7 @@ const AutomatedPayrollCalculationOutputSchema = z.object({
   grossPay: z.number().describe("Total earnings before any deductions (sum of all pays and allowances)."),
   
   insuranceDeduction: z.number().describe("Calculated insurance deduction amount."),
-  taxDeduction: z.number().describe("Calculated tax deduction amount."),
+  taxDeduction: z.number().describe("Calculated progressive tax deduction amount."),
   latenessDeduction: z.number().describe("Deduction applied for being late."),
   
   netPay: z.number().describe("Final take-home pay after all deductions."),
@@ -97,7 +96,13 @@ const prompt = ai.definePrompt({
 
 6.  **Calculate Other Deductions:**
     *   \`insuranceDeduction\` = (\`baseSalaryPay\` + \`overtimePay\`) * (\`insuranceDeductionPercentage\` / 100).  (Insurance is often calculated on base + overtime).
-    *   \`taxDeduction\` = \`grossPay\` * (\`taxDeductionPercentage\` / 100). (This is a simplified calculation).
+    *   **Progressive Tax:** Calculate the monthly tax based on the estimated annual income (\`grossPay\` * 12).
+        *   Annual Income up to 1,440,000,000 IRR is exempt.
+        *   From 1,440,000,001 to 1,980,000,000 IRR is 10%.
+        *   From 1,980,000,001 to 3,240,000,000 IRR is 15%.
+        *   From 3,240,000,001 to 4,800,000,000 IRR is 20%.
+        *   Over 4,800,000,000 IRR is 30%.
+        *   Calculate the annual tax based on these brackets and then divide by 12 for the monthly \`taxDeduction\`.
 
 7.  **Calculate Net Pay:**
     *   \`netPay\` = \`grossPay\` - (\`insuranceDeduction\` + \`taxDeduction\` + \`latenessDeduction\` + \`otherDeductions\`).
@@ -122,4 +127,3 @@ const automatedPayrollCalculationFlow = ai.defineFlow(
     return output!;
   }
 );
-

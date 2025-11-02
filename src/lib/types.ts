@@ -146,7 +146,6 @@ export interface PayrollSettings {
     foodAllowance: number;
 
     insuranceDeductionPercentage: number; // e.g. 7 for 7%
-    taxDeductionPercentage: number; // Simplified as a single rate, e.g. 10 for 10%
     
     maxAllowedLateness: number; // in minutes
     latenessPenaltyAmount: number; // deduction amount
@@ -156,7 +155,7 @@ export interface PayrollSettings {
 
 // This type combines all necessary inputs for a payroll calculation.
 // It's used by both the AI flow and the reliable TypeScript calculator.
-export interface AutomatedPayrollCalculationInput extends PayrollSettings, CompanyInfo {
+export interface AutomatedPayrollCalculationInput extends Omit<PayrollSettings, 'taxDeductionPercentage'>, CompanyInfo {
   totalHoursWorked: number;
   totalOvertimeHours: number;
   totalHolidayHours: number;

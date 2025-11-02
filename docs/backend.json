@@ -141,12 +141,11 @@
         "housingAllowance": { "type": "number", "description": "Fixed amount for housing allowance." },
         "foodAllowance": { "type": "number", "description": "Fixed amount for food allowance." },
         "insuranceDeductionPercentage": { "type": "number", "description": "Employee's insurance deduction percentage (e.g., 7)." },
-        "taxDeductionPercentage": { "type": "number", "description": "Simplified tax deduction percentage (e.g., 10)." },
         "maxAllowedLateness": { "type": "number", "description": "Maximum allowed lateness in minutes before penalty." },
         "latenessPenaltyAmount": { "type": "number", "description": "Deduction amount for being late." },
         "estateId": { "type": "string" }
       },
-      "required": ["baseSalaryOfMonth", "overtimeMultiplier", "childAllowance", "housingAllowance", "foodAllowance", "insuranceDeductionPercentage", "taxDeductionPercentage", "estateId"]
+      "required": ["baseSalaryOfMonth", "overtimeMultiplier", "childAllowance", "housingAllowance", "foodAllowance", "insuranceDeductionPercentage", "estateId"]
     },
      "WorkLog": {
       "title": "WorkLog",
@@ -274,4 +273,3 @@
     ]
   }
 }
-
