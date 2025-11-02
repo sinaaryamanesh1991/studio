@@ -129,6 +129,22 @@ export function MainNav() {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
+         <SidebarGroup>
+          <SidebarGroupLabel>تنظیمات</SidebarGroupLabel>
+            <SidebarMenu>
+                 <SidebarMenuItem>
+                    <Link href="/settings">
+                        <SidebarMenuButton
+                            isActive={pathname === '/settings'}
+                            tooltip={{ children: 'تنظیمات عمومی', className: 'font-body' }}
+                        >
+                            <Settings />
+                            <span>تنظیمات عمومی</span>
+                        </SidebarMenuButton>
+                    </Link>
+                </SidebarMenuItem>
+            </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="mt-auto">
         <SidebarMenu>

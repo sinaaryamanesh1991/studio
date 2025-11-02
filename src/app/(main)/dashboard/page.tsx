@@ -5,22 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { Users, Home, ArrowLeft, Loader2, CalendarDays, Clock } from 'lucide-react';
-import type { Resident, Villa, Personnel } from '@/lib/types';
+import { Users, Home, ArrowLeft, Loader2, CalendarDays, Clock, BarChart3, PieChart } from 'lucide-react';
+import type { Resident, Villa, Personnel, Transaction } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useEffect, useState } from 'react';
-import { format } from 'date-fns-jalali';
+import { useEffect, useState, useMemo } from 'react';
+import { format as formatJalali, subMonths, getMonth, getYear } from 'date-fns-jalali';
 import { faIR } from 'date-fns-jalali/locale';
-
-const residentStatusVariant = {
-  'ساکن': 'default',
-  'خالی': 'secondary',
-} as const;
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Pie, PieChart as RechartsPieChart, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 
 const personnelStatusVariant = {
   'مشغول کار': 'default',
@@ -29,30 +26,19 @@ const personnelStatusVariant = {
   'غیبت': 'outline',
 } as const;
 
-const occupantTypeVariant = {
-  'owner': 'default',
-  'tenant': 'outline',
-} as const;
 
 function ClockAndDate() {
     const [time, setTime] = useState('');
     const [date, setDate] = useState('');
 
     useEffect(() => {
-        // Set up the interval to update the time every second
         const timerId = setInterval(() => {
             const now = new Date();
             setTime(now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
         }, 1000);
-
-        // Set the initial Persian date
-        setDate(format(new Date(), 'PPPP', { locale: faIR }));
-
-        // Cleanup function to clear the interval when the component unmounts
-        return () => {
-            clearInterval(timerId);
-        };
-    }, []); // Empty dependency array ensures this runs only once on mount
+        setDate(formatJalali(new Date(), 'PPPP', { locale: faIR }));
+        return () => clearInterval(timerId);
+    }, []);
 
     return (
         <Card className="mb-6">
@@ -78,6 +64,117 @@ function ClockAndDate() {
     );
 }
 
+function FinancialChart({ transactions }: { transactions: Transaction[] | null }) {
+    const chartData = useMemo(() => {
+        const now = new Date();
+        const data: { month: string; دریافتی: number; پرداختی: number }[] = [];
+
+        for (let i = 5; i >= 0; i--) {
+            const date = subMonths(now, i);
+            const monthName = formatJalali(date, 'MMM', { locale: faIR });
+            const month = getMonth(date);
+            const year = getYear(date);
+
+            const receipts = transactions
+                ?.filter(t => {
+                    const tDate = new Date(t.date);
+                    return getMonth(tDate) === month && getYear(tDate) === year && t.type === 'دریافتی';
+                })
+                .reduce((sum, t) => sum + t.amount, 0) ?? 0;
+
+            const payments = transactions
+                ?.filter(t => {
+                    const tDate = new Date(t.date);
+                    return getMonth(tDate) === month && getYear(tDate) === year && t.type === 'پرداختی';
+                })
+                .reduce((sum, t) => sum + t.amount, 0) ?? 0;
+
+            data.push({ month: monthName, 'دریافتی': receipts, 'پرداختی': payments });
+        }
+        return data;
+    }, [transactions]);
+    
+    const chartConfig = {
+      دریافتی: { label: 'دریافتی', color: 'hsl(var(--chart-1))' },
+      پرداختی: { label: 'پرداختی', color: 'hsl(var(--chart-2))' },
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    تحلیل مالی ۶ ماه اخیر
+                </CardTitle>
+                <CardDescription>نمودار مقایسه‌ای درآمدها و هزینه‌ها</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                    <BarChart data={chartData} accessibilityLayer>
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                            dataKey="month"
+                            tickLine={false}
+                            tickMargin={10}
+                            axisLine={false}
+                        />
+                        <YAxis tickFormatter={(value) => `${(value / 1000000).toLocaleString()} M`} />
+                        <Tooltip content={<ChartTooltipContent />} />
+                        <Legend />
+                        <Bar dataKey="دریافتی" fill="var(--color-دریافتی)" radius={4} />
+                        <Bar dataKey="پرداختی" fill="var(--color-پرداختی)" radius={4} />
+                    </BarChart>
+                </ChartContainer>
+            </CardContent>
+        </Card>
+    );
+}
+
+function ResidentsChart({ residents }: { residents: Resident[] | null }) {
+    const chartData = useMemo(() => {
+        const total = residents?.length ?? 0;
+        const occupied = residents?.filter(r => r.status === 'ساکن').length ?? 0;
+        const vacant = total - occupied;
+        return [
+            { name: 'ساکن', value: occupied, fill: 'hsl(var(--chart-1))' },
+            { name: 'خالی', value: vacant, fill: 'hsl(var(--chart-2))' }
+        ];
+    }, [residents]);
+
+     const chartConfig = {
+      ساکن: { label: 'ساکن' },
+      خالی: { label: 'خالی' },
+    }
+
+    return (
+         <Card className="flex flex-col">
+          <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <PieChart className="h-5 w-5" />
+                    وضعیت سکونت ویلاها
+                </CardTitle>
+                <CardDescription>نمودار تفکیکی واحدهای دارای سکنه و خالی</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0">
+                <ChartContainer
+                config={chartConfig}
+                className="mx-auto aspect-square h-[250px]"
+                >
+                <RechartsPieChart>
+                    <Tooltip content={<ChartTooltipContent nameKey="name" />} />
+                    <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                         {chartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                    </Pie>
+                    <Legend />
+                </RechartsPieChart>
+                </ChartContainer>
+            </CardContent>
+        </Card>
+    );
+}
+
 
 export default function DashboardPage() {
   const { firestore, user, isUserLoading } = useFirebase();
@@ -89,25 +186,13 @@ export default function DashboardPage() {
   const residentsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'residents') : null, [firestore, estateId]);
   const { data: residents, isLoading: loadingResidents } = useCollection<Resident>(residentsQuery);
 
+  const transactionsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'financialTransactions') : null, [firestore, estateId]);
+  const { data: transactions, isLoading: loadingTransactions } = useCollection<Transaction>(transactionsQuery);
+  
   const villasQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'villas') : null, [firestore, estateId]);
   const { data: villas, isLoading: loadingVillas } = useCollection<Villa>(villasQuery);
 
-  const globalLoading = loadingPersonnel || loadingResidents || loadingVillas || isUserLoading;
-
-  const handleStatusChange = (resident: Resident, isPresent: boolean) => {
-    if (!estateId) return;
-    const residentRef = doc(firestore, 'estates', estateId, 'residents', resident.id);
-    const updatedData = { ...resident, isPresent: isPresent, status: isPresent ? 'ساکن' : 'خالی' };
-    setDocumentNonBlocking(residentRef, updatedData, { merge: true });
-  };
-  
-  const handleOccupantTypeChange = (villa: Villa, isOwner: boolean) => {
-      if (!estateId) return;
-      const villaRef = doc(firestore, 'estates', estateId, 'villas', villa.id);
-      const updatedData = { ...villa, occupantType: isOwner ? 'owner' : 'tenant' };
-      setDocumentNonBlocking(villaRef, updatedData, { merge: true });
-  };
-
+  const globalLoading = loadingPersonnel || loadingResidents || loadingVillas || isUserLoading || loadingTransactions;
 
   if (globalLoading) {
     return (
@@ -130,6 +215,12 @@ export default function DashboardPage() {
       <PageHeader title="داشبورد" />
       
       <ClockAndDate />
+      
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 mt-6">
+          <FinancialChart transactions={transactions} />
+          <ResidentsChart residents={residents} />
+      </div>
+
 
        <div className="mt-6">
         <Card>
@@ -182,72 +273,6 @@ export default function DashboardPage() {
                         هنوز هیچ پرسنلی ثبت نشده است.
                     </p>
                  )}
-            </CardContent>
-        </Card>
-      </div>
-      
-      <div className="mt-6">
-        <Card>
-            <CardHeader>
-                <CardTitle>لیست ساکنین و وضعیت ویلاها</CardTitle>
-                <CardDescription>اطلاعات تماس، وضعیت سکونت و مالکیت ساکنین</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>شماره ویلا</TableHead>
-                            <TableHead>نام</TableHead>
-                            <TableHead>نام خانوادگی</TableHead>
-                            <TableHead>شماره تماس</TableHead>
-                            <TableHead>وضعیت سکونت</TableHead>
-                            <TableHead>وضعیت مالکیت</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident: Resident) => {
-                             const villa = villas?.find(v => v.villaNumber === resident.villaNumber);
-                             return (
-                                <TableRow key={resident.id}>
-                                    <TableCell className="font-medium">{resident.villaNumber}</TableCell>
-                                    <TableCell>{resident.name}</TableCell>
-                                    <TableCell>{resident.familyName}</TableCell>
-                                    <TableCell>{resident.phone}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center space-x-2 space-x-reverse">
-                                            <Switch
-                                                id={`status-switch-${resident.id}`}
-                                                checked={resident.isPresent}
-                                                onCheckedChange={(checked) => handleStatusChange(resident, checked)}
-                                                aria-label="وضعیت سکونت"
-                                            />
-                                            <Badge variant={residentStatusVariant[resident.status]}>
-                                                {resident.status}
-                                            </Badge>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        {resident.status === 'ساکن' && villa ? (
-                                             <div className="flex items-center space-x-2 space-x-reverse">
-                                                <Switch
-                                                    id={`occupant-type-switch-${villa.id}`}
-                                                    checked={villa.occupantType === 'owner'}
-                                                    onCheckedChange={(checked) => handleOccupantTypeChange(villa, checked)}
-                                                    aria-label="وضعیت مالکیت"
-                                                />
-                                                <Badge variant={occupantTypeVariant[villa.occupantType]}>
-                                                    {villa.occupantType === 'owner' ? 'مالک' : 'مستاجر'}
-                                                </Badge>
-                                            </div>
-                                        ) : (
-                                            <Badge variant="secondary">ویلا خالی است</Badge>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
             </CardContent>
         </Card>
       </div>
