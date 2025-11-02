@@ -15,9 +15,9 @@ import { useState, useMemo, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
-import { format, toDate } from 'date-fns-jalali';
-import { faIR } from 'date-fns/locale';
-import { format as formatEn } from 'date-fns';
+import { format } from 'date-fns-jalali';
+import { faIR } from 'date-fns-jalali/locale';
+import { format as formatEn, parse as parseEn } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
@@ -115,11 +115,11 @@ function WorkHoursContent() {
     const { toast } = useToast();
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-    const dateString = formatEn(selectedDate, 'yyyy-MM-dd');
+    const dateStringForDb = formatEn(selectedDate, 'yyyy-MM-dd');
 
     const dailyLogs = useMemo(() => {
         if (!personnel || !workLogs) return [];
-        const logsForDate = workLogs.filter(log => log.date === dateString);
+        const logsForDate = workLogs.filter(log => log.date === dateStringForDb);
         
         return personnel.map(p => {
             const existingLog = logsForDate.find(log => log.personnelId === p.id);
@@ -131,7 +131,7 @@ function WorkHoursContent() {
                 hoursWorked: existingLog ? calculateHours(existingLog.entryTime, existingLog.exitTime) : 0,
             };
         });
-    }, [personnel, workLogs, dateString]);
+    }, [personnel, workLogs, dateStringForDb]);
 
     const [editableLogs, setEditableLogs] = useState(dailyLogs);
 
@@ -154,12 +154,12 @@ function WorkHoursContent() {
 
         editableLogs.forEach(log => {
             if (log.entryTime && log.exitTime) {
-                const logId = `${log.personnelId}-${dateString}`;
+                const logId = `${log.personnelId}-${dateStringForDb}`;
                 const logRef = doc(firestore, 'estates', estateId, 'workLogs', logId);
                 const dataToSave: WorkLog = {
                     id: logId,
                     personnelId: log.personnelId,
-                    date: dateString,
+                    date: dateStringForDb,
                     entryTime: log.entryTime,
                     exitTime: log.exitTime,
                     hoursWorked: log.hoursWorked,
@@ -268,11 +268,13 @@ export function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord,
     };
     
     const formatDate = (dateString: string) => {
+        if (!dateString) return "نامشخص";
         try {
-            // Using toDate from date-fns-jalali to correctly parse the string
-            return format(toDate(new Date(dateString)), 'yyyy/MM/dd');
-        } catch(e) {
-            return dateString;
+            const date = parseEn(dateString, 'yyyy-MM-dd', new Date());
+             if (isNaN(date.getTime())) return dateString; // fallback
+            return format(date, 'yyyy/MM/dd', { locale: faIR });
+        } catch {
+            return dateString; // fallback
         }
     }
 
