@@ -73,3 +73,9 @@ export interface PayrollRecord {
   netPay: number;
   overtimePay: number;
 }
+
+export interface CompanyInfo {
+    name: string;
+    defaultEntryTime: string;
+    defaultExitTime: string;
+}

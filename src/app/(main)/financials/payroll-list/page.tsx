@@ -40,7 +40,7 @@ export default function PayrollListPage() {
                  <Link href="/financials/payroll" passHref>
                     <Button>
                         <PlusCircle className="ms-2 h-4 w-4" />
-                        محاسبه حقوق جدید
+                        بازگشت به سیستم حقوق
                     </Button>
                 </Link>
             </PageHeader>

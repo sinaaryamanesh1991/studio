@@ -36,7 +36,6 @@ const navItems = [
   { href: '/residents', label: 'ساکنین', icon: Home },
   { href: '/board-members', label: 'هیئت مدیره', icon: Briefcase },
   { href: '/map', label: 'نقشه شهرک', icon: Map },
-  // { href: '/financials', label: 'امور مالی', icon: CircleDollarSign },
   { href: '/documents', label: 'اسناد و مدارک', icon: FileText },
 ];
 
@@ -94,18 +93,10 @@ export function MainNav() {
                                 </Link>
                            </SidebarMenuItem>
                            <SidebarMenuItem>
-                               <Link href="/financials/payroll-list" legacyBehavior passHref>
-                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll-list'}>
-                                        <List />
-                                        <span>لیست حقوق</span>
-                                    </SidebarMenuSubButton>
-                                </Link>
-                           </SidebarMenuItem>
-                           <SidebarMenuItem>
                                 <Link href="/financials/payroll" legacyBehavior passHref>
-                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll'}>
+                                    <SidebarMenuSubButton isActive={pathname.startsWith('/financials/payroll')}>
                                         <Calculator />
-                                        <span>محاسبه‌گر حقوق</span>
+                                        <span>حقوق و دستمزد</span>
                                     </SidebarMenuSubButton>
                                 </Link>
                             </SidebarMenuItem>
