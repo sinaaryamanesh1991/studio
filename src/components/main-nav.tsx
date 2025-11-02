@@ -82,20 +82,20 @@ export function MainNav() {
                     <CollapsibleContent>
                         <SidebarMenuSub>
                           <SidebarMenuItem>
-                               <Link href="/financials">
-                                    <SidebarMenuSubButton isActive={pathname === '/financials'}>
+                               <SidebarMenuSubButton asChild isActive={pathname === '/financials'}>
+                                    <Link href="/financials">
                                         <List />
                                         <span>لیست تراکنش ها</span>
-                                    </SidebarMenuSubButton>
-                                </Link>
+                                    </Link>
+                                </SidebarMenuSubButton>
                            </SidebarMenuItem>
                            <SidebarMenuItem>
-                                <Link href="/financials/payroll">
-                                    <SidebarMenuSubButton isActive={pathname.startsWith('/financials/payroll')}>
+                                <SidebarMenuSubButton asChild isActive={pathname.startsWith('/financials/payroll')}>
+                                    <Link href="/financials/payroll">
                                         <Settings />
                                         <span>حقوق و دستمزد</span>
-                                    </SidebarMenuSubButton>
-                                </Link>
+                                    </Link>
+                                </SidebarMenuSubButton>
                             </SidebarMenuItem>
                         </SidebarMenuSub>
                     </CollapsibleContent>
