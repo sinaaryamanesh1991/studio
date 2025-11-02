@@ -138,7 +138,7 @@ export default function PersonnelPage() {
     }
     
     const formatPersonnelId = (id: string) => {
-        const numericId = parseInt(id, 10);
+       const numericId = parseInt(id.replace('p', ''), 10);
         if (isNaN(numericId)) return id;
         return numericId.toString().padStart(3, '0');
     }
