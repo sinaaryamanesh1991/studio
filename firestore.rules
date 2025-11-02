@@ -26,25 +26,6 @@ service cloud.firestore {
     }
 
     /**
-     * @description Checks if the incoming data's 'estateId' matches the 'estateId' in the path.
-     * This is crucial for ensuring that data is not accidentally written to the wrong estate.
-     * @param {string} estateId - The estate ID from the path.
-     * @returns {boolean} True if the 'estateId' values match, false otherwise.
-     */
-    function isCorrectEstate(estateId) {
-      return request.resource.data.estateId == estateId;
-    }
-
-    /**
-     * @description Validates that the 'estateId' field cannot be changed during an update.
-     * This prevents moving a document from one estate to another.
-     * @returns {boolean} True if the 'estateId' field remains the same, false otherwise.
-     */
-    function estateIdIsImmutable() {
-        return request.resource.data.estateId == resource.data.estateId;
-    }
-
-    /**
      * @description
      * This rule applies to the root /estates collection.
      * - A user can create an estate document only if the document's ID matches their own UID.
@@ -53,17 +34,17 @@ service cloud.firestore {
      */
     match /estates/{estateId} {
       allow get, update, delete: if isSignedIn() && request.auth.uid == estateId;
-      allow list: if false;
+      allow list: if false; // Disallow listing all estates in the system.
       allow create: if isSignedIn() && request.auth.uid == estateId;
 
       /**
        * @description
-       * This rule applies to all subcollections within a specific estate (e.g., personnel, residents).
-       * It grants full read and write access (including list) only to the user whose UID matches the estateId in the path.
-       * This is the core rule that scopes all data access to the owner of the estate.
-       * On create and update, we also validate that the document's internal 'estateId' field matches the path.
+       * This is the master rule for all subcollections within an estate (e.g., personnel, residents, villas).
+       * It grants full read and write access (including list, get, create, update, delete)
+       * only to the user whose UID matches the estateId in the path.
+       * This single rule correctly scopes all data access to the owner of the estate.
        */
-      match /{collection}/{docId} {
+      match /{collection}/{docId=**} {
         allow read, write: if isSignedIn() && request.auth.uid == estateId;
       }
     }
