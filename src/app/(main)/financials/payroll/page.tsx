@@ -439,7 +439,7 @@ export default function PayrollSystemPage() {
             </PageHeader>
             
             <Tabs defaultValue="info" className="w-full">
-                <TabsList className="grid w-full grid-cols-6 mb-6">
+                <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 mb-6">
                     <TabsTrigger value="info">اطلاعات پایه</TabsTrigger>
                     <TabsTrigger value="payroll-settings">تنظیمات حقوق</TabsTrigger>
                     <TabsTrigger value="personnel">اطلاعات پرسنل</TabsTrigger>
