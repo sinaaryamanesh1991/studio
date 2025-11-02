@@ -62,19 +62,21 @@ export default function DashboardPage() {
   
   const presentCount = residents?.filter(r => r.status === 'ساکن').length ?? 0;
 
-  const getOwnerStatus = (villa: Villa): { text: string; variant: keyof typeof ownerStatusVariant } => {
-    const resident = residents?.find(r => r.villaNumber === villa.villaNumber);
+  const getOwnerStatus = (resident: Resident): { text: string; variant: keyof typeof ownerStatusVariant } => {
+    const villa = villas?.find(v => v.villaNumber === resident.villaNumber);
 
-    if (resident && resident.status === 'ساکن') {
-      const residentFullName = `${resident.name} ${resident.familyName}`.trim();
-      const ownerFullName = villa.owner.trim();
-
-      if (residentFullName === ownerFullName) {
-        return { text: 'مالک ساکن است', variant: 'مالک ساکن است' };
-      }
-      return { text: 'ساکن مستاجر است', variant: 'ساکن مستاجر است' };
+    if (resident.status !== 'ساکن' || !villa) {
+        return { text: 'ویلا خالی است', variant: 'ویلا خالی است' };
     }
-    return { text: 'ویلا خالی است', variant: 'ویلا خالی است' };
+    
+    const residentFullName = `${resident.name} ${resident.familyName}`.trim();
+    const ownerFullName = villa.owner.trim();
+
+    if (residentFullName === ownerFullName) {
+        return { text: 'مالک ساکن است', variant: 'مالک ساکن است' };
+    }
+    
+    return { text: 'ساکن مستاجر است', variant: 'ساکن مستاجر است' };
 };
 
   const handleSeed = async () => {
@@ -157,8 +159,8 @@ export default function DashboardPage() {
       <div className="mt-6">
         <Card>
             <CardHeader>
-                <CardTitle>لیست ساکنین</CardTitle>
-                <CardDescription>اطلاعات تماس و وضعیت سکونت ساکنین</CardDescription>
+                <CardTitle>لیست ساکنین و وضعیت ویلاها</CardTitle>
+                <CardDescription>اطلاعات تماس، وضعیت سکونت و مالکیت ساکنین</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -168,65 +170,35 @@ export default function DashboardPage() {
                             <TableHead>نام</TableHead>
                             <TableHead>نام خانوادگی</TableHead>
                             <TableHead>شماره تماس</TableHead>
-                            <TableHead>پلاک خودرو</TableHead>
                             <TableHead>وضعیت سکونت</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident: Resident) => (
-                            <TableRow key={resident.id}>
-                                <TableCell className="font-medium">{resident.villaNumber}</TableCell>
-                                <TableCell>{resident.name}</TableCell>
-                                <TableCell>{resident.familyName}</TableCell>
-                                <TableCell>{resident.phone}</TableCell>
-                                <TableCell>{resident.carPlates}</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center space-x-2 space-x-reverse">
-                                        <Switch
-                                            id={`status-switch-${resident.id}`}
-                                            checked={resident.isPresent}
-                                            onCheckedChange={(checked) => handleStatusChange(resident, checked)}
-                                            aria-label="وضعیت سکونت"
-                                        />
-                                        <Badge variant={statusVariant[resident.status]}>
-                                            {resident.status}
-                                        </Badge>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
-      </div>
-      <div className="mt-6">
-        <Card>
-            <CardHeader>
-                <CardTitle>لیست صاحبین و وضعیت ویلاها</CardTitle>
-                <CardDescription>فهرست مالکین ویلاها و وضعیت فعلی سکونت هر ویلا.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>شماره ویلا</TableHead>
-                            <TableHead>نام مالک</TableHead>
-                            <TableHead>شماره تماس مالک</TableHead>
                             <TableHead>وضعیت ویلا</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {villas?.sort((a, b) => a.villaNumber - b.villaNumber).map((villa) => {
-                            const status = getOwnerStatus(villa);
-                            return (
-                                <TableRow key={villa.id}>
-                                    <TableCell className="font-medium">{villa.villaNumber}</TableCell>
-                                    <TableCell>{villa.owner}</TableCell>
-                                    <TableCell>{villa.phone}</TableCell>
+                        {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident: Resident) => {
+                             const ownerStatus = getOwnerStatus(resident);
+                             return (
+                                <TableRow key={resident.id}>
+                                    <TableCell className="font-medium">{resident.villaNumber}</TableCell>
+                                    <TableCell>{resident.name}</TableCell>
+                                    <TableCell>{resident.familyName}</TableCell>
+                                    <TableCell>{resident.phone}</TableCell>
                                     <TableCell>
-                                        <Badge variant={ownerStatusVariant[status.variant]}>
-                                            {status.text}
+                                        <div className="flex items-center space-x-2 space-x-reverse">
+                                            <Switch
+                                                id={`status-switch-${resident.id}`}
+                                                checked={resident.isPresent}
+                                                onCheckedChange={(checked) => handleStatusChange(resident, checked)}
+                                                aria-label="وضعیت سکونت"
+                                            />
+                                            <Badge variant={statusVariant[resident.status]}>
+                                                {resident.status}
+                                            </Badge>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={ownerStatusVariant[ownerStatus.variant]}>
+                                            {ownerStatus.text}
                                         </Badge>
                                     </TableCell>
                                 </TableRow>
@@ -237,6 +209,7 @@ export default function DashboardPage() {
             </CardContent>
         </Card>
       </div>
+      
       <div className="mt-6">
         <Card>
             <CardHeader>
