@@ -38,7 +38,6 @@ import { setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/no
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns-jalali';
-import { parse as parseJalali } from 'date-fns-jalali';
 import { format as formatEn, parse as parseEn } from 'date-fns';
 import { faIR } from 'date-fns-jalali/locale';
 import { cn } from '@/lib/utils';
@@ -94,12 +93,19 @@ export default function PersonnelPage() {
         deleteDocumentNonBlocking(doc(firestore, 'estates', estateId, 'personnel', id));
     };
     
-    const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!estateId) return;
 
         const formData = new FormData(e.currentTarget);
-        const personId = editingPersonnel ? editingPersonnel.id : `p${Date.now()}`;
+        
+        let personId = editingPersonnel ? editingPersonnel.id : '';
+
+        if (!editingPersonnel) {
+            // Find the max ID and add 1
+            const maxId = personnel ? Math.max(0, ...personnel.map(p => parseInt(p.id, 10))) : 0;
+            personId = (maxId + 1).toString();
+        }
         
         // Use formatEn from the standard date-fns to format for database
         const hireDateForDb = selectedDate ? formatEn(selectedDate, 'yyyy-MM-dd') : '';
@@ -136,6 +142,10 @@ export default function PersonnelPage() {
             return dateString; // fallback
         }
     }
+    
+    const formatPersonnelId = (id: string) => {
+        return id.padStart(3, '0');
+    }
 
     if (isLoading) {
         return <div>در حال بارگذاری...</div>
@@ -168,7 +178,7 @@ export default function PersonnelPage() {
                         <TableBody>
                             {personnel?.map((person) => (
                                 <TableRow key={person.id}>
-                                    <TableCell className="font-mono">{person.id}</TableCell>
+                                    <TableCell className="font-mono">{formatPersonnelId(person.id)}</TableCell>
                                     <TableCell>{person.name}</TableCell>
                                     <TableCell>{person.familyName}</TableCell>
                                     <TableCell>{formatDateForDisplay(person.hireDate)}</TableCell>

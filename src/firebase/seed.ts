@@ -4,10 +4,10 @@ import { collection, doc, writeBatch, Firestore } from 'firebase/firestore';
 import type { Personnel, Resident, Villa, BoardMember, Transaction, Document, CompanyInfo, PayrollSettings } from '@/lib/types';
 
 const initialPersonnel: Omit<Personnel, 'estateId'>[] = [
-    { id: 'p001', name: 'اسحاق', familyName: '', nationalId: '', accountNumber: '', insuranceNumber: '', hireDate: '1403-01-01', phone: '0910-305-3794', position: 'خدمات', status: 'مشغول کار' },
-    { id: 'p002', name: 'کابچی', familyName: '', nationalId: '', accountNumber: '', insuranceNumber: '', hireDate: '1403-01-01', phone: '0911-744-4694', position: 'نگهبان', status: 'مشغول کار' },
-    { id: 'p003', name: 'فرهنگ', familyName: '', nationalId: '', accountNumber: '', insuranceNumber: '', hireDate: '1403-01-01', phone: '0933-488-1914', position: 'خدمات', status: 'مشغول کار' },
-    { id: 'p004', name: 'ناصر', familyName: 'رمضان', nationalId: '', accountNumber: '', insuranceNumber: '', hireDate: '1403-01-01', phone: '09', position: 'سرایدار', status: 'مشغول کار' },
+    { id: '1', name: 'اسحاق', familyName: '', nationalId: '', accountNumber: '', insuranceNumber: '', hireDate: '2024-03-21', phone: '0910-305-3794', position: 'خدمات', status: 'مشغول کار' },
+    { id: '2', name: 'کابچی', familyName: '', nationalId: '', accountNumber: '', insuranceNumber: '', hireDate: '2024-03-21', phone: '0911-744-4694', position: 'نگهبان', status: 'مشغول کار' },
+    { id: '3', name: 'فرهنگ', familyName: '', nationalId: '', accountNumber: '', insuranceNumber: '', hireDate: '2024-03-21', phone: '0933-488-1914', position: 'خدمات', status: 'مشغول کار' },
+    { id: '4', name: 'ناصر', familyName: 'رمضان', nationalId: '', accountNumber: '', insuranceNumber: '', hireDate: '2024-03-21', phone: '09', position: 'سرایدار', status: 'مشغول کار' },
 ];
 
 const initialResidents: Omit<Resident, 'estateId' | 'villaId'>[] = [
