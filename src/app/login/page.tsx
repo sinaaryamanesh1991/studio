@@ -43,7 +43,7 @@ export default function LoginPage() {
       // The useEffect will handle redirection to /dashboard
     } catch (error: any) {
       // If the user is not found, it means they are a new user.
-      if (error.code === 'auth/user-not-found') {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         try {
           // Create a new user with the provided email and password.
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
