@@ -8,7 +8,7 @@ import { useData } from '@/context/data-context';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Link from 'next/link';
 import type { PayrollRecord } from '@/lib/types';
-import { MoreHorizontal, FileText, Trash2, Edit, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, FileText, Trash2, Edit, Calculator } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,10 +37,10 @@ export default function PayrollListPage() {
     return (
         <>
             <PageHeader title="لیست حقوق و دستمزد">
-                 <Link href="/financials/payroll" passHref>
+                 <Link href="/financials/payroll-calculator" passHref>
                     <Button>
-                        <PlusCircle className="ms-2 h-4 w-4" />
-                        بازگشت به سیستم حقوق
+                        <Calculator className="ms-2 h-4 w-4" />
+                        محاسبه حقوق جدید
                     </Button>
                 </Link>
             </PageHeader>
@@ -99,7 +99,7 @@ export default function PayrollListPage() {
                     </Table>
                     {payrollRecords.length === 0 && (
                         <p className="text-center text-muted-foreground py-8">
-                            هنوز هیچ محاسبه حقوقی ثبت نشده است.
+                            هنوز هیچ محاسبه حقوقی ثبت نشده است. برای شروع، یک محاسبه جدید ایجاد کنید.
                         </p>
                     )}
                 </CardContent>
@@ -159,7 +159,7 @@ export default function PayrollListPage() {
                              <Separator />
                              <div className="flex justify-between items-center font-extrabold text-lg bg-muted -mx-6 px-6 py-3">
                                 <span>پرداختی نهایی:</span>
-                                <span className="font-mono text-accent">{selectedPayslip.netPay.toLocaleString('fa-IR')} تومان</span>
+                                <span className="font-mono text-primary">{selectedPayslip.netPay.toLocaleString('fa-IR')} تومان</span>
                             </div>
                         </div>
                         <DialogFooter>

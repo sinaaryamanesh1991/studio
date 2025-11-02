@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Calculator,
   List,
+  FilePlus,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -94,9 +95,25 @@ export function MainNav() {
                            </SidebarMenuItem>
                            <SidebarMenuItem>
                                 <Link href="/financials/payroll" legacyBehavior passHref>
-                                    <SidebarMenuSubButton isActive={pathname.startsWith('/financials/payroll')}>
+                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll'}>
                                         <Calculator />
-                                        <span>حقوق و دستمزد</span>
+                                        <span>تنظیمات حقوق</span>
+                                    </SidebarMenuSubButton>
+                                </Link>
+                            </SidebarMenuItem>
+                             <SidebarMenuItem>
+                                <Link href="/financials/payroll-calculator" legacyBehavior passHref>
+                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll-calculator'}>
+                                        <FilePlus />
+                                        <span>محاسبه حقوق</span>
+                                    </SidebarMenuSubButton>
+                                </Link>
+                            </SidebarMenuItem>
+                             <SidebarMenuItem>
+                                <Link href="/financials/payroll-list" legacyBehavior passHref>
+                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll-list'}>
+                                        <List />
+                                        <span>لیست حقوق</span>
                                     </SidebarMenuSubButton>
                                 </Link>
                             </SidebarMenuItem>

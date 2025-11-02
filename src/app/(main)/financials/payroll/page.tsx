@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,9 +10,8 @@ import { useData } from '@/context/data-context';
 import { useToast } from '@/hooks/use-toast';
 import type { CompanyInfo } from '@/lib/types';
 import Link from 'next/link';
-import { PlusCircle } from 'lucide-react';
+import { Calculator, List } from 'lucide-react';
 
-// A simple form for company basic info
 function CompanyInfoForm() {
     const { companyInfo, setCompanyInfo } = useData();
     const { toast } = useToast();
@@ -66,9 +64,15 @@ export default function PayrollSystemPage() {
     return (
         <>
             <PageHeader title="سیستم جامع حقوق و دستمزد">
+                 <Link href="/financials/payroll-calculator" passHref>
+                    <Button>
+                        <Calculator className="ms-2 h-4 w-4" />
+                        محاسبه حقوق جدید
+                    </Button>
+                </Link>
                  <Link href="/financials/payroll-list" passHref>
                     <Button variant="outline">
-                        <PlusCircle className="ms-2 h-4 w-4" />
+                        <List className="ms-2 h-4 w-4" />
                         مشاهده لیست حقوق
                     </Button>
                 </Link>
