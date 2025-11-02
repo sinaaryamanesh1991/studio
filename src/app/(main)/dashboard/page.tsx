@@ -4,9 +4,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useData } from '@/context/data-context';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { Users, Home, UserCheck, FileDown, FileUp, Building2 } from 'lucide-react';
+import { Users, Home, UserCheck, FileDown, FileUp } from 'lucide-react';
 import type { BoardMember, Resident } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -31,11 +29,6 @@ export default function DashboardPage() {
       importData(file);
     }
   };
-
-  const residentStatusData = [
-    { status: 'ساکن', count: residents.filter(r => r.status === 'ساکن').length, fill: 'hsl(var(--chart-1))' },
-    { status: 'خالی', count: residents.filter(r => r.status === 'خالی').length, fill: 'hsl(var(--chart-2))' },
-  ]
 
   return (
     <>
@@ -88,27 +81,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="mt-6 grid grid-cols-1 gap-6">
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle>وضعیت سکونت</CardTitle>
-                <CardDescription>نمودار وضعیت سکونت واحدها</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ChartContainer config={{}} className="h-[250px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Tooltip
-                                cursor={{ fill: 'hsl(var(--muted))' }}
-                                content={<ChartTooltipContent hideLabel />}
-                            />
-                            <Pie data={residentStatusData} dataKey="count" nameKey="status" innerRadius={50} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </ChartContainer>
-            </CardContent>
-        </Card>
-      </div>
+      
       <div className="mt-6">
         <Card>
             <CardHeader>
