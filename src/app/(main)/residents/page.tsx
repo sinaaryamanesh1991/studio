@@ -104,9 +104,9 @@ export default function ResidentsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {residents?.map((resident) => (
+                            {residents?.sort((a, b) => a.villaNumber - b.villaNumber).map((resident) => (
                                 <TableRow key={resident.id}>
-                                    <TableCell className="font-medium">{resident.villaNumber}</TableCell>
+                                    <TableCell className="font-medium font-mono">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
                                     <TableCell>{resident.name}</TableCell>
                                     <TableCell>{resident.familyName}</TableCell>
                                     <TableCell>{resident.phone}</TableCell>
