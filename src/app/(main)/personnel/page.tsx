@@ -99,13 +99,7 @@ export default function PersonnelPage() {
 
         const formData = new FormData(e.currentTarget);
         
-        let personId = editingPersonnel ? editingPersonnel.id : '';
-
-        if (!editingPersonnel) {
-            // Find the max ID and add 1
-            const maxId = personnel ? Math.max(0, ...personnel.map(p => parseInt(p.id, 10))) : 0;
-            personId = (maxId + 1).toString();
-        }
+        const personId = editingPersonnel ? editingPersonnel.id : `p${Date.now()}`;
         
         // Use formatEn from the standard date-fns to format for database
         const hireDateForDb = selectedDate ? formatEn(selectedDate, 'yyyy-MM-dd') : '';
@@ -144,7 +138,9 @@ export default function PersonnelPage() {
     }
     
     const formatPersonnelId = (id: string) => {
-        return id.padStart(3, '0');
+        const numericId = parseInt(id, 10);
+        if (isNaN(numericId)) return id;
+        return numericId.toString().padStart(3, '0');
     }
 
     if (isLoading) {
