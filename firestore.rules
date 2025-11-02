@@ -1,49 +1,30 @@
-/**
- * @file Firestore Security Rules for Sina Estate Manager.
- *
- * Core Philosophy:
- * This ruleset enforces a strict owner-only access model within each estate. Only authenticated users can access the database, and all data is scoped to a specific estate. The owner of an estate is the user whose UID matches the estateId.
- *
- * Data Structure:
- * The database is structured hierarchically under the /estates/{estateId} path. Each estate has its own collections for personnel, residents, etc.
- *
- * Key Security Decisions:
- * - All data access requires authentication (`isSignedIn()`).
- * - A user can only access data within the estate document that matches their own UID (`request.auth.uid == estateId`).
- * - No public listing of all estates is allowed.
- * - Strong validation on create/update to ensure data integrity and prevent cross-estate data manipulation.
- */
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * @description Checks if the user is signed in.
-     * @returns {boolean} True if the user is signed in, false otherwise.
-     */
+    // Helper function to check if a user is authenticated
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * @description
-     * This rule applies to the root /estates collection.
-     * - A user can create an estate document only if the document's ID matches their own UID.
-     * - A user can only read, update, or delete an estate document if its ID matches their own UID.
-     * - Listing all estates is disallowed for security.
-     */
+    // Match the top-level 'estates' collection
     match /estates/{estateId} {
-      allow get, update, delete: if isSignedIn() && request.auth.uid == estateId;
-      allow list: if false; // Disallow listing all estates in the system.
+      // An authenticated user can create an estate, but only if the document ID matches their own user ID.
+      // This establishes them as the "owner" of that estate document and all its subcollections.
       allow create: if isSignedIn() && request.auth.uid == estateId;
 
-      /**
-       * @description
-       * This is the master rule for all subcollections within an estate (e.g., personnel, residents, villas).
-       * It grants full read and write access (including list, get, create, update, delete)
-       * only to the user whose UID matches the estateId in the path.
-       * This single rule correctly scopes all data access to the owner of the estate.
-       */
+      // Only the "owner" of the estate document can read, update, or delete it.
+      allow get, update, delete: if isSignedIn() && request.auth.uid == estateId;
+      
+      // Explicitly deny anyone from listing all estates in the entire database for security.
+      allow list: if false;
+
+      // This is the master rule for ALL subcollections within an estate.
+      // It uses a recursive wildcard `{docId=**}` to match any document at any depth below the estate.
+      // It grants full read and write access (get, list, create, update, delete)
+      // only to the user whose UID matches the `estateId` from the URL path.
+      // This single, simple rule correctly and securely scopes all data access to the owner of the estate.
       match /{collection}/{docId=**} {
         allow read, write: if isSignedIn() && request.auth.uid == estateId;
       }
