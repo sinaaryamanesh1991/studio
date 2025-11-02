@@ -109,31 +109,31 @@ export default function MapPage() {
     
     const handleAddVilla = () => {
         if (!estateId || !villas) return;
-        const existingIds = villas.map(v => v.villaNumber);
-        let newId = 1;
-        while(existingIds.includes(newId)) {
-            newId++;
+        const existingNumbers = villas.map(v => v.villaNumber);
+        let newNumber = 1;
+        while(existingNumbers.includes(newNumber)) {
+            newNumber++;
         }
 
-        if (newId > 20) {
+        if (newNumber > 20) {
             toast({ variant: 'destructive', title: 'خطا', description: 'ظرفیت نقشه برای افزودن ویلای جدید تکمیل است.' });
             return;
         }
         
-        const newVillaId = `v${newId}`;
+        const newVillaId = `v${newNumber}`;
         const newVilla: Villa = {
             id: newVillaId,
-            name: `ویلا ${newId}`,
+            name: `ویلا ${newNumber}`,
             owner: 'نامشخص',
             area: 100,
             residentInfo: '',
             phone: '',
             estateId: estateId,
-            villaNumber: newId
+            villaNumber: newNumber
         };
         const villaRef = doc(firestore, 'estates', estateId, 'villas', newVillaId);
         setDocumentNonBlocking(villaRef, newVilla, {});
-        toast({ title: 'موفقیت', description: `ویلای شماره ${newId} با موفقیت اضافه شد.`});
+        toast({ title: 'موفقیت', description: `ویلای شماره ${newNumber} با موفقیت اضافه شد.`});
     };
 
     const handleDeleteVilla = (id: string) => {
@@ -193,7 +193,7 @@ export default function MapPage() {
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
                     <SchematicMap 
-                        villas={villas ?? []}
+                        villas={villas?.sort((a, b) => a.villaNumber - b.villaNumber) ?? []}
                         onVillaClick={handleCardClick} 
                         isEditMode={isEditMode}
                         onAddVilla={handleAddVilla}
