@@ -80,7 +80,6 @@ export interface PayrollRecord {
     estateId: string;
   
     // Inputs
-    baseSalary: number;
     workLogId: string; // To link to the monthly work log
     
     // Calculated values from WorkLog
@@ -152,4 +151,17 @@ export interface PayrollSettings {
     maxAllowedLateness: number; // in minutes
     latenessPenaltyAmount: number; // deduction amount
     estateId: string;
+}
+
+
+// This type combines all necessary inputs for a payroll calculation.
+// It's used by both the AI flow and the reliable TypeScript calculator.
+export interface AutomatedPayrollCalculationInput extends PayrollSettings, CompanyInfo {
+  totalHoursWorked: number;
+  totalOvertimeHours: number;
+  totalHolidayHours: number;
+  totalNightWorkHours: number;
+  childrenCount: number;
+  otherDeductions: number;
+  entryTime: string;
 }

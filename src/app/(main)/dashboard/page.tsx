@@ -5,26 +5,28 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { Users, Home, Briefcase, DatabaseZap, Loader2 } from 'lucide-react';
+import { Users, Home, Briefcase, DatabaseZap, Loader2, ArrowLeft } from 'lucide-react';
 import type { Resident, Villa, BoardMember, Personnel } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Skeleton } from '@/components/ui/skeleton';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { seedDatabase } from '@/firebase/seed';
 import { useToast } from '@/hooks/use-toast';
-import {
-    Alert,
-    AlertDescription,
-    AlertTitle,
-} from "@/components/ui/alert"
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
-const statusVariant = {
+const residentStatusVariant = {
   'ساکن': 'default',
   'خالی': 'secondary',
+} as const;
+
+const personnelStatusVariant = {
+  'مشغول کار': 'default',
+  'اتمام کار': 'destructive',
+  'مرخصی': 'secondary',
+  'غیبت': 'outline',
 } as const;
 
 const occupantTypeVariant = {
@@ -67,14 +69,6 @@ export default function DashboardPage() {
   };
 
   const presentCount = residents?.filter(r => r.status === 'ساکن').length ?? 0;
-
-  const getOccupantText = (villa: Villa | undefined, resident: Resident): string => {
-      if(resident.status !== 'ساکن' || !villa) {
-          return 'ویلا خالی است';
-      }
-      return villa.occupantType === 'owner' ? 'مالک ساکن است' : 'ساکن مستاجر است';
-  }
-
 
   const handleSeed = async () => {
     if (!firestore || !estateId) return;
@@ -120,17 +114,7 @@ export default function DashboardPage() {
         </Button>
       </PageHeader>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">تعداد پرسنل</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{personnel?.length ?? 0} نفر</div>
-            <p className="text-xs text-muted-foreground">تعداد کل کارکنان ثبت شده</p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">تعداد ساکنین</CardTitle>
@@ -150,6 +134,61 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold">{boardMembers?.length ?? 0} نفر</div>
             <p className="text-xs text-muted-foreground">تعداد اعضای هیئت مدیره</p>
           </CardContent>
+        </Card>
+      </div>
+
+       <div className="mt-6">
+        <Card>
+            <CardHeader>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <CardTitle>لیست پرسنل</CardTitle>
+                        <CardDescription>نمای کلی از کارکنان شهرک</CardDescription>
+                    </div>
+                     <Button asChild variant="outline" size="sm">
+                        <Link href="/personnel">
+                             <ArrowLeft className="ms-2 h-4 w-4" />
+                            مشاهده همه
+                        </Link>
+                    </Button>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>عکس</TableHead>
+                            <TableHead>نام و نام خانوادگی</TableHead>
+                            <TableHead>سمت</TableHead>
+                            <TableHead>وضعیت</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {personnel?.slice(0, 5).map((person) => (
+                             <TableRow key={person.id}>
+                                <TableCell>
+                                    <Avatar>
+                                        <AvatarImage src={person.photoUrl} alt={`${person.name} ${person.familyName}`} />
+                                        <AvatarFallback>
+                                            <Users className="h-5 w-5"/>
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </TableCell>
+                                <TableCell className="font-medium">{person.name} {person.familyName}</TableCell>
+                                <TableCell>{person.position}</TableCell>
+                                <TableCell>
+                                    <Badge variant={personnelStatusVariant[person.status]}>{person.status}</Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+                 {(personnel?.length ?? 0) === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                        هنوز هیچ پرسنلی ثبت نشده است.
+                    </p>
+                 )}
+            </CardContent>
         </Card>
       </div>
       
@@ -174,7 +213,6 @@ export default function DashboardPage() {
                     <TableBody>
                         {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident: Resident) => {
                              const villa = villas?.find(v => v.villaNumber === resident.villaNumber);
-                             const occupantText = getOccupantText(villa, resident);
                              return (
                                 <TableRow key={resident.id}>
                                     <TableCell className="font-medium">{resident.villaNumber}</TableCell>
@@ -189,7 +227,7 @@ export default function DashboardPage() {
                                                 onCheckedChange={(checked) => handleStatusChange(resident, checked)}
                                                 aria-label="وضعیت سکونت"
                                             />
-                                            <Badge variant={statusVariant[resident.status]}>
+                                            <Badge variant={residentStatusVariant[resident.status]}>
                                                 {resident.status}
                                             </Badge>
                                         </div>
