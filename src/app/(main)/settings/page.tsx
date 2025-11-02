@@ -81,7 +81,7 @@ function PayrollSettingsForm() {
     const payrollSettingsQuery = useMemoFirebase(() => estateId ? doc(firestore, 'estates', estateId, 'payrollSettings', 'default') : null, [firestore, estateId]);
     const { data: payrollSettings, isLoading } = useDoc<PayrollSettings>(payrollSettingsQuery);
     const { toast } = useToast();
-    const [formData, setFormData] = useState<Partial<PayrollSettings>>({
+    const [formData, setFormData] = useState<Partial<Omit<PayrollSettings, 'taxDeductionPercentage'>>>({
         baseSalaryOfMonth: 71661840,
         overtimeMultiplier: 1.4,
         nightWorkMultiplier: 1.35,
@@ -165,7 +165,7 @@ function PayrollSettingsForm() {
                             <div className="space-y-2">
                                 <Label htmlFor="holidayWorkMultiplier">ضریب تعطیل کاری</Label>
                                 <Input id="holidayWorkMultiplier" name="holidayWorkMultiplier" type="number" step="0.01" value={formData.holidayWorkMultiplier || ''} onChange={handleChange} />
-                                <p className="text-xs text-muted-foreground">معمولاً 1.9 (1.4 برای تعطیل + 0.5 برای جمعه)</p>
+                                <p className="text-xs text-muted-foreground">معمولاً 1.9</p>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="nightWorkMultiplier">ضریب شب کاری</Label>
@@ -204,7 +204,7 @@ function PayrollSettingsForm() {
 export default function SettingsPage() {
     return (
         <>
-            <PageHeader title="تنظیمات عمومی" />
+            <PageHeader title="تنظیمات" />
             <Tabs defaultValue="company-info" className="w-full">
                  <TabsList className="grid w-full grid-cols-2 mb-6">
                     <TabsTrigger value="company-info">اطلاعات پایه</TabsTrigger>

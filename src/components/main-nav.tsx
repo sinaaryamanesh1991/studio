@@ -130,10 +130,10 @@ export function MainNav() {
               <Link href="/settings">
                 <SidebarMenuButton
                   isActive={pathname === '/settings'}
-                  tooltip={{ children: 'تنظیمات عمومی', className: 'font-body' }}
+                  tooltip={{ children: 'تنظیمات', className: 'font-body' }}
                 >
                   <Settings />
-                  <span>تنظیمات عمومی</span>
+                  <span>تنظیمات</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
