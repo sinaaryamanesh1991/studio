@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { PlusCircle, MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon, User } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -41,6 +41,8 @@ import { format } from 'date-fns-jalali';
 import { format as formatEn, parse as parseEn } from 'date-fns';
 import { faIR } from 'date-fns-jalali/locale';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { toast } from '@/hooks/use-toast';
 
 
 const statusVariant = {
@@ -64,8 +66,6 @@ export default function PersonnelPage() {
     useEffect(() => {
         if (isDialogOpen) {
             if (editingPersonnel && editingPersonnel.hireDate) {
-                // The date is stored in 'yyyy-MM-dd' (Gregorian) format.
-                // We need to parse it as such.
                 const parsedDate = parseEn(editingPersonnel.hireDate, 'yyyy-MM-dd', new Date());
                 if (!isNaN(parsedDate.getTime())) {
                     setSelectedDate(parsedDate);
@@ -101,20 +101,29 @@ export default function PersonnelPage() {
         
         const personId = editingPersonnel ? editingPersonnel.id : `p${Date.now()}`;
         
-        // Use formatEn from the standard date-fns to format for database
         const hireDateForDb = selectedDate ? formatEn(selectedDate, 'yyyy-MM-dd') : '';
+        
+        const photoFile = formData.get('photoUrl') as File;
+        let photoUrl = editingPersonnel?.photoUrl || '';
+        if (photoFile && photoFile.size > 0) {
+            // In a real app, upload to Firebase Storage and get URL.
+            // For now, we simulate this with a placeholder.
+            photoUrl = `https://picsum.photos/seed/${personId}/200/200`;
+            toast({title: "آپلود عکس", description: "عکس با موفقیت آپلود شد (شبیه‌سازی شده)."});
+        }
         
         const newPerson: Personnel = {
             id: personId,
             name: formData.get('name') as string,
             familyName: formData.get('familyName') as string,
             phone: formData.get('phone') as string,
-            hireDate: hireDateForDb, // Save in standard format
+            hireDate: hireDateForDb,
             position: formData.get('position') as Personnel['position'],
             status: formData.get('status') as Personnel['status'],
             nationalId: formData.get('nationalId') as string,
             accountNumber: formData.get('accountNumber') as string,
             insuranceNumber: formData.get('insuranceNumber') as string,
+            photoUrl: photoUrl,
             estateId: estateId,
         };
         
@@ -161,6 +170,7 @@ export default function PersonnelPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead>عکس</TableHead>
                                 <TableHead>شماره پرسنلی</TableHead>
                                 <TableHead>نام</TableHead>
                                 <TableHead>نام خانوادگی</TableHead>
@@ -174,6 +184,14 @@ export default function PersonnelPage() {
                         <TableBody>
                             {personnel?.map((person) => (
                                 <TableRow key={person.id}>
+                                    <TableCell>
+                                        <Avatar>
+                                            <AvatarImage src={person.photoUrl} alt={`${person.name} ${person.familyName}`} />
+                                            <AvatarFallback>
+                                                <User className="h-5 w-5"/>
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </TableCell>
                                     <TableCell className="font-mono">{formatPersonnelId(person.id)}</TableCell>
                                     <TableCell>{person.name}</TableCell>
                                     <TableCell>{person.familyName}</TableCell>
@@ -241,6 +259,10 @@ export default function PersonnelPage() {
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="phone" className="text-right">شماره تماس</Label>
                                 <Input id="phone" name="phone" defaultValue={editingPersonnel?.phone} className="col-span-3" />
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="photoUrl" className="text-right">عکس پروفایل</Label>
+                                <Input id="photoUrl" name="photoUrl" type="file" className="col-span-3" accept="image/*" />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="hireDate" className="text-right">تاریخ استخدام</Label>

@@ -9,6 +9,7 @@ export interface Personnel {
   phone: string;
   position: 'سرایدار' | 'خدمات' | 'نگهبان' | 'حسابدار' | 'مدیر شهرک';
   status: 'مشغول کار' | 'اتمام کار' | 'مرخصی' | 'غیبت';
+  photoUrl?: string;
   estateId: string;
 }
 

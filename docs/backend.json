@@ -27,6 +27,7 @@
         "phone": { "type": "string" },
         "position": { "type": "string", "enum": ["سرایدار", "خدمات", "نگهبان", "حسابدار", "مدیر شهرک"] },
         "status": { "type": "string", "enum": ["مشغول کار", "اتمام کار", "مرخصی", "غیبت"] },
+        "photoUrl": { "type": "string", "format": "uri", "description": "URL of the personnel's profile photo." },
         "estateId": { "type": "string", "description": "FK to Estate" }
       },
       "required": ["id", "name", "familyName", "position", "status", "estateId"]
