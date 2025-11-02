@@ -63,7 +63,7 @@ export default function DashboardPage() {
             handleSeed();
         }
     }
-  }, [globalLoading, estateId, personnel, residents, villas, isSeeding]);
+  }, [globalLoading, estateId, personnel, residents, villas]);
 
 
   const handleSeed = async () => {
@@ -76,11 +76,12 @@ export default function DashboardPage() {
     try {
       await seedDatabase(firestore, estateId);
       toast({ title: 'موفقیت', description: 'داده‌های اولیه با موفقیت در دیتابیس ثبت شد. صفحه به زودی تازه‌سازی می‌شود...' });
-      setTimeout(() => window.location.reload(), 2000);
+      // We don't reload here anymore, the useCollection hooks will pick up the changes.
     } catch (error) {
       console.error("Seeding error: ", error);
       toast({ variant: 'destructive', title: 'خطا', description: 'خطا در ثبت داده‌های اولیه.' });
-      setIsSeeding(false);
+    } finally {
+        setIsSeeding(false);
     }
   };
 
