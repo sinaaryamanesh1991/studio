@@ -11,6 +11,9 @@ import {
   FileText,
   Building,
   Briefcase,
+  ChevronDown,
+  Calculator,
+  List,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -20,8 +23,12 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'داشبورد', icon: LayoutDashboard },
@@ -29,12 +36,13 @@ const navItems = [
   { href: '/residents', label: 'ساکنین', icon: Home },
   { href: '/board-members', label: 'هیئت مدیره', icon: Briefcase },
   { href: '/map', label: 'نقشه شهرک', icon: Map },
-  { href: '/financials', label: 'امور مالی', icon: CircleDollarSign },
+  // { href: '/financials', label: 'امور مالی', icon: CircleDollarSign },
   { href: '/documents', label: 'اسناد و مدارک', icon: FileText },
 ];
 
 export function MainNav() {
   const pathname = usePathname();
+  const [isFinancialOpen, setIsFinancialOpen] = useState(pathname.startsWith('/financials'));
 
   return (
     <>
@@ -55,7 +63,7 @@ export function MainNav() {
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname.startsWith(item.href)}
+                    isActive={pathname === item.href}
                     tooltip={{ children: item.label, className: 'font-body' }}
                   >
                     <a>
@@ -66,6 +74,45 @@ export function MainNav() {
                 </Link>
               </SidebarMenuItem>
             ))}
+             <SidebarMenuItem>
+                <Collapsible open={isFinancialOpen} onOpenChange={setIsFinancialOpen}>
+                    <CollapsibleTrigger asChild>
+                        <SidebarMenuButton isActive={pathname.startsWith('/financials')}>
+                            <CircleDollarSign />
+                            <span>امور مالی</span>
+                            <ChevronDown className="ms-auto h-4 w-4 shrink-0 transition-transform ease-in-out group-data-[state=open]:rotate-180" />
+                        </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <SidebarMenuSub>
+                          <SidebarMenuItem>
+                               <Link href="/financials" legacyBehavior passHref>
+                                    <SidebarMenuSubButton isActive={pathname === '/financials'}>
+                                        <List />
+                                        <span>لیست تراکنش ها</span>
+                                    </SidebarMenuSubButton>
+                                </Link>
+                           </SidebarMenuItem>
+                           <SidebarMenuItem>
+                               <Link href="/financials/payroll-list" legacyBehavior passHref>
+                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll-list'}>
+                                        <List />
+                                        <span>لیست حقوق</span>
+                                    </SidebarMenuSubButton>
+                                </Link>
+                           </SidebarMenuItem>
+                           <SidebarMenuItem>
+                                <Link href="/financials/payroll" legacyBehavior passHref>
+                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll'}>
+                                        <Calculator />
+                                        <span>محاسبه‌گر حقوق</span>
+                                    </SidebarMenuSubButton>
+                                </Link>
+                            </SidebarMenuItem>
+                        </SidebarMenuSub>
+                    </CollapsibleContent>
+                </Collapsible>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

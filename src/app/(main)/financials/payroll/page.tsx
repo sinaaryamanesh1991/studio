@@ -22,7 +22,8 @@ import type { PayrollRecord } from '@/lib/types';
 const formSchema = z.object({
   personnelId: z.string().min(1, { message: "لطفا یک پرسنل را انتخاب کنید." }),
   hourlyRate: z.coerce.number().min(0, { message: "نرخ ساعتی باید مثبت باشد." }),
-  hoursWorked: z.coerce.number().min(0, { message: "ساعات کار باید مثبت باشد." }),
+  entryTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "فرمت ساعت ورود معتبر نیست (HH:MM)" }),
+  exitTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "فرمت ساعت خروج معتبر نیست (HH:MM)" }),
   overtimeHours: z.coerce.number().min(0, { message: "ساعات اضافه کاری باید مثبت باشد." }),
   holidayPay: z.coerce.number().min(0, { message: "مبلغ تعطیل کاری باید مثبت باشد." }),
   deductions: z.coerce.number().min(0, { message: "مبلغ کسورات باید مثبت باشد." }),
@@ -40,7 +41,8 @@ export default function PayrollCalculatorPage() {
     defaultValues: {
       personnelId: '',
       hourlyRate: 0,
-      hoursWorked: 0,
+      entryTime: '08:00',
+      exitTime: '17:00',
       overtimeHours: 0,
       holidayPay: 0,
       deductions: 0,
@@ -67,6 +69,7 @@ export default function PayrollCalculatorPage() {
         personnelId: values.personnelId,
         personnelName: `${selectedPersonnel.name} ${selectedPersonnel.familyName}`,
         calculationDate: new Date().toLocaleDateString('fa-IR'),
+        hoursWorked: response.hoursWorked, // Get hoursWorked from AI response
         ...values,
         ...response,
       };
@@ -77,13 +80,12 @@ export default function PayrollCalculatorPage() {
         title: "محاسبه و ذخیره موفق",
         description: `حقوق برای ${newRecord.personnelName} محاسبه و ذخیره شد.`,
         action: (
-          <Button variant="outline" size="sm" onClick={() => router.push('/financials')}>
+          <Button variant="outline" size="sm" onClick={() => router.push('/financials/payroll-list')}>
             مشاهده لیست حقوق
           </Button>
         ),
       });
 
-      // Reset form for next entry
       form.reset();
       setResult(null);
 
@@ -148,19 +150,34 @@ export default function PayrollCalculatorPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="hoursWorked"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ساعات کارکرد</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="entryTime"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>ساعت ورود</FormLabel>
+                        <FormControl>
+                            <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="exitTime"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>ساعت خروج</FormLabel>
+                        <FormControl>
+                            <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
                  <FormField
                   control={form.control}
                   name="overtimeHours"
@@ -222,6 +239,10 @@ export default function PayrollCalculatorPage() {
             {!isLoading && !result && <div className="text-muted-foreground">نتیجه اینجا نمایش داده می‌شود.</div>}
             {result && (
               <div className="w-full space-y-4 text-lg">
+                 <div className="flex justify-between items-center border-b pb-2">
+                  <span className="font-medium text-muted-foreground">ساعات کارکرد عادی:</span>
+                  <span className="font-bold font-mono text-primary">{result.hoursWorked} ساعت</span>
+                </div>
                 <div className="flex justify-between items-center border-b pb-2">
                   <span className="font-medium text-muted-foreground">دستمزد اضافه کاری:</span>
                   <span className="font-bold font-mono text-primary">{result.overtimePay.toLocaleString('fa-IR')} تومان</span>

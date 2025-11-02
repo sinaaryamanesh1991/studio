@@ -62,6 +62,8 @@ export interface PayrollRecord {
   calculationDate: string;
   // Inputs
   hourlyRate: number;
+  entryTime: string;
+  exitTime: string;
   hoursWorked: number;
   overtimeHours: number;
   holidayPay: number;
