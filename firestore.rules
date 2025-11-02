@@ -2,7 +2,7 @@
  * @file Firestore Security Rules for Sina Estate Manager.
  *
  * Core Philosophy:
- * This ruleset enforces a strict owner-only access model within each estate. Only authenticated users can access the database, and all data is scoped to a specific estate.  Every collection within an estate is secured to ensure that only members or authorized personnel of that estate can read or modify its data.  Authorization is performed by requiring that the 'estateId' field within each document matches the {estateId} parameter in the path.
+ * This ruleset enforces a strict owner-only access model within each estate. Only authenticated users can access the database, and all data is scoped to a specific estate. Every collection within an estate is secured to ensure that only members or authorized personnel of that estate can read or modify its data. Authorization is performed by requiring that the 'estateId' field within each document matches the {estateId} parameter in the path.
  *
  * Data Structure:
  * The database is structured hierarchically under the /estates/{estateId} path. Each estate has its own collections for personnel, residents, board members, villas, financial transactions, documents, payroll information, and attendance records.
@@ -29,29 +29,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Checks if the authenticated user is the owner of the estate.
-     * @param {string} estateId - The estate ID to check against.
-     * @returns {boolean} True if the user is the owner, false otherwise.
-     */
-    function isOwner(estateId) {
-      return isSignedIn() && request.auth.uid == estateId;
-    }
-
-    /**
-     * @description Checks if the authenticated user is the owner of the estate for an existing document.
-     * Used for update and delete operations.
-     * @param {string} estateId - The estate ID to check against.
-     * @returns {boolean} True if the user is the owner of the existing document's estate, false otherwise.
-     */
-    function isExistingOwner(estateId) {
-        return isSignedIn() && resource.data.estateId == estateId;
-    }
-
-    /**
-     * @description Enforces that the 'estateId' field in the request data matches the 'estateId' parameter in the path.
+     * @description Checks if the incoming data's 'estateId' matches the 'estateId' in the path.
+     * @param {string} estateId - The estate ID from the path.
      * @returns {boolean} True if the 'estateId' values match, false otherwise.
      */
-    function isValidEstateId(estateId) {
+    function isCorrectEstate(estateId) {
       return request.resource.data.estateId == estateId;
     }
 
@@ -67,206 +49,24 @@ service cloud.firestore {
      * @description
      * This rule applies to the root estates collection.
      * It only allows creation of an estate if the authenticated user's UID matches the estateId,
-     * effectively making the creator the owner.  Reads and listing are disallowed for security reasons.
-     * @path /estates/{estateId}
-     * @allow (create) - Authenticated user with UID 'user_abc' creates a new estate document where estateId == 'user_abc'.
-     * @deny (create) - Authenticated user with UID 'user_xyz' attempts to create an estate document where estateId == 'user_abc'.
-     * @deny (get, list, update, delete) - Any operation other than create is disallowed.
-     * @principle Enforces strict owner-only access for estate creation and prevents unauthorized access.
+     * effectively making the creator the owner. Reads of single documents are allowed only for the owner.
+     * Listing is disallowed for security.
      */
     match /estates/{estateId} {
-      allow get: if isOwner(estateId);
+      allow get: if isSignedIn() && request.auth.uid == estateId;
       allow list: if false;
-      allow create: if isOwner(estateId);
-      allow update: if isOwner(estateId);
-      allow delete: if isOwner(estateId);
+      allow create: if isSignedIn() && request.auth.uid == estateId;
+      allow update: if isSignedIn() && request.auth.uid == estateId;
+      allow delete: if isSignedIn() && request.auth.uid == estateId;
     }
 
     /**
      * @description
-     * This rule applies to the personnel subcollection within an estate.
-     * It allows authenticated users to create, read, update, and delete personnel documents
-     * only if the document's 'estateId' field matches the {estateId} parameter in the path.
-     * This ensures that personnel data is scoped to the correct estate.
-     * @path /estates/{estateId}/personnel/{personnelId}
-     * @allow (create, get, list, update, delete) - Authenticated user creates, reads, updates, or deletes a personnel document within their estate.
-     * @deny (create, get, list, update, delete) - Authenticated user attempts to access or modify personnel data in another estate.
-     * @principle Enforces strict estate-scoped access for personnel data.
+     * This rule applies to all subcollections within an estate.
+     * It allows list/read/write operations only for the user whose UID matches the estateId.
      */
-    match /estates/{estateId}/personnel/{personnelId} {
-      allow get: if isExistingOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
-    }
-
-    /**
-     * @description
-     * This rule applies to the residents subcollection within an estate.
-     * It allows authenticated users to create, read, update, and delete resident documents
-     * only if the document's 'estateId' field matches the {estateId} parameter in the path.
-     * This ensures that resident data is scoped to the correct estate.
-     * @path /estates/{estateId}/residents/{residentId}
-     * @allow (create, get, list, update, delete) - Authenticated user creates, reads, updates, or deletes a resident document within their estate.
-     * @deny (create, get, list, update, delete) - Authenticated user attempts to access or modify resident data in another estate.
-     * @principle Enforces strict estate-scoped access for resident data.
-     */
-    match /estates/{estateId}/residents/{residentId} {
-      allow get: if isExistingOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
-    }
-
-    /**
-     * @description
-     * This rule applies to the boardMembers subcollection within an estate.
-     * It allows authenticated users to create, read, update, and delete board member documents
-     * only if the document's 'estateId' field matches the {estateId} parameter in the path.
-     * This ensures that board member data is scoped to the correct estate.
-     * @path /estates/{estateId}/boardMembers/{boardMemberId}
-     * @allow (create, get, list, update, delete) - Authenticated user creates, reads, updates, or deletes a board member document within their estate.
-     * @deny (create, get, list, update, delete) - Authenticated user attempts to access or modify board member data in another estate.
-     * @principle Enforces strict estate-scoped access for board member data.
-     */
-    match /estates/{estateId}/boardMembers/{boardMemberId} {
-      allow get: if isExistingOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
-    }
-
-    /**
-     * @description
-     * This rule applies to the villas subcollection within an estate.
-     * It allows authenticated users to create, read, update, and delete villa documents
-     * only if the document's 'estateId' field matches the {estateId} parameter in the path.
-     * This ensures that villa data is scoped to the correct estate.
-     * @path /estates/{estateId}/villas/{villaId}
-     * @allow (create, get, list, update, delete) - Authenticated user creates, reads, updates, or deletes a villa document within their estate.
-     * @deny (create, get, list, update, delete) - Authenticated user attempts to access or modify villa data in another estate.
-     * @principle Enforces strict estate-scoped access for villa data.
-     */
-    match /estates/{estateId}/villas/{villaId} {
-      allow get: if isExistingOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
-    }
-
-    /**
-     * @description
-     * This rule applies to the financialTransactions subcollection within an estate.
-     * It allows authenticated users to create, read, update, and delete financial transaction documents
-     * only if the document's 'estateId' field matches the {estateId} parameter in the path.
-     * This ensures that financial transaction data is scoped to the correct estate.
-     * @path /estates/{estateId}/financialTransactions/{transactionId}
-     * @allow (create, get, list, update, delete) - Authenticated user creates, reads, updates, or deletes a financial transaction document within their estate.
-     * @deny (create, get, list, update, delete) - Authenticated user attempts to access or modify financial transaction data in another estate.
-     * @principle Enforces strict estate-scoped access for financial transaction data.
-     */
-    match /estates/{estateId}/financialTransactions/{transactionId} {
-      allow get: if isExistingOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
-    }
-
-    /**
-     * @description
-     * This rule applies to the documents subcollection within an estate.
-     * It allows authenticated users to create, read, update, and delete document records
-     * only if the document's 'estateId' field matches the {estateId} parameter in the path.
-     * This ensures that document data is scoped to the correct estate.
-     * @path /estates/{estateId}/documents/{documentId}
-     * @allow (create, get, list, update, delete) - Authenticated user creates, reads, updates, or deletes a document within their estate.
-     * @deny (create, get, list, update, delete) - Authenticated user attempts to access or modify document data in another estate.
-     * @principle Enforces strict estate-scoped access for document data.
-     */
-    match /estates/{estateId}/documents/{documentId} {
-      allow get: if isExistingOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
-    }
-
-    /**
-     * @description
-     * This rule applies to the payrollInformation subcollection within an estate.
-     * It allows authenticated users to create, read, update, and delete payroll information records
-     * only if the document's 'estateId' field matches the {estateId} parameter in the path.
-     * This ensures that payroll information data is scoped to the correct estate.
-     * @path /estates/{estateId}/payrollInformation/{payrollInformationId}
-     * @allow (create, get, list, update, delete) - Authenticated user creates, reads, updates, or deletes a payroll information record within their estate.
-     * @deny (create, get, list, update, delete) - Authenticated user attempts to access or modify payroll information data in another estate.
-     * @principle Enforces strict estate-scoped access for payroll information data.
-     */
-    match /estates/{estateId}/payrollInformation/{payrollInformationId} {
-      allow get: if isExistingOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
-    }
-
-    /**
-     * @description
-     * This rule applies to the attendanceRecords subcollection within an estate.
-     * It allows authenticated users to create, read, update, and delete attendance records
-     * only if the document's 'estateId' field matches the {estateId} parameter in the path.
-     * This ensures that attendance records data is scoped to the correct estate.
-     * @path /estates/{estateId}/attendanceRecords/{attendanceRecordId}
-     * @allow (create, get, list, update, delete) - Authenticated user creates, reads, updates, or deletes an attendance record within their estate.
-     * @deny (create, get, list, update, delete) - Authenticated user attempts to access or modify attendance records data in another estate.
-     * @principle Enforces strict estate-scoped access for attendance records data.
-     */
-    match /estates/{estateId}/attendanceRecords/{attendanceRecordId} {
-      allow get: if isExistingOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
-    }
-    
-    // This allows reading the companyInfo and payrollSettings documents
-    match /estates/{estateId}/companyInfo/{docId} {
-      allow get: if isOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isOwner(estateId);
-    }
-
-    match /estates/{estateId}/payrollSettings/{docId} {
-      allow get: if isOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isOwner(estateId);
-    }
-    
-    match /estates/{estateId}/workLogs/{docId} {
-      allow get: if isExistingOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
-    }
-
-    match /estates/{estateId}/payrollRecords/{docId} {
-      allow get: if isExistingOwner(estateId);
-      allow list: if isOwner(estateId);
-      allow create: if isOwner(estateId) && isValidEstateId(estateId);
-      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
+    match /estates/{estateId}/{collection}/{docId} {
+        allow read, write: if isSignedIn() && request.auth.uid == estateId;
     }
   }
 }
-
-    
