@@ -58,7 +58,7 @@ export default function DashboardPage() {
   useEffect(() => {
     // Ensure we are not loading, have a user, and the data has been checked
     if (!globalLoading && estateId) {
-        const isDataEmpty = !personnel?.length && !residents?.length && !villas?.length;
+        const isDataEmpty = !personnel?.length || !residents?.length || !villas?.length;
         if (isDataEmpty && !isSeeding) {
             handleSeed();
         }

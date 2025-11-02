@@ -76,7 +76,7 @@ export default function BoardMembersPage() {
 
         const memberId = editingMember ? editingMember.id : `b${Date.now()}`;
 
-        const newMemberData: BoardMember = {
+        const newMemberData: Omit<BoardMember, 'estateId'> = {
             id: memberId,
             residentId,
             name: selectedResident.name,
@@ -84,11 +84,10 @@ export default function BoardMembersPage() {
             phone: selectedResident.phone,
             villaNumber: selectedResident.villaNumber,
             position,
-            estateId: estateId,
         };
 
         const memberRef = doc(firestore, 'estates', estateId, 'boardMembers', memberId);
-        setDocumentNonBlocking(memberRef, newMemberData, { merge: true });
+        setDocumentNonBlocking(memberRef, {...newMemberData, estateId}, { merge: true });
         
         setIsDialogOpen(false);
         setEditingMember(null);
