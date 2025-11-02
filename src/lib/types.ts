@@ -101,12 +101,18 @@ export interface CompanyInfo {
 }
 
 export interface WorkLog {
-  id: string; // e.g., `p001-2024-07-28`
+  id: string; // e.g., `p001-2024-07`
   personnelId: string;
-  date: string; // YYYY-MM-DD
-  entryTime: string; // HH:MM
-  exitTime: string; // HH:MM
-  hoursWorked: number;
+  year: number;
+  month: number;
+  days: {
+      day: number;
+      entryTime: string; // HH:MM
+      exitTime: string; // HH:MM
+      hoursWorked: number;
+      overtimeHours: number;
+      holidayHours: number;
+  }[];
   estateId: string;
 }
 

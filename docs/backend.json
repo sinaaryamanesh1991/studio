@@ -143,17 +143,30 @@
      "WorkLog": {
       "title": "WorkLog",
       "type": "object",
-      "description": "Represents a daily work log for personnel.",
+      "description": "Represents a monthly work log for personnel.",
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "description": "Composite ID: {personnelId}-{year}-{month}" },
         "personnelId": { "type": "string" },
-        "date": { "type": "string", "format": "date" },
-        "entryTime": { "type": "string" },
-        "exitTime": { "type": "string" },
-        "hoursWorked": { "type": "number" },
+        "year": { "type": "number" },
+        "month": { "type": "number" },
+        "days": { 
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "day": {"type": "number"},
+                    "entryTime": {"type": "string"},
+                    "exitTime": {"type": "string"},
+                    "hoursWorked": {"type": "number"},
+                    "overtimeHours": {"type": "number"},
+                    "holidayHours": {"type": "number"}
+                },
+                 "required": ["day", "entryTime", "exitTime", "hoursWorked"]
+            }
+        },
         "estateId": { "type": "string" }
       },
-      "required": ["id", "personnelId", "date", "estateId"]
+      "required": ["id", "personnelId", "year", "month", "days", "estateId"]
     },
      "PayrollRecord": {
       "title": "PayrollRecord",

@@ -17,13 +17,14 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns-jalali';
 import { faIR } from 'date-fns-jalali/locale';
-import { format as formatEn, parse as parseEn } from 'date-fns';
+import { format as formatEn, parse as parseEn, getDaysInMonth, startOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import PayrollListPage from './payroll-list-content';
 import { collection, doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function CompanyInfoForm() {
     const { firestore, user } = useFirebase();
@@ -109,149 +110,204 @@ function WorkHoursContent() {
     const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
     const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
 
-    const workLogsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'workLogs') : null, [firestore, estateId]);
-    const { data: workLogs, isLoading: loadingWorkLogs } = useCollection<WorkLog>(workLogsQuery);
-
     const { toast } = useToast();
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [selectedPersonnelId, setSelectedPersonnelId] = useState<string>('');
+    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
 
-    const dateStringForDb = formatEn(selectedDate, 'yyyy-MM-dd');
+    const workLogId = selectedPersonnelId ? `${selectedPersonnelId}-${selectedYear}-${String(selectedMonth).padStart(2, '0')}` : null;
+    const workLogQuery = useMemoFirebase(() => (estateId && workLogId) ? doc(firestore, 'estates', estateId, 'workLogs', workLogId) : null, [estateId, workLogId]);
+    const { data: workLog, isLoading: loadingWorkLog } = useDoc<WorkLog>(workLogQuery);
 
-    const dailyLogs = useMemo(() => {
-        if (!personnel || !workLogs) return [];
-        const logsForDate = workLogs.filter(log => log.date === dateStringForDb);
-        
-        return personnel.map(p => {
-            const existingLog = logsForDate.find(log => log.personnelId === p.id);
-            return {
-                personnelId: p.id,
-                name: `${p.name} ${p.familyName}`,
-                entryTime: existingLog?.entryTime || '',
-                exitTime: existingLog?.exitTime || '',
-                hoursWorked: existingLog ? calculateHours(existingLog.entryTime, existingLog.exitTime) : 0,
-            };
-        });
-    }, [personnel, workLogs, dateStringForDb]);
-
-    const [editableLogs, setEditableLogs] = useState(dailyLogs);
-
+    const [monthlyLogs, setMonthlyLogs] = useState<WorkLog['days']>([]);
+    
     useEffect(() => {
-        setEditableLogs(dailyLogs);
-    }, [dailyLogs]);
+        if (selectedPersonnelId && !loadingWorkLog) {
+            const daysInMonth = getDaysInMonth(new Date(selectedYear, selectedMonth - 1));
+            const newLogs = Array.from({ length: daysInMonth }, (_, i) => {
+                const day = i + 1;
+                const existingLog = workLog?.days.find(d => d.day === day);
+                return existingLog || {
+                    day,
+                    entryTime: '',
+                    exitTime: '',
+                    hoursWorked: 0,
+                    overtimeHours: 0,
+                    holidayHours: 0
+                };
+            });
+            setMonthlyLogs(newLogs);
+        } else if (!selectedPersonnelId) {
+            setMonthlyLogs([]);
+        }
+    }, [selectedPersonnelId, selectedYear, selectedMonth, workLog, loadingWorkLog]);
 
-    const handleTimeChange = (personnelId: string, field: 'entryTime' | 'exitTime', value: string) => {
-        setEditableLogs(prev => prev.map(log => {
-            if (log.personnelId === personnelId) {
+
+    const handleTimeChange = (day: number, field: 'entryTime' | 'exitTime' | 'overtimeHours' | 'holidayHours', value: string | number) => {
+        setMonthlyLogs(prev => prev.map(log => {
+            if (log.day === day) {
                 const updatedLog = { ...log, [field]: value };
-                return { ...updatedLog, hoursWorked: calculateHours(updatedLog.entryTime, updatedLog.exitTime) };
+                const hoursWorked = calculateHours(updatedLog.entryTime, updatedLog.exitTime);
+                return { ...updatedLog, hoursWorked };
             }
             return log;
         }));
     };
 
     const handleSaveLogs = () => {
-        if (!estateId) return;
+        if (!estateId || !selectedPersonnelId || !workLogId) return;
 
-        editableLogs.forEach(log => {
-            if (log.entryTime && log.exitTime) {
-                const logId = `${log.personnelId}-${dateStringForDb}`;
-                const logRef = doc(firestore, 'estates', estateId, 'workLogs', logId);
-                const dataToSave: WorkLog = {
-                    id: logId,
-                    personnelId: log.personnelId,
-                    date: dateStringForDb,
-                    entryTime: log.entryTime,
-                    exitTime: log.exitTime,
-                    hoursWorked: log.hoursWorked,
-                    estateId
-                };
-                setDocumentNonBlocking(logRef, dataToSave, { merge: true });
-            }
-        });
-        toast({ title: 'موفقیت', description: 'ساعات کاری با موفقیت ذخیره شد.' });
+        const logRef = doc(firestore, 'estates', estateId, 'workLogs', workLogId);
+        const dataToSave: WorkLog = {
+            id: workLogId,
+            personnelId: selectedPersonnelId,
+            year: selectedYear,
+            month: selectedMonth,
+            days: monthlyLogs.filter(log => log.entryTime && log.exitTime), // Only save days with data
+            estateId
+        };
+        setDocumentNonBlocking(logRef, dataToSave, { merge: true });
+        toast({ title: 'موفقیت', description: 'ساعات کاری ماه با موفقیت ذخیره شد.' });
     };
 
-    if(loadingPersonnel || loadingWorkLogs) {
-        return <div>در حال بارگذاری...</div>;
-    }
+    const isLoading = loadingPersonnel || loadingWorkLog;
     
+    const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+    const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, name: format(new Date(0, i), 'LLLL', { locale: faIR }) }));
+    const daysInMonth = getDaysInMonth(new Date(selectedYear, selectedMonth - 1));
+    const firstDayOfMonth = startOfMonth(new Date(selectedYear, selectedMonth - 1));
+
     return (
         <Card>
             <CardHeader className="flex-col md:flex-row justify-between items-start md:items-center gap-4">
                  <div>
-                    <CardTitle>ثبت ورود و خروج روزانه</CardTitle>
+                    <CardTitle>ثبت کارکرد ماهانه پرسنل</CardTitle>
                     <CardDescription>
-                        ساعات ورود و خروج پرسنل را برای تاریخ انتخاب شده وارد کنید.
+                        ساعات کاری پرسنل را برای ماه انتخاب شده وارد و ذخیره کنید.
                     </CardDescription>
                 </div>
                  <div className="flex flex-col sm:flex-row items-center gap-4">
-                     <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                            variant={"outline"}
-                            className={cn(
-                                "w-full sm:w-[280px] justify-start text-left font-normal",
-                                !selectedDate && "text-muted-foreground"
-                            )}
-                            >
-                            <CalendarIcon className="ml-2 h-4 w-4" />
-                            {selectedDate ? format(selectedDate, 'PPP', {locale: faIR}) : <span>انتخاب تاریخ</span>}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                            <Calendar
-                                locale={faIR}
-                                mode="single"
-                                selected={selectedDate}
-                                onSelect={(date) => date && setSelectedDate(date)}
-                                initialFocus
-                            />
-                        </PopoverContent>
-                    </Popover>
-                    <Button onClick={handleSaveLogs} className="w-full sm:w-auto">
+                     <Button onClick={handleSaveLogs} className="w-full sm:w-auto" disabled={!selectedPersonnelId || isLoading}>
                         <Save className="ms-2 h-4 w-4" />
                         ذخیره تغییرات
                     </Button>
                 </div>
             </CardHeader>
             <CardContent>
-                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>نام پرسنل</TableHead>
-                            <TableHead>ساعت ورود</TableHead>
-                            <TableHead>ساعت خروج</TableHead>
-                            <TableHead>جمع ساعات کارکرد</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {editableLogs.map(log => (
-                            <TableRow key={log.personnelId}>
-                                <TableCell className="font-medium">{log.name}</TableCell>
-                                <TableCell>
-                                    <Input 
-                                        type="time" 
-                                        className="w-32" 
-                                        value={log.entryTime}
-                                        onChange={(e) => handleTimeChange(log.personnelId, 'entryTime', e.target.value)}
-                                    />
-                                </TableCell>
-                                 <TableCell>
-                                    <Input 
-                                        type="time" 
-                                        className="w-32"
-                                        value={log.exitTime}
-                                        onChange={(e) => handleTimeChange(log.personnelId, 'exitTime', e.target.value)}
-                                    />
-                                </TableCell>
-                                 <TableCell>
-                                    <span className="font-mono text-lg">{log.hoursWorked.toFixed(2)}</span>
-                                    <span className="text-xs text-muted-foreground mr-1">ساعت</span>
-                                </TableCell>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 border rounded-lg">
+                    <div className="space-y-2">
+                        <Label>انتخاب پرسنل</Label>
+                        <Select onValueChange={setSelectedPersonnelId} value={selectedPersonnelId} disabled={loadingPersonnel}>
+                             <SelectTrigger>
+                                <SelectValue placeholder="یکی از پرسنل را انتخاب کنید" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {personnel?.map(p => <SelectItem key={p.id} value={p.id}>{p.name} {p.familyName}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-2">
+                        <Label>انتخاب سال</Label>
+                        <Select onValueChange={(v) => setSelectedYear(Number(v))} value={String(selectedYear)}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-2">
+                        <Label>انتخاب ماه</Label>
+                         <Select onValueChange={(v) => setSelectedMonth(Number(v))} value={String(selectedMonth)}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {months.map(m => <SelectItem key={m.value} value={String(m.value)}>{m.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                {isLoading && <p>در حال بارگذاری اطلاعات...</p>}
+
+                {!isLoading && selectedPersonnelId && (
+                     <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>روز</TableHead>
+                                <TableHead>تاریخ</TableHead>
+                                <TableHead>ساعت ورود</TableHead>
+                                <TableHead>ساعت خروج</TableHead>
+                                <TableHead>اضافه‌کاری</TableHead>
+                                <TableHead>تعطیل‌کاری</TableHead>
+                                <TableHead>جمع ساعات</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                           {monthlyLogs.map((log) => {
+                               const date = new Date(selectedYear, selectedMonth - 1, log.day);
+                               const dayName = format(date, 'EEEE', { locale: faIR });
+                               const isHoliday = dayName === 'جمعه';
+
+                               return (
+                                    <TableRow key={log.day} className={cn(isHoliday && 'bg-muted/50')}>
+                                        <TableCell className="font-medium">
+                                            {log.day}
+                                            <span className="text-xs text-muted-foreground mr-1">({dayName})</span>
+                                        </TableCell>
+                                        <TableCell>{format(date, 'yyyy/MM/dd')}</TableCell>
+                                        <TableCell>
+                                            <Input 
+                                                type="time" 
+                                                className="w-32" 
+                                                value={log.entryTime}
+                                                onChange={(e) => handleTimeChange(log.day, 'entryTime', e.target.value)}
+                                            />
+                                        </TableCell>
+                                         <TableCell>
+                                            <Input 
+                                                type="time" 
+                                                className="w-32"
+                                                value={log.exitTime}
+                                                onChange={(e) => handleTimeChange(log.day, 'exitTime', e.target.value)}
+                                            />
+                                        </TableCell>
+                                         <TableCell>
+                                            <Input 
+                                                type="number" 
+                                                className="w-24"
+                                                value={log.overtimeHours}
+                                                step="0.1"
+                                                onChange={(e) => handleTimeChange(log.day, 'overtimeHours', Number(e.target.value))}
+                                            />
+                                        </TableCell>
+                                         <TableCell>
+                                            <Input 
+                                                type="number" 
+                                                className="w-24"
+                                                value={log.holidayHours}
+                                                step="0.1"
+                                                onChange={(e) => handleTimeChange(log.day, 'holidayHours', Number(e.target.value))}
+                                            />
+                                        </TableCell>
+                                         <TableCell>
+                                            <span className="font-mono text-lg">{log.hoursWorked.toFixed(2)}</span>
+                                            <span className="text-xs text-muted-foreground mr-1">ساعت</span>
+                                        </TableCell>
+                                    </TableRow>
+                               );
+                           })}
+                        </TableBody>
+                    </Table>
+                )}
+
+                 {!isLoading && !selectedPersonnelId && (
+                     <div className="text-center py-16 text-muted-foreground">
+                         لطفا برای مشاهده و ثبت کارکرد، یکی از پرسنل را انتخاب کنید.
+                    </div>
+                 )}
             </CardContent>
         </Card>
     );
