@@ -5,15 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { Users, Home, Briefcase, DatabaseZap, Loader2, ArrowLeft } from 'lucide-react';
-import type { Resident, Villa, BoardMember, Personnel } from '@/lib/types';
+import { Users, Home, ArrowLeft, Loader2, CalendarDays, Clock } from 'lucide-react';
+import type { Resident, Villa, Personnel } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
+import { useEffect, useState } from 'react';
+import { format } from 'date-fns-jalali';
+import { faIR } from 'date-fns-jalali/locale';
 
 const residentStatusVariant = {
   'ساکن': 'default',
@@ -31,6 +33,50 @@ const occupantTypeVariant = {
   'owner': 'default',
   'tenant': 'outline',
 } as const;
+
+function ClockAndDate() {
+    const [time, setTime] = useState('');
+    const [date, setDate] = useState('');
+
+    useEffect(() => {
+        // Set up the interval to update the time every second
+        const timerId = setInterval(() => {
+            const now = new Date();
+            setTime(now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+        }, 1000);
+
+        // Set the initial Persian date
+        setDate(format(new Date(), 'PPPP', { locale: faIR }));
+
+        // Cleanup function to clear the interval when the component unmounts
+        return () => {
+            clearInterval(timerId);
+        };
+    }, []); // Empty dependency array ensures this runs only once on mount
+
+    return (
+        <Card className="mb-6">
+            <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                         <Clock className="h-6 w-6 text-primary" />
+                        <div>
+                            <p className="text-sm text-muted-foreground">ساعت</p>
+                            <p className="text-xl font-bold font-mono">{time || '...'}</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-3">
+                        <CalendarDays className="h-6 w-6 text-primary" />
+                        <div>
+                             <p className="text-sm text-muted-foreground">تاریخ امروز</p>
+                            <p className="text-xl font-bold">{date || '...'}</p>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 
 export default function DashboardPage() {
@@ -82,6 +128,8 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader title="داشبورد" />
+      
+      <ClockAndDate />
 
        <div className="mt-6">
         <Card>
