@@ -6,13 +6,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { Users, Home, ArrowLeft, Loader2, DollarSign } from 'lucide-react';
-import type { Resident, Villa, Personnel, Transaction } from '@/lib/types';
+import type { Resident, Villa, Personnel } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+// Define a type for financial transactions to avoid 'any'
+interface Transaction {
+  id: string;
+  party: string;
+  reason: string;
+  type: 'دریافتی' | 'پرداختی';
+  amount: number;
+}
+
 
 const personnelStatusVariant = {
   'مشغول کار': 'default',
@@ -118,7 +128,7 @@ export default function DashboardPage() {
                     <TableRow>
                         <TableHead>طرف حساب</TableHead>
                         <TableHead>بابت</TableHead>
-                        <TableHead className="text-left">مبلغ (تومان)</TableHead>
+                        <TableHead className="text-left">مبلغ (ریال)</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
