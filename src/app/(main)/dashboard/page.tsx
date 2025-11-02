@@ -5,25 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useData } from '@/context/data-context';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Users, Home, UserCheck, FileDown, FileUp, Building2 } from 'lucide-react';
-import type { BoardMember } from '@/lib/types';
+import type { BoardMember, Resident } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useRef } from 'react';
 
-const chartData = [
-  { role: 'نگهبان', count: 5 },
-  { role: 'خدمات', count: 8 },
-  { role: 'سرایدار', count: 2 },
-  { role: 'حسابدار', count: 1 },
-  { role: 'مدیر', count: 1 },
-];
-
-const residentStatusData = [
-    { status: 'ساکن', count: 45, fill: 'hsl(var(--chart-1))' },
-    { status: 'غیر ساکن', count: 15, fill: 'hsl(var(--chart-2))' },
-]
+const statusVariant = {
+  'ساکن': 'default',
+  'غیر ساکن': 'secondary',
+} as const;
 
 export default function DashboardPage() {
   const { personnel, residents, boardMembers, exportData, importData } = useData();
@@ -40,6 +32,10 @@ export default function DashboardPage() {
     }
   };
 
+  const residentStatusData = [
+    { status: 'ساکن', count: residents.filter(r => r.status === 'ساکن').length, fill: 'hsl(var(--chart-1))' },
+    { status: 'غیر ساکن', count: residents.filter(r => r.status === 'غیر ساکن').length, fill: 'hsl(var(--chart-2))' },
+  ]
 
   return (
     <>
@@ -92,28 +88,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>نمودار پرسنل</CardTitle>
-            <CardDescription>تعداد پرسنل بر اساس سمت</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={{}} className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
-                        <XAxis type="number" hide />
-                        <YAxis dataKey="role" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }} width={80} />
-                        <Tooltip
-                            cursor={{ fill: 'hsl(var(--muted))' }}
-                            content={<ChartTooltipContent />}
-                        />
-                        <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+      <div className="mt-6 grid grid-cols-1 gap-6">
         <Card className="lg:col-span-2">
             <CardHeader>
                 <CardTitle>وضعیت سکونت</CardTitle>
@@ -131,6 +106,44 @@ export default function DashboardPage() {
                         </PieChart>
                     </ResponsiveContainer>
                 </ChartContainer>
+            </CardContent>
+        </Card>
+      </div>
+      <div className="mt-6">
+        <Card>
+            <CardHeader>
+                <CardTitle>لیست ساکنین</CardTitle>
+                <CardDescription>اطلاعات تماس و وضعیت سکونت ساکنین</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>شماره ویلا</TableHead>
+                            <TableHead>نام</TableHead>
+                            <TableHead>نام خانوادگی</TableHead>
+                            <TableHead>شماره تماس</TableHead>
+                            <TableHead>پلاک خودرو</TableHead>
+                            <TableHead>وضعیت</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {residents.map((resident: Resident) => (
+                            <TableRow key={resident.id}>
+                                <TableCell className="font-medium">{resident.villaNumber}</TableCell>
+                                <TableCell>{resident.name}</TableCell>
+                                <TableCell>{resident.familyName}</TableCell>
+                                <TableCell>{resident.phone}</TableCell>
+                                <TableCell>{resident.carPlates}</TableCell>
+                                <TableCell>
+                                    <Badge variant={statusVariant[resident.status]}>
+                                        {resident.status}
+                                    </Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </CardContent>
         </Card>
       </div>
