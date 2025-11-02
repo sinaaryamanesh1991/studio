@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { PlusCircle, MoreHorizontal, Eye, Trash2 } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Eye, Trash2, User } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
@@ -30,6 +30,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns-jalali';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 export default function DocumentsPage() {
     const { firestore, user } = useFirebase();
@@ -99,18 +101,36 @@ export default function DocumentsPage() {
         });
     };
 
-    const getRelatedEntityName = (doc: Document) => {
-        if (!doc.relatedEntityId) return doc.description || '-';
-        if (doc.category === 'پرسنل') {
-            const p = personnel?.find(p => p.id === doc.relatedEntityId);
-            return p ? `${p.name} ${p.familyName}` : 'یافت نشد';
+    const renderRelatedEntity = (doc: Document) => {
+        if (!doc.relatedEntityId) {
+          return doc.description || '-';
         }
-        if (doc.category === 'ساکنین') {
-            const r = residents?.find(r => r.id === doc.relatedEntityId);
-            return r ? `${r.name} ${r.familyName}` : 'یافت نشد';
+    
+        if (doc.category === 'پرسنل' && personnel) {
+          const p = personnel.find(p => p.id === doc.relatedEntityId);
+          if (!p) return <span className="text-muted-foreground">پرسنل یافت نشد</span>;
+          return (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={p.photoUrl} alt={`${p.name} ${p.familyName}`} />
+                <AvatarFallback>
+                  <User className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              <span>{p.name} {p.familyName}</span>
+            </div>
+          );
         }
+    
+        if (doc.category === 'ساکنین' && residents) {
+          const r = residents.find(r => r.id === doc.relatedEntityId);
+           if (!r) return <span className="text-muted-foreground">ساکن یافت نشد</span>;
+          return `${r.name} ${r.familyName}`;
+        }
+    
         return '-';
-    }
+      };
+
     
     const isLoading = loadingDocs || loadingPersonnel || loadingResidents;
 
@@ -143,7 +163,7 @@ export default function DocumentsPage() {
                                 <TableRow key={doc.id}>
                                     <TableCell className="font-medium">{doc.name}</TableCell>
                                     <TableCell>{doc.category}</TableCell>
-                                    <TableCell>{getRelatedEntityName(doc)}</TableCell>
+                                    <TableCell>{renderRelatedEntity(doc)}</TableCell>
                                     <TableCell>{doc.uploadDate}</TableCell>
                                     <TableCell className="text-left">
                                         <DropdownMenu>
