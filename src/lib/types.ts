@@ -61,9 +61,12 @@ export interface Transaction {
 export interface Document {
   id: string;
   name: string;
-  category: 'شرکت' | 'طرفین' | 'پرسنل' | 'ادارات';
+  category: 'شهرک' | 'پرسنل' | 'ساکنین' | 'ویلا';
   uploadDate: string;
   url: string;
+  fileName: string;
+  relatedEntityId?: string; // e.g., personnelId or residentId
+  description?: string; // For 'ویلا' or 'شهرک' categories
   estateId: string;
 }
 

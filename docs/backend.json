@@ -104,12 +104,15 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "category": { "type": "string", "enum": ["شرکت", "طرفین", "پرسنل", "ادارات"] },
+        "category": { "type": "string", "enum": ["شهرک", "پرسنل", "ساکنین", "ویلا"] },
         "uploadDate": { "type": "string", "format": "date" },
         "url": { "type": "string", "format": "uri" },
+        "fileName": { "type": "string" },
+        "relatedEntityId": { "type": "string", "description": "FK to another entity like Personnel or Resident" },
+        "description": { "type": "string" },
         "estateId": { "type": "string", "description": "FK to Estate" }
       },
-      "required": ["id", "name", "category", "uploadDate", "url", "estateId"]
+      "required": ["id", "name", "category", "uploadDate", "url", "fileName", "estateId"]
     },
      "CompanyInfo": {
       "title": "CompanyInfo",
