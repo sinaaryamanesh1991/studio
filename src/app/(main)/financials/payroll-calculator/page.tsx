@@ -17,7 +17,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 
 export default function PayrollCalculatorPage() {
-    const { personnel, companyInfo, payrollRecords, setPayrollRecords } = useData();
+    const { personnel, companyInfo, payrollRecords, setPayrollRecords, payrollSettings } = useData();
     const { toast } = useToast();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -26,11 +26,13 @@ export default function PayrollCalculatorPage() {
     const [selectedPersonnelId, setSelectedPersonnelId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [calculationResult, setCalculationResult] = useState<Omit<PayrollRecord, 'id' | 'personnelId' | 'personnelName' | 'calculationDate'> | null>(null);
+    
     const [initialFormState, setInitialFormState] = useState<Partial<PayrollRecord>>({
-        hourlyRate: 25000,
+        hourlyRate: payrollSettings.baseHourlyRate,
         entryTime: companyInfo.defaultEntryTime,
         exitTime: companyInfo.defaultExitTime,
         overtimeHours: 0,
+        overtimeMultiplier: payrollSettings.overtimeMultiplier,
         holidayPay: 0,
         deductions: 0,
     });
@@ -45,6 +47,7 @@ export default function PayrollCalculatorPage() {
                     entryTime: recordToEdit.entryTime,
                     exitTime: recordToEdit.exitTime,
                     overtimeHours: recordToEdit.overtimeHours,
+                    overtimeMultiplier: recordToEdit.overtimeMultiplier,
                     holidayPay: recordToEdit.holidayPay,
                     deductions: recordToEdit.deductions,
                 });
@@ -52,8 +55,18 @@ export default function PayrollCalculatorPage() {
                     ...recordToEdit,
                 });
             }
+        } else {
+             setInitialFormState({
+                hourlyRate: payrollSettings.baseHourlyRate,
+                entryTime: companyInfo.defaultEntryTime,
+                exitTime: companyInfo.defaultExitTime,
+                overtimeHours: 0,
+                overtimeMultiplier: payrollSettings.overtimeMultiplier,
+                holidayPay: 0,
+                deductions: 0,
+            });
         }
-    }, [payrollIdToEdit, payrollRecords]);
+    }, [payrollIdToEdit, payrollRecords, payrollSettings, companyInfo]);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -70,6 +83,7 @@ export default function PayrollCalculatorPage() {
             entryTime: formData.get('entryTime') as string,
             exitTime: formData.get('exitTime') as string,
             overtimeHours: Number(formData.get('overtimeHours')),
+            overtimeMultiplier: Number(formData.get('overtimeMultiplier')),
             holidayPay: Number(formData.get('holidayPay')),
             deductions: Number(formData.get('deductions')),
         };
@@ -95,23 +109,34 @@ export default function PayrollCalculatorPage() {
         const selectedPerson = personnel.find(p => p.id === selectedPersonnelId);
         if (!selectedPerson) return;
         
+        const sharedData = {
+            personnelId: selectedPersonnelId,
+            personnelName: `${selectedPerson.name} ${selectedPerson.familyName}`,
+            calculationDate: format(new Date(), 'yyyy-MM-dd'),
+            hourlyRate: calculationResult.hourlyRate,
+            entryTime: calculationResult.entryTime,
+            exitTime: calculationResult.exitTime,
+            hoursWorked: calculationResult.hoursWorked,
+            overtimeHours: calculationResult.overtimeHours,
+            overtimeMultiplier: calculationResult.overtimeMultiplier,
+            holidayPay: calculationResult.holidayPay,
+            deductions: calculationResult.deductions,
+            grossPay: calculationResult.grossPay,
+            netPay: calculationResult.netPay,
+            overtimePay: calculationResult.overtimePay,
+        };
+
         if (payrollIdToEdit) {
             const updatedRecord: PayrollRecord = {
                 id: payrollIdToEdit,
-                personnelId: selectedPersonnelId,
-                personnelName: `${selectedPerson.name} ${selectedPerson.familyName}`,
-                calculationDate: format(new Date(), 'yyyy-MM-dd'),
-                ...calculationResult
+                ...sharedData
             };
             setPayrollRecords(prev => prev.map(p => p.id === payrollIdToEdit ? updatedRecord : p));
             toast({ title: 'موفقیت', description: 'محاسبه حقوق با موفقیت به‌روزرسانی شد.' });
         } else {
              const newRecord: PayrollRecord = {
                 id: `pay-${Date.now()}`,
-                personnelId: selectedPersonnelId,
-                personnelName: `${selectedPerson.name} ${selectedPerson.familyName}`,
-                calculationDate: format(new Date(), 'yyyy-MM-dd'),
-                ...calculationResult
+                ...sharedData
             };
             setPayrollRecords(prev => [...prev, newRecord]);
             toast({ title: 'موفقیت', description: 'محاسبه حقوق با موفقیت در لیست ذخیره شد.' });
@@ -132,7 +157,7 @@ export default function PayrollCalculatorPage() {
                             <CardDescription>اطلاعات کارکرد پرسنل را برای محاسبه حقوق وارد کنید.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <form onSubmit={handleSubmit} className="space-y-6" key={payrollIdToEdit || 'new'}>
+                            <form onSubmit={handleSubmit} className="space-y-6" key={payrollIdToEdit || JSON.stringify(initialFormState)}>
                                 <div className="space-y-2">
                                     <Label htmlFor="personnelId">انتخاب پرسنل</Label>
                                     <Select name="personnelId" onValueChange={setSelectedPersonnelId} value={selectedPersonnelId} required>
@@ -160,9 +185,15 @@ export default function PayrollCalculatorPage() {
                                         <Input id="exitTime" name="exitTime" type="time" defaultValue={initialFormState.exitTime} required />
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="overtimeHours">ساعات اضافه کاری</Label>
-                                    <Input id="overtimeHours" name="overtimeHours" type="number" defaultValue={initialFormState.overtimeHours} required />
+                                 <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="overtimeHours">ساعات اضافه کاری</Label>
+                                        <Input id="overtimeHours" name="overtimeHours" type="number" step="0.1" defaultValue={initialFormState.overtimeHours} required />
+                                    </div>
+                                     <div className="space-y-2">
+                                        <Label htmlFor="overtimeMultiplier">ضریب اضافه کاری</Label>
+                                        <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.1" defaultValue={initialFormState.overtimeMultiplier} required />
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="holidayPay">مبلغ تعطیل کاری (تومان)</Label>

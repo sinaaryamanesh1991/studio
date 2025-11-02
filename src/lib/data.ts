@@ -1,4 +1,4 @@
-import type { Personnel, Resident, BoardMember, Villa, Transaction, Document, PayrollRecord, CompanyInfo, WorkLog } from './types';
+import type { Personnel, Resident, BoardMember, Villa, Transaction, Document, PayrollRecord, CompanyInfo, WorkLog, PayrollSettings } from './types';
 
 export const initialPersonnel: Personnel[] = [
   { id: 'p001', name: 'اسحاق', familyName: '', hireDate: '1403-01-01', phone: '0910-305-3794', position: 'نگهبان', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
@@ -82,3 +82,8 @@ export const initialCompanyInfo: CompanyInfo = {
 };
 
 export const initialWorkLogs: WorkLog[] = [];
+
+export const initialPayrollSettings: PayrollSettings = {
+    baseHourlyRate: 33299, // Based on 1403 labor law (7,166,180 / (44*4.33))
+    overtimeMultiplier: 1.4,
+};

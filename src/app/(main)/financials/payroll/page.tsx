@@ -5,21 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useData } from '@/context/data-context';
 import { useToast } from '@/hooks/use-toast';
-import type { CompanyInfo, Personnel, PayrollRecord, WorkLog } from '@/lib/types';
+import type { CompanyInfo, Personnel, PayrollRecord, WorkLog, PayrollSettings } from '@/lib/types';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, Users, Clock, Receipt, Search, Printer, Save } from 'lucide-react';
+import { Calculator, Users, Clock, Receipt, Search, Printer, Save, Settings } from 'lucide-react';
 import PayrollListPage from './payroll-list-content';
-import { useState, useMemo, ChangeEvent } from 'react';
+import { useState, useMemo } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns-jalali';
-import { cn } from '@/lib/utils';
-import { ar } from 'date-fns/locale';
+import { format, toDate } from 'date-fns-jalali';
+import { faIR } from 'date-fns/locale';
 import { format as formatEn } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 
@@ -166,15 +166,16 @@ function WorkHoursContent() {
                             )}
                             >
                             <CalendarIcon className="ml-2 h-4 w-4" />
-                            {selectedDate ? format(selectedDate, 'PPP', {locale: ar}) : <span>انتخاب تاریخ</span>}
+                            {selectedDate ? format(selectedDate, 'PPP', {locale: faIR}) : <span>انتخاب تاریخ</span>}
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
                             <Calendar
-                            mode="single"
-                            selected={selectedDate}
-                            onSelect={(date) => date && setSelectedDate(date)}
-                            initialFocus
+                                locale={faIR}
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={(date) => date && setSelectedDate(date)}
+                                initialFocus
                             />
                         </PopoverContent>
                     </Popover>
@@ -235,8 +236,15 @@ function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord, person
             title: "قابلیت چاپ در دست ساخت",
             description: "امکان چاپ و خروجی PDF به زودی اضافه خواهد شد.",
         });
-        // window.print(); // This would be the actual print logic
     };
+    
+    const formatDate = (dateString: string) => {
+        try {
+            return format(new Date(dateString), 'yyyy/MM/dd');
+        } catch(e) {
+            return dateString;
+        }
+    }
 
     return (
         <Card className="mt-6">
@@ -244,7 +252,7 @@ function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord, person
                 <div>
                     <CardTitle>فیش حقوقی - {payslip.personnelName}</CardTitle>
                     <CardDescription>
-                        تاریخ محاسبه: {payslip.calculationDate}
+                        تاریخ محاسبه: {formatDate(payslip.calculationDate)}
                     </CardDescription>
                 </div>
                 <Button onClick={handlePrint} variant="outline">
@@ -375,6 +383,49 @@ function PayslipContent() {
     );
 }
 
+function PayrollSettingsForm() {
+    const { payrollSettings, setPayrollSettings } = useData();
+    const { toast } = useToast();
+
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const newSettings: PayrollSettings = {
+            baseHourlyRate: Number(formData.get('baseHourlyRate')),
+            overtimeMultiplier: Number(formData.get('overtimeMultiplier')),
+        };
+        setPayrollSettings(newSettings);
+        toast({ title: 'موفقیت', description: 'تنظیمات حقوق و دستمزد با موفقیت ذخیره شد.' });
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>تنظیمات حقوق و دستمزد</CardTitle>
+                <CardDescription>
+                    پارامترهای پایه برای محاسبه حقوق را بر اساس قوانین کار تنظیم کنید.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="baseHourlyRate">پایه حقوق قانون کار (ساعتی)</Label>
+                        <Input id="baseHourlyRate" name="baseHourlyRate" type="number" defaultValue={payrollSettings?.baseHourlyRate} placeholder="مثال: 33299" />
+                        <p className="text-xs text-muted-foreground">این مبلغ به عنوان نرخ پیش‌فرض ساعتی در محاسبه‌گر حقوق استفاده می‌شود.</p>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="overtimeMultiplier">ضریب اضافه کاری</Label>
+                        <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.1" defaultValue={payrollSettings?.overtimeMultiplier} placeholder="مثال: 1.4" />
+                         <p className="text-xs text-muted-foreground">طبق قانون کار، این ضریب معمولا ۱.۴ است.</p>
+                    </div>
+                    <Button type="submit">ذخیره تنظیمات</Button>
+                </form>
+            </CardContent>
+        </Card>
+    );
+}
+
+
 export default function PayrollSystemPage() {
     return (
         <>
@@ -388,8 +439,9 @@ export default function PayrollSystemPage() {
             </PageHeader>
             
             <Tabs defaultValue="info" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-6">
+                <TabsList className="grid w-full grid-cols-6 mb-6">
                     <TabsTrigger value="info">اطلاعات پایه</TabsTrigger>
+                    <TabsTrigger value="payroll-settings">تنظیمات حقوق</TabsTrigger>
                     <TabsTrigger value="personnel">اطلاعات پرسنل</TabsTrigger>
                     <TabsTrigger value="work-hours">ساعت کاری</TabsTrigger>
                     <TabsTrigger value="list">لیست حقوق</TabsTrigger>
@@ -398,6 +450,9 @@ export default function PayrollSystemPage() {
                 
                 <TabsContent value="info">
                     <CompanyInfoForm />
+                </TabsContent>
+                 <TabsContent value="payroll-settings">
+                    <PayrollSettingsForm />
                 </TabsContent>
                 <TabsContent value="personnel">
                     <Card>

@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
+import { format } from 'date-fns-jalali';
 
 export default function PayrollListPage() {
     const { payrollRecords, setPayrollRecords } = useData();
@@ -37,6 +38,14 @@ export default function PayrollListPage() {
 
     const handleEditPayroll = (id: string) => {
         router.push(`/financials/payroll-calculator?id=${id}`);
+    };
+    
+    const formatDate = (dateString: string) => {
+        try {
+            return format(new Date(dateString), 'yyyy/MM/dd');
+        } catch (e) {
+            return dateString;
+        }
     };
 
     return (
@@ -73,7 +82,7 @@ export default function PayrollListPage() {
                             {payrollRecords.map((record) => (
                                 <TableRow key={record.id}>
                                     <TableCell className="font-medium">{record.personnelName}</TableCell>
-                                    <TableCell>{record.calculationDate}</TableCell>
+                                    <TableCell>{formatDate(record.calculationDate)}</TableCell>
                                     <TableCell className="font-mono">{record.grossPay.toLocaleString('fa-IR')} تومان</TableCell>
                                     <TableCell className="font-mono font-bold">{record.netPay.toLocaleString('fa-IR')} تومان</TableCell>
                                     <TableCell className="text-left">
@@ -118,7 +127,7 @@ export default function PayrollListPage() {
                         <DialogHeader>
                             <DialogTitle>فیش حقوقی - {selectedPayslip.personnelName}</DialogTitle>
                             <DialogDescription>
-                                تاریخ محاسبه: {selectedPayslip.calculationDate}
+                                تاریخ محاسبه: {formatDate(selectedPayslip.calculationDate)}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4 text-sm">

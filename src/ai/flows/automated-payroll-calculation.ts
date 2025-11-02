@@ -16,6 +16,7 @@ const AutomatedPayrollCalculationInputSchema = z.object({
   entryTime: z.string().describe("The employee's entry time in HH:MM format."),
   exitTime: z.string().describe("The employee's exit time in HH:MM format."),
   overtimeHours: z.number().describe('The number of overtime hours the employee worked.'),
+  overtimeMultiplier: z.number().describe('The multiplier for overtime pay (e.g., 1.4 or 1.5).'),
   holidayPay: z.number().describe('The amount of holiday pay the employee is entitled to.'),
   deductions: z.number().describe("The total amount of deductions from the employee's pay."),
 });
@@ -46,12 +47,13 @@ Hourly Rate: {{{hourlyRate}}}
 Entry Time: {{{entryTime}}}
 Exit Time: {{{exitTime}}}
 Overtime Hours: {{{overtimeHours}}}
+Overtime Multiplier: {{{overtimeMultiplier}}}
 Holiday Pay: {{{holidayPay}}}
 Deductions: {{{deductions}}}
 
 - Calculate 'hoursWorked' from the entry and exit times.
+- Overtime Pay = overtimeHours * hourlyRate * overtimeMultiplier.
 - Gross Pay = (hoursWorked * hourlyRate) + holidayPay + overtimePay.
-- Overtime Pay = overtimeHours * hourlyRate * 1.5 (assuming a 1.5x rate).
 - Net Pay = Gross Pay - deductions.
 
 Return the calculated hoursWorked, grossPay, netPay, and overtimePay.`,

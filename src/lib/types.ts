@@ -69,6 +69,7 @@ export interface PayrollRecord {
   exitTime: string;
   hoursWorked: number;
   overtimeHours: number;
+  overtimeMultiplier: number;
   holidayPay: number;
   deductions: number;
   // Outputs
@@ -90,4 +91,9 @@ export interface WorkLog {
   entryTime: string; // HH:MM
   exitTime: string; // HH:MM
   hoursWorked: number;
+}
+
+export interface PayrollSettings {
+    baseHourlyRate: number;
+    overtimeMultiplier: number;
 }

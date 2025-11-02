@@ -5,7 +5,6 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useData } from '@/context/data-context';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
@@ -41,7 +40,7 @@ export default function FinancialsPage() {
             party: formData.get('party') as string,
             reason: formData.get('reason') as string,
             amount: Number(formData.get('amount')),
-            date: format(new Date(), 'yyyy-MM-dd'),
+            date: format(new Date(), 'yyyy/MM/dd'),
         };
 
         setTransactions(prev => [...prev, newTransaction]);
