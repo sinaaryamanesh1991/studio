@@ -15,7 +15,7 @@ export interface Resident {
   phone: string;
   carPlates: string;
   villaNumber: number;
-  status: 'ساکن' | 'غیر ساکن';
+  status: 'ساکن' | 'خالی';
 }
 
 export interface BoardMember {

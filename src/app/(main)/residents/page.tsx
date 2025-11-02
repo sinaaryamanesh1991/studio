@@ -26,11 +26,11 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const statusVariant = {
   'ساکن': 'default',
-  'غیر ساکن': 'secondary',
+  'خالی': 'secondary',
 } as const;
 
 
@@ -44,14 +44,6 @@ export default function ResidentsPage() {
         setIsDialogOpen(true);
     };
     
-    const handleStatusChange = (residentId: string, isPresent: boolean) => {
-        setResidents(prev => 
-            prev.map(r => 
-                r.id === residentId ? { ...r, status: isPresent ? 'ساکن' : 'غیر ساکن' } : r
-            )
-        );
-    };
-
     const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!editingResident) return;
@@ -64,7 +56,7 @@ export default function ResidentsPage() {
             phone: formData.get('phone') as string,
             carPlates: formData.get('carPlates') as string,
             villaNumber: parseInt(formData.get('villaNumber') as string, 10),
-            status: (formData.get('status') === 'on' || formData.get('status') === 'ساکن') ? 'ساکن' : 'غیر ساکن',
+            status: formData.get('status') as Resident['status'],
         };
 
         setResidents(prev => prev.map(r => r.id === updatedResident.id ? updatedResident : r));
@@ -87,7 +79,6 @@ export default function ResidentsPage() {
                                 <TableHead>شماره تماس</TableHead>
                                 <TableHead>پلاک خودرو</TableHead>
                                 <TableHead>وضعیت</TableHead>
-                                <TableHead className="text-left">حضور</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -101,13 +92,6 @@ export default function ResidentsPage() {
                                     <TableCell>{resident.carPlates}</TableCell>
                                     <TableCell>
                                         <Badge variant={statusVariant[resident.status]}>{resident.status}</Badge>
-                                    </TableCell>
-                                    <TableCell className="text-left">
-                                        <Switch
-                                            checked={resident.status === 'ساکن'}
-                                            onCheckedChange={(checked) => handleStatusChange(resident.id, checked)}
-                                            aria-label='تغییر وضعیت سکونت'
-                                        />
                                     </TableCell>
                                     <TableCell className="text-left">
                                         <DropdownMenu>
@@ -163,14 +147,16 @@ export default function ResidentsPage() {
                                 <Input id="carPlates" name="carPlates" defaultValue={editingResident?.carPlates} className="col-span-3" />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="status" className="text-right">وضعیت سکونت</Label>
-                                <div className="col-span-3 flex items-center">
-                                    <Switch 
-                                        id="status" 
-                                        name="status"
-                                        defaultChecked={editingResident?.status === 'ساکن'}
-                                    />
-                                </div>
+                                <Label htmlFor="status" className="text-right">وضعیت</Label>
+                                <Select name="status" defaultValue={editingResident?.status}>
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="انتخاب وضعیت" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ساکن">ساکن</SelectItem>
+                                        <SelectItem value="خالی">خالی</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                         <DialogFooter>

@@ -14,7 +14,7 @@ import { useRef } from 'react';
 
 const statusVariant = {
   'ساکن': 'default',
-  'غیر ساکن': 'secondary',
+  'خالی': 'secondary',
 } as const;
 
 export default function DashboardPage() {
@@ -34,7 +34,7 @@ export default function DashboardPage() {
 
   const residentStatusData = [
     { status: 'ساکن', count: residents.filter(r => r.status === 'ساکن').length, fill: 'hsl(var(--chart-1))' },
-    { status: 'غیر ساکن', count: residents.filter(r => r.status === 'غیر ساکن').length, fill: 'hsl(var(--chart-2))' },
+    { status: 'خالی', count: residents.filter(r => r.status === 'خالی').length, fill: 'hsl(var(--chart-2))' },
   ]
 
   return (
