@@ -3,7 +3,7 @@
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useData } from '@/context/data-context';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { PlusCircle, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +33,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { collection, doc } from 'firebase/firestore';
+import { setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 const statusVariant = {
   'مشغول کار': 'default',
@@ -43,7 +45,11 @@ const statusVariant = {
 
 
 export default function PersonnelPage() {
-    const { personnel, setPersonnel } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+    const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
+    const { data: personnel, isLoading } = useCollection<Personnel>(personnelQuery);
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingPersonnel, setEditingPersonnel] = useState<Personnel | null>(null);
 
@@ -58,13 +64,19 @@ export default function PersonnelPage() {
     };
 
     const handleDelete = (id: string) => {
-        setPersonnel(prev => prev.filter(p => p.id !== id));
+        if (!estateId) return;
+        deleteDocumentNonBlocking(doc(firestore, 'estates', estateId, 'personnel', id));
     };
     
     const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!estateId) return;
+
         const formData = new FormData(e.currentTarget);
-        const newPerson: Omit<Personnel, 'id'> = {
+        const personId = editingPersonnel ? editingPersonnel.id : `p${Date.now()}`;
+        
+        const newPerson: Personnel = {
+            id: personId,
             name: formData.get('name') as string,
             familyName: formData.get('familyName') as string,
             phone: formData.get('phone') as string,
@@ -74,16 +86,19 @@ export default function PersonnelPage() {
             nationalId: formData.get('nationalId') as string,
             accountNumber: formData.get('accountNumber') as string,
             insuranceNumber: formData.get('insuranceNumber') as string,
+            estateId: estateId,
         };
+        
+        const personRef = doc(firestore, 'estates', estateId, 'personnel', personId);
+        setDocumentNonBlocking(personRef, newPerson, { merge: true });
 
-        if (editingPersonnel) {
-            setPersonnel(prev => prev.map(p => p.id === editingPersonnel.id ? { ...p, ...newPerson } : p));
-        } else {
-            setPersonnel(prev => [...prev, { id: `p${Date.now()}`, ...newPerson }]);
-        }
         setIsDialogOpen(false);
         setEditingPersonnel(null);
     };
+
+    if (isLoading) {
+        return <div>در حال بارگذاری...</div>
+    }
 
 
     return (
@@ -110,7 +125,7 @@ export default function PersonnelPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {personnel.map((person) => (
+                            {personnel?.map((person) => (
                                 <TableRow key={person.id}>
                                     <TableCell className="font-mono">{person.id}</TableCell>
                                     <TableCell>{person.name}</TableCell>

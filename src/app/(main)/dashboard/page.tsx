@@ -3,14 +3,17 @@
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useData } from '@/context/data-context';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
+import { collection, doc, writeBatch } from 'firebase/firestore';
 import { Users, Home, UserCheck, FileDown, FileUp, Briefcase } from 'lucide-react';
-import type { Resident } from '@/lib/types';
+import type { Resident, Villa } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useRef } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { useToast } from '@/hooks/use-toast';
 
 const statusVariant = {
   'ساکن': 'default',
@@ -25,8 +28,25 @@ const ownerStatusVariant = {
 
 
 export default function DashboardPage() {
-  const { personnel, residents, setResidents, boardMembers, villas, exportData, importData, isLoading } = useData();
+  const { firestore, user } = useFirebase();
+  const { toast } = useToast();
+  const estateId = user?.uid;
+
+  const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
+  const { data: personnel, isLoading: loadingPersonnel } = useCollection(personnelQuery);
+
+  const residentsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'residents') : null, [firestore, estateId]);
+  const { data: residents, isLoading: loadingResidents } = useCollection<Resident>(residentsQuery);
+
+  const boardMembersQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'boardMembers') : null, [firestore, estateId]);
+  const { data: boardMembers, isLoading: loadingBoardMembers } = useCollection(boardMembersQuery);
+
+  const villasQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'villas') : null, [firestore, estateId]);
+  const { data: villas, isLoading: loadingVillas } = useCollection<Villa>(villasQuery);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isLoading = loadingPersonnel || loadingResidents || loadingBoardMembers || loadingVillas;
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -34,30 +54,65 @@ export default function DashboardPage() {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      importData(file);
+    if (file && estateId) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const text = e.target?.result;
+                if (typeof text !== 'string') return;
+                const data = JSON.parse(text);
+                const batch = writeBatch(firestore);
+
+                // Assuming data structure from old context
+                if(data.personnel) data.personnel.forEach((p: any) => batch.set(doc(firestore, 'estates', estateId, 'personnel', p.id), { ...p, estateId }));
+                if(data.residents) data.residents.forEach((r: any) => batch.set(doc(firestore, 'estates', estateId, 'residents', r.id), { ...r, estateId }));
+                if(data.boardMembers) data.boardMembers.forEach((b: any) => batch.set(doc(firestore, 'estates', estateId, 'boardMembers', b.id), { ...b, estateId }));
+                if(data.villas) data.villas.forEach((v: any) => batch.set(doc(firestore, 'estates', estateId, 'villas', v.id.toString()), { ...v, estateId, villaNumber: v.id, id: v.id.toString() }));
+                if(data.transactions) data.transactions.forEach((t: any) => batch.set(doc(firestore, 'estates', estateId, 'financialTransactions', t.id), { ...t, estateId }));
+                if(data.documents) data.documents.forEach((d: any) => batch.set(doc(firestore, 'estates', estateId, 'documents', d.id), { ...d, estateId }));
+                if(data.payrollRecords) data.payrollRecords.forEach((p: any) => batch.set(doc(firestore, 'estates', estateId, 'payrollRecords', p.id), { ...p, estateId }));
+                if(data.workLogs) data.workLogs.forEach((w: any) => batch.set(doc(firestore, 'estates', estateId, 'workLogs', w.id), { ...w, estateId }));
+
+                await batch.commit();
+                toast({ title: 'موفقیت', description: 'اطلاعات با موفقیت وارد شد.' });
+            } catch (error) {
+                console.error("Import error: ", error);
+                toast({ variant: 'destructive', title: 'خطا', description: 'خطا در وارد کردن اطلاعات.' });
+            }
+        };
+        reader.readAsText(file);
     }
   };
 
-  const handleStatusChange = (residentId: string, isPresent: boolean) => {
-    setResidents(prev =>
-      prev.map(r =>
-        r.id === residentId
-          ? { ...r, isPresent: isPresent, status: isPresent ? 'ساکن' : 'خالی' }
-          : r
-      )
-    );
+  const exportData = () => {
+    const dataToExport = {
+        personnel,
+        residents,
+        boardMembers,
+        villas,
+    };
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(dataToExport, null, 2))}`;
+    const link = document.createElement("a");
+    link.href = jsonString;
+    link.download = "sina_estate_data.json";
+    link.click();
+  };
+
+  const handleStatusChange = (resident: Resident, isPresent: boolean) => {
+    if (!estateId) return;
+    const residentRef = doc(firestore, 'estates', estateId, 'residents', resident.id);
+    const updatedData = { ...resident, isPresent: isPresent, status: isPresent ? 'ساکن' : 'خالی' };
+    setDocumentNonBlocking(residentRef, updatedData, { merge: true });
   };
   
-  const residentCount = residents.length;
-  const presentCount = residents.filter(r => r.status === 'ساکن').length;
+  const residentCount = residents?.length ?? 0;
+  const presentCount = residents?.filter(r => r.status === 'ساکن').length ?? 0;
 
-  const getOwnerStatus = (villaId: number): { text: string; variant: keyof typeof ownerStatusVariant } => {
-    const resident = residents.find(r => r.villaNumber === villaId);
-    const villa = villas.find(v => v.id === villaId);
+  const getOwnerStatus = (villaNumber: number): { text: string; variant: keyof typeof ownerStatusVariant } => {
+    const resident = residents?.find(r => r.villaNumber === villaNumber);
+    const villa = villas?.find(v => v.villaNumber === villaNumber);
 
     if (resident && resident.status === 'ساکن') {
-      // A simple check to see if owner name is part of the resident name
       if (villa && (resident.name.includes(villa.owner) || resident.familyName.includes(villa.owner) || villa.owner.includes(resident.name) || villa.owner.includes(resident.familyName))) {
         return { text: 'مالک ساکن است', variant: 'مالک ساکن است' };
       }
@@ -121,7 +176,7 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{personnel.length} نفر</div>
+            <div className="text-2xl font-bold">{personnel?.length ?? 0} نفر</div>
             <p className="text-xs text-muted-foreground">تعداد کل کارکنان ثبت شده</p>
           </CardContent>
         </Card>
@@ -141,7 +196,7 @@ export default function DashboardPage() {
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{boardMembers.length} نفر</div>
+            <div className="text-2xl font-bold">{boardMembers?.length ?? 0} نفر</div>
             <p className="text-xs text-muted-foreground">تعداد اعضای هیئت مدیره</p>
           </CardContent>
         </Card>
@@ -166,7 +221,7 @@ export default function DashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {residents.map((resident: Resident) => (
+                        {residents?.map((resident: Resident) => (
                             <TableRow key={resident.id}>
                                 <TableCell className="font-medium">{resident.villaNumber}</TableCell>
                                 <TableCell>{resident.name}</TableCell>
@@ -178,7 +233,7 @@ export default function DashboardPage() {
                                         <Switch
                                             id={`status-switch-${resident.id}`}
                                             checked={resident.isPresent}
-                                            onCheckedChange={(checked) => handleStatusChange(resident.id, checked)}
+                                            onCheckedChange={(checked) => handleStatusChange(resident, checked)}
                                             aria-label="وضعیت سکونت"
                                         />
                                         <Badge variant={statusVariant[resident.status]}>
@@ -210,11 +265,11 @@ export default function DashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {villas.sort((a, b) => a.id - b.id).map((villa) => {
-                            const status = getOwnerStatus(villa.id);
+                        {villas?.sort((a, b) => a.villaNumber - b.villaNumber).map((villa) => {
+                            const status = getOwnerStatus(villa.villaNumber);
                             return (
                                 <TableRow key={villa.id}>
-                                    <TableCell className="font-medium">{villa.id}</TableCell>
+                                    <TableCell className="font-medium">{villa.villaNumber}</TableCell>
                                     <TableCell>{villa.owner}</TableCell>
                                     <TableCell>{villa.phone}</TableCell>
                                     <TableCell>
@@ -247,7 +302,7 @@ export default function DashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {boardMembers.map((member) => (
+                        {boardMembers?.map((member) => (
                             <TableRow key={member.id}>
                                 <TableCell className="font-medium">{member.name} {member.familyName}</TableCell>
                                 <TableCell>{member.phone}</TableCell>

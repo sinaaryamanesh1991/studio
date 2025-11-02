@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useData } from '@/context/data-context';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Link from 'next/link';
-import type { PayrollRecord } from '@/lib/types';
+import type { PayrollRecord, Personnel } from '@/lib/types';
 import { MoreHorizontal, FileText, Trash2, Edit, Calculator } from 'lucide-react';
 import {
   DropdownMenu,
@@ -23,18 +23,29 @@ import {
     DialogFooter,
     DialogClose,
 } from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import { format, toDate } from 'date-fns-jalali';
 import { PayslipDisplay } from './page';
+import { collection, doc } from 'firebase/firestore';
+import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function PayrollListPage() {
-    const { payrollRecords, setPayrollRecords, personnel } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+
+    const payrollRecordsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'payrollRecords') : null, [firestore, estateId]);
+    const { data: payrollRecords, isLoading: loadingPayroll } = useCollection<PayrollRecord>(payrollRecordsQuery);
+
+    const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
+    const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
+
     const [selectedPayslip, setSelectedPayslip] = useState<PayrollRecord | null>(null);
     const router = useRouter();
 
     const handleDeletePayroll = (id: string) => {
-        setPayrollRecords(prev => prev.filter(p => p.id !== id));
+        if (!estateId) return;
+        const recordRef = doc(firestore, 'estates', estateId, 'payrollRecords', id);
+        deleteDocumentNonBlocking(recordRef);
     };
 
     const handleEditPayroll = (id: string) => {
@@ -48,6 +59,12 @@ export default function PayrollListPage() {
             return dateString;
         }
     };
+    
+    const isLoading = loadingPayroll || loadingPersonnel;
+
+    if (isLoading) {
+        return <div>در حال بارگذاری...</div>
+    }
 
     return (
         <>
@@ -80,7 +97,7 @@ export default function PayrollListPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {payrollRecords.map((record) => (
+                            {payrollRecords?.map((record) => (
                                 <TableRow key={record.id}>
                                     <TableCell className="font-medium">{record.personnelName}</TableCell>
                                     <TableCell>{formatDate(record.calculationDate)}</TableCell>
@@ -114,7 +131,7 @@ export default function PayrollListPage() {
                             ))}
                         </TableBody>
                     </Table>
-                    {payrollRecords.length === 0 && (
+                    {(payrollRecords?.length ?? 0) === 0 && (
                         <p className="text-center text-muted-foreground py-8">
                             هنوز هیچ محاسبه حقوقی ثبت نشده است. برای شروع، یک محاسبه جدید ایجاد کنید.
                         </p>
@@ -125,7 +142,7 @@ export default function PayrollListPage() {
             {selectedPayslip && (
                  <Dialog open={!!selectedPayslip} onOpenChange={(isOpen) => !isOpen && setSelectedPayslip(null)}>
                     <DialogContent className="sm:max-w-lg font-body">
-                       <PayslipDisplay payslip={selectedPayslip} personnel={personnel.find(p => p.id === selectedPayslip.personnelId)} />
+                       <PayslipDisplay payslip={selectedPayslip} personnel={personnel?.find(p => p.id === selectedPayslip.personnelId)} />
                         <DialogFooter>
                             <DialogClose asChild>
                                 <Button type="button" variant="secondary">بستن</Button>

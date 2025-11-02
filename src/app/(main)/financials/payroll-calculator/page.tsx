@@ -7,57 +7,67 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useData } from '@/context/data-context';
+import { useCollection, useDoc, useFirebase, useMemoFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import type { PayrollRecord } from '@/lib/types';
+import type { PayrollRecord, Personnel, PayrollSettings, CompanyInfo } from '@/lib/types';
 import { automatedPayrollCalculation } from '@/ai/flows/automated-payroll-calculation';
 import { Wand2, Loader2, Save } from 'lucide-react';
 import { format as formatEn } from 'date-fns';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
+import { collection, doc } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function PayrollCalculatorPage() {
-    const { personnel, companyInfo, payrollRecords, setPayrollRecords, payrollSettings } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
     const { toast } = useToast();
     const router = useRouter();
     const searchParams = useSearchParams();
     const payrollIdToEdit = searchParams.get('id');
 
+    const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
+    const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
+
+    const companyInfoQuery = useMemoFirebase(() => estateId ? doc(firestore, 'estates', estateId, 'companyInfo', 'default') : null, [firestore, estateId]);
+    const { data: companyInfo, isLoading: loadingCompanyInfo } = useDoc<CompanyInfo>(companyInfoQuery);
+
+    const payrollSettingsQuery = useMemoFirebase(() => estateId ? doc(firestore, 'estates', estateId, 'payrollSettings', 'default') : null, [firestore, estateId]);
+    const { data: payrollSettings, isLoading: loadingPayrollSettings } = useDoc<PayrollSettings>(payrollSettingsQuery);
+
+    const payrollRecordToEditQuery = useMemoFirebase(() => (estateId && payrollIdToEdit) ? doc(firestore, 'estates', estateId, 'payrollRecords', payrollIdToEdit) : null, [firestore, estateId, payrollIdToEdit]);
+    const { data: payrollRecordToEdit, isLoading: loadingRecordToEdit } = useDoc<PayrollRecord>(payrollRecordToEditQuery);
+
+
     const [selectedPersonnelId, setSelectedPersonnelId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
-    const [calculationResult, setCalculationResult] = useState<Omit<PayrollRecord, 'id' | 'personnelId' | 'personnelName' | 'calculationDate'> | null>(null);
+    const [calculationResult, setCalculationResult] = useState<Omit<PayrollRecord, 'id' | 'personnelId' | 'personnelName' | 'calculationDate' | 'estateId'> | null>(null);
     
-    // Set a default state that won't be null
-    const [initialFormState, setInitialFormState] = useState<Partial<PayrollRecord>>({
-        hourlyRate: payrollSettings.baseHourlyRate || 0,
-        entryTime: companyInfo.defaultEntryTime || '08:00',
-        exitTime: companyInfo.defaultExitTime || '17:00',
+    const [formState, setFormState] = useState({
+        hourlyRate: 0,
+        entryTime: '08:00',
+        exitTime: '17:00',
         overtimeHours: 0,
-        overtimeMultiplier: payrollSettings.overtimeMultiplier || 1.4,
+        overtimeMultiplier: 1.4,
         holidayPay: 0,
         deductions: 0,
     });
 
     useEffect(() => {
-        if (payrollIdToEdit) {
-            const recordToEdit = payrollRecords.find(p => p.id === payrollIdToEdit);
-            if (recordToEdit) {
-                setSelectedPersonnelId(recordToEdit.personnelId);
-                const formState = {
-                    hourlyRate: recordToEdit.hourlyRate,
-                    entryTime: recordToEdit.entryTime,
-                    exitTime: recordToEdit.exitTime,
-                    overtimeHours: recordToEdit.overtimeHours,
-                    overtimeMultiplier: recordToEdit.overtimeMultiplier,
-                    holidayPay: recordToEdit.holidayPay,
-                    deductions: recordToEdit.deductions,
-                };
-                setInitialFormState(formState);
-                setCalculationResult({
-                    ...recordToEdit,
-                });
-            }
-        } else {
+        if (payrollIdToEdit && payrollRecordToEdit) {
+            setSelectedPersonnelId(payrollRecordToEdit.personnelId);
+            const newFormState = {
+                hourlyRate: payrollRecordToEdit.hourlyRate,
+                entryTime: payrollRecordToEdit.entryTime,
+                exitTime: payrollRecordToEdit.exitTime,
+                overtimeHours: payrollRecordToEdit.overtimeHours,
+                overtimeMultiplier: payrollRecordToEdit.overtimeMultiplier,
+                holidayPay: payrollRecordToEdit.holidayPay,
+                deductions: payrollRecordToEdit.deductions,
+            };
+            setFormState(newFormState);
+            setCalculationResult({ ...payrollRecordToEdit });
+        } else if (!payrollIdToEdit && payrollSettings && companyInfo) {
              const defaultState = {
                 hourlyRate: payrollSettings.baseHourlyRate || 0,
                 entryTime: companyInfo.defaultEntryTime || '08:00',
@@ -67,11 +77,16 @@ export default function PayrollCalculatorPage() {
                 holidayPay: 0,
                 deductions: 0,
             };
-            setInitialFormState(defaultState);
-            setCalculationResult(null); // Reset result for new calculations
-            setSelectedPersonnelId(''); // Reset selected personnel
+            setFormState(defaultState);
+            setCalculationResult(null);
+            setSelectedPersonnelId('');
         }
-    }, [payrollIdToEdit, payrollRecords, payrollSettings, companyInfo]);
+    }, [payrollIdToEdit, payrollRecordToEdit, payrollSettings, companyInfo]);
+    
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormState(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -82,15 +97,14 @@ export default function PayrollCalculatorPage() {
         setIsLoading(true);
         setCalculationResult(null);
         
-        const formData = new FormData(event.currentTarget);
         const input = {
-            hourlyRate: Number(formData.get('hourlyRate')),
-            entryTime: formData.get('entryTime') as string,
-            exitTime: formData.get('exitTime') as string,
-            overtimeHours: Number(formData.get('overtimeHours')),
-            overtimeMultiplier: Number(formData.get('overtimeMultiplier')),
-            holidayPay: Number(formData.get('holidayPay')),
-            deductions: Number(formData.get('deductions')),
+            hourlyRate: Number(formState.hourlyRate),
+            entryTime: formState.entryTime,
+            exitTime: formState.exitTime,
+            overtimeHours: Number(formState.overtimeHours),
+            overtimeMultiplier: Number(formState.overtimeMultiplier),
+            holidayPay: Number(formState.holidayPay),
+            deductions: Number(formState.deductions),
         };
 
         try {
@@ -109,12 +123,16 @@ export default function PayrollCalculatorPage() {
     };
 
     const handleSaveRecord = () => {
-        if (!calculationResult || !selectedPersonnelId) return;
+        if (!calculationResult || !selectedPersonnelId || !estateId || !personnel) return;
 
         const selectedPerson = personnel.find(p => p.id === selectedPersonnelId);
         if (!selectedPerson) return;
         
-        const sharedData = {
+        const id = payrollIdToEdit || `pay-${Date.now()}`;
+        const recordRef = doc(firestore, 'estates', estateId, 'payrollRecords', id);
+
+        const recordData: PayrollRecord = {
+            id,
             personnelId: selectedPersonnelId,
             personnelName: `${selectedPerson.name} ${selectedPerson.familyName}`,
             calculationDate: formatEn(new Date(), 'yyyy-MM-dd'),
@@ -129,26 +147,20 @@ export default function PayrollCalculatorPage() {
             grossPay: calculationResult.grossPay,
             netPay: calculationResult.netPay,
             overtimePay: calculationResult.overtimePay,
+            estateId: estateId,
         };
 
-        if (payrollIdToEdit) {
-            const updatedRecord: PayrollRecord = {
-                id: payrollIdToEdit,
-                ...sharedData
-            };
-            setPayrollRecords(prev => prev.map(p => p.id === payrollIdToEdit ? updatedRecord : p));
-            toast({ title: 'موفقیت', description: 'محاسبه حقوق با موفقیت به‌روزرسانی شد.' });
-        } else {
-             const newRecord: PayrollRecord = {
-                id: `pay-${Date.now()}`,
-                ...sharedData
-            };
-            setPayrollRecords(prev => [...prev, newRecord]);
-            toast({ title: 'موفقیت', description: 'محاسبه حقوق با موفقیت در لیست ذخیره شد.' });
-        }
+        setDocumentNonBlocking(recordRef, recordData, { merge: true });
         
+        toast({ title: 'موفقیت', description: `محاسبه حقوق با موفقیت ${payrollIdToEdit ? 'به‌روزرسانی' : 'ذخیره'} شد.` });
         router.push('/financials/payroll');
     };
+    
+    const pageIsLoading = loadingPersonnel || loadingCompanyInfo || loadingPayrollSettings || loadingRecordToEdit;
+    
+    if (pageIsLoading) {
+        return <div>در حال بارگذاری...</div>;
+    }
 
     return (
         <>
@@ -162,7 +174,7 @@ export default function PayrollCalculatorPage() {
                             <CardDescription>اطلاعات کارکرد پرسنل را برای محاسبه حقوق وارد کنید.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <form onSubmit={handleSubmit} className="space-y-6" key={payrollIdToEdit || JSON.stringify(initialFormState)}>
+                            <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="space-y-2">
                                     <Label htmlFor="personnelId">انتخاب پرسنل</Label>
                                     <Select name="personnelId" onValueChange={setSelectedPersonnelId} value={selectedPersonnelId} required>
@@ -170,7 +182,7 @@ export default function PayrollCalculatorPage() {
                                             <SelectValue placeholder="یکی از پرسنل را انتخاب کنید" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {personnel.map(p => (
+                                            {personnel?.map(p => (
                                                 <SelectItem key={p.id} value={p.id}>{p.name} {p.familyName}</SelectItem>
                                             ))}
                                         </SelectContent>
@@ -178,35 +190,35 @@ export default function PayrollCalculatorPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="hourlyRate">نرخ ساعتی (تومان)</Label>
-                                    <Input id="hourlyRate" name="hourlyRate" type="number" defaultValue={initialFormState.hourlyRate} required />
+                                    <Input id="hourlyRate" name="hourlyRate" type="number" value={formState.hourlyRate} onChange={handleInputChange} required />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="entryTime">ساعت ورود</Label>
-                                        <Input id="entryTime" name="entryTime" type="time" defaultValue={initialFormState.entryTime} required />
+                                        <Input id="entryTime" name="entryTime" type="time" value={formState.entryTime} onChange={handleInputChange} required />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="exitTime">ساعت خروج</Label>
-                                        <Input id="exitTime" name="exitTime" type="time" defaultValue={initialFormState.exitTime} required />
+                                        <Input id="exitTime" name="exitTime" type="time" value={formState.exitTime} onChange={handleInputChange} required />
                                     </div>
                                 </div>
                                  <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="overtimeHours">ساعات اضافه کاری</Label>
-                                        <Input id="overtimeHours" name="overtimeHours" type="number" step="0.1" defaultValue={initialFormState.overtimeHours} required />
+                                        <Input id="overtimeHours" name="overtimeHours" type="number" step="0.1" value={formState.overtimeHours} onChange={handleInputChange} required />
                                     </div>
                                      <div className="space-y-2">
                                         <Label htmlFor="overtimeMultiplier">ضریب اضافه کاری</Label>
-                                        <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.1" defaultValue={initialFormState.overtimeMultiplier} required />
+                                        <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.1" value={formState.overtimeMultiplier} onChange={handleInputChange} required />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="holidayPay">مبلغ تعطیل کاری (تومان)</Label>
-                                    <Input id="holidayPay" name="holidayPay" type="number" defaultValue={initialFormState.holidayPay} required />
+                                    <Input id="holidayPay" name="holidayPay" type="number" value={formState.holidayPay} onChange={handleInputChange} required />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="deductions">کسورات (تومان)</Label>
-                                    <Input id="deductions" name="deductions" type="number" defaultValue={initialFormState.deductions} required />
+                                    <Input id="deductions" name="deductions" type="number" value={formState.deductions} onChange={handleInputChange} required />
                                 </div>
 
                                 <Button type="submit" className="w-full" disabled={isLoading}>

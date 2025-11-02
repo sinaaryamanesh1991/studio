@@ -2,7 +2,7 @@
 
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { useData } from '@/context/data-context';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import type { Villa } from '@/lib/types';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -21,16 +21,18 @@ import { Home, Phone, PlusCircle, XCircle } from 'lucide-react';
 import './map.css';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
+import { collection, doc } from 'firebase/firestore';
+import { setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
-const SchematicMap = ({ onVillaClick, isEditMode, onAddVilla, onDeleteVilla }: { 
+const SchematicMap = ({ villas, onVillaClick, isEditMode, onAddVilla, onDeleteVilla }: { 
+    villas: Villa[],
     onVillaClick: (villa: Villa) => void, 
     isEditMode: boolean,
     onAddVilla: () => void,
-    onDeleteVilla: (id: number) => void
+    onDeleteVilla: (id: string) => void
 }) => {
-    const { villas } = useData();
-
-    const findAndClick = (id: number) => {
+    
+    const findAndClick = (id: string) => {
         if (isEditMode) return;
         const villa = villas.find(v => v.id === id);
         if (villa) {
@@ -57,8 +59,8 @@ const SchematicMap = ({ onVillaClick, isEditMode, onAddVilla, onDeleteVilla }: {
 
                 {/* Villas */}
                 {villas.map((villa) => (
-                    <div key={villa.id} className={`villa v${villa.id}`} onClick={() => findAndClick(villa.id)}>
-                        {`ویلاى ${villa.id}`}
+                    <div key={villa.id} className={`villa v${villa.villaNumber}`} onClick={() => findAndClick(villa.id)}>
+                        {`ویلاى ${villa.villaNumber}`}
                          {isEditMode && (
                             <button
                                 onClick={(e) => {
@@ -66,7 +68,7 @@ const SchematicMap = ({ onVillaClick, isEditMode, onAddVilla, onDeleteVilla }: {
                                     onDeleteVilla(villa.id);
                                 }}
                                 className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 z-10 hover:bg-destructive/80"
-                                aria-label={`حذف ویلا ${villa.id}`}
+                                aria-label={`حذف ویلا ${villa.villaNumber}`}
                             >
                                 <XCircle className="w-4 h-4" />
                             </button>
@@ -90,7 +92,11 @@ const SchematicMap = ({ onVillaClick, isEditMode, onAddVilla, onDeleteVilla }: {
 
 
 export default function MapPage() {
-    const { villas, setVillas } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+    const villasQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'villas') : null, [firestore, estateId]);
+    const { data: villas, isLoading } = useCollection<Villa>(villasQuery);
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedVilla, setSelectedVilla] = useState<Villa | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -102,7 +108,8 @@ export default function MapPage() {
     };
     
     const handleAddVilla = () => {
-        const existingIds = villas.map(v => v.id);
+        if (!estateId || !villas) return;
+        const existingIds = villas.map(v => v.villaNumber);
         let newId = 1;
         while(existingIds.includes(newId)) {
             newId++;
@@ -112,27 +119,33 @@ export default function MapPage() {
             toast({ variant: 'destructive', title: 'خطا', description: 'ظرفیت نقشه برای افزودن ویلای جدید تکمیل است.' });
             return;
         }
-
+        
+        const newVillaId = `v${newId}`;
         const newVilla: Villa = {
-            id: newId,
+            id: newVillaId,
             name: `ویلا ${newId}`,
             owner: 'نامشخص',
             area: 100,
             residentInfo: '',
             phone: '',
+            estateId: estateId,
+            villaNumber: newId
         };
-        setVillas(prev => [...prev, newVilla].sort((a,b) => a.id - b.id));
+        const villaRef = doc(firestore, 'estates', estateId, 'villas', newVillaId);
+        setDocumentNonBlocking(villaRef, newVilla, {});
         toast({ title: 'موفقیت', description: `ویلای شماره ${newId} با موفقیت اضافه شد.`});
     };
 
-    const handleDeleteVilla = (id: number) => {
-        setVillas(prev => prev.filter(v => v.id !== id));
-        toast({ title: 'موفقیت', description: `ویلای شماره ${id} حذف شد.` });
+    const handleDeleteVilla = (id: string) => {
+        if (!estateId) return;
+        const villaRef = doc(firestore, 'estates', estateId, 'villas', id);
+        deleteDocumentNonBlocking(villaRef);
+        toast({ title: 'موفقیت', description: `ویلا حذف شد.` });
     };
 
     const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!selectedVilla) return;
+        if (!selectedVilla || !estateId) return;
 
         const formData = new FormData(e.currentTarget);
         const updatedVilla: Villa = {
@@ -143,11 +156,17 @@ export default function MapPage() {
             residentInfo: formData.get('residentInfo') as string,
             phone: formData.get('phone') as string,
         };
+        
+        const villaRef = doc(firestore, 'estates', estateId, 'villas', selectedVilla.id);
+        setDocumentNonBlocking(villaRef, updatedVilla, { merge: true });
 
-        setVillas(prev => prev.map(v => v.id === updatedVilla.id ? updatedVilla : v));
         setIsDialogOpen(false);
         setSelectedVilla(null);
     };
+
+    if (isLoading) {
+        return <div>در حال بارگذاری...</div>;
+    }
 
     return (
         <>
@@ -174,6 +193,7 @@ export default function MapPage() {
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
                     <SchematicMap 
+                        villas={villas ?? []}
                         onVillaClick={handleCardClick} 
                         isEditMode={isEditMode}
                         onAddVilla={handleAddVilla}
@@ -191,7 +211,7 @@ export default function MapPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {villas.sort((a,b) => a.id - b.id).map(villa => (
+                        {villas?.sort((a,b) => a.villaNumber - b.villaNumber).map(villa => (
                             <Card 
                                 key={villa.id} 
                                 className={`cursor-pointer hover:shadow-lg hover:border-primary transition-all flex flex-col ${isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}

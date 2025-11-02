@@ -3,7 +3,7 @@
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useData } from '@/context/data-context';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { MoreHorizontal, Edit } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { collection, doc } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 const statusVariant = {
   'ساکن': 'default',
@@ -36,7 +38,11 @@ const statusVariant = {
 
 
 export default function ResidentsPage() {
-    const { residents, setResidents } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+    const residentsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'residents') : null, [firestore, estateId]);
+    const { data: residents, isLoading } = useCollection<Resident>(residentsQuery);
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingResident, setEditingResident] = useState<Resident | null>(null);
 
@@ -47,7 +53,7 @@ export default function ResidentsPage() {
     
     const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!editingResident) return;
+        if (!editingResident || !estateId) return;
 
         const formData = new FormData(e.currentTarget);
         const newStatus = formData.get('status') as Resident['status'];
@@ -62,16 +68,23 @@ export default function ResidentsPage() {
             isPresent: newStatus === 'ساکن',
         };
 
-        setResidents(prev => prev.map(r => r.id === updatedResident.id ? updatedResident : r));
+        const residentRef = doc(firestore, 'estates', estateId, 'residents', updatedResident.id);
+        setDocumentNonBlocking(residentRef, updatedResident, { merge: true });
+
         setIsDialogOpen(false);
         setEditingResident(null);
     };
 
-    const handleStatusChange = (residentId: string, isPresent: boolean) => {
-        setResidents(prev =>
-            prev.map(r => (r.id === residentId ? { ...r, isPresent: isPresent, status: isPresent ? 'ساکن' : 'خالی' } : r))
-        );
+    const handleStatusChange = (resident: Resident, isPresent: boolean) => {
+        if (!estateId) return;
+        const residentRef = doc(firestore, 'estates', estateId, 'residents', resident.id);
+        const updatedData = { ...resident, isPresent, status: isPresent ? 'ساکن' : 'خالی' };
+        setDocumentNonBlocking(residentRef, updatedData, { merge: true });
     };
+
+    if (isLoading) {
+        return <div>در حال بارگذاری...</div>;
+    }
 
     return (
         <>
@@ -91,7 +104,7 @@ export default function ResidentsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {residents.map((resident) => (
+                            {residents?.map((resident) => (
                                 <TableRow key={resident.id}>
                                     <TableCell className="font-medium">{resident.villaNumber}</TableCell>
                                     <TableCell>{resident.name}</TableCell>
@@ -102,7 +115,7 @@ export default function ResidentsPage() {
                                         <div className="flex items-center space-x-2 space-x-reverse">
                                             <Switch
                                                 checked={resident.isPresent}
-                                                onCheckedChange={(checked) => handleStatusChange(resident.id, checked)}
+                                                onCheckedChange={(checked) => handleStatusChange(resident, checked)}
                                                 aria-label="وضعیت سکونت"
                                             />
                                             <Badge variant={statusVariant[resident.status]}>{resident.status}</Badge>

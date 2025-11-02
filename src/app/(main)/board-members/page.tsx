@@ -3,7 +3,7 @@
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useData } from '@/context/data-context';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { PlusCircle, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -32,9 +32,19 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { collection, doc } from 'firebase/firestore';
+import { setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function BoardMembersPage() {
-    const { boardMembers, setBoardMembers, residents } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+
+    const boardMembersQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'boardMembers') : null, [firestore, estateId]);
+    const { data: boardMembers, isLoading: loadingBoardMembers } = useCollection<BoardMember>(boardMembersQuery);
+
+    const residentsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'residents') : null, [firestore, estateId]);
+    const { data: residents, isLoading: loadingResidents } = useCollection<Resident>(residentsQuery);
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<BoardMember | null>(null);
 
@@ -49,11 +59,14 @@ export default function BoardMembersPage() {
     };
 
     const handleDelete = (id: string) => {
-        setBoardMembers(prev => prev.filter(m => m.id !== id));
+        if (!estateId) return;
+        deleteDocumentNonBlocking(doc(firestore, 'estates', estateId, 'boardMembers', id));
     };
     
     const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!estateId || !residents) return;
+
         const formData = new FormData(e.currentTarget);
         const residentId = formData.get('residentId') as string;
         const position = formData.get('position') as string;
@@ -61,23 +74,31 @@ export default function BoardMembersPage() {
         const selectedResident = residents.find(r => r.id === residentId);
         if (!selectedResident) return;
 
-        const newMemberData = {
+        const memberId = editingMember ? editingMember.id : `b${Date.now()}`;
+
+        const newMemberData: BoardMember = {
+            id: memberId,
             residentId,
             name: selectedResident.name,
             familyName: selectedResident.familyName,
             phone: selectedResident.phone,
             villaNumber: selectedResident.villaNumber,
             position,
+            estateId: estateId,
         };
 
-        if (editingMember) {
-            setBoardMembers(prev => prev.map(m => m.id === editingMember.id ? { ...m, ...newMemberData } : m));
-        } else {
-            setBoardMembers(prev => [...prev, { id: `b${Date.now()}`, ...newMemberData }]);
-        }
+        const memberRef = doc(firestore, 'estates', estateId, 'boardMembers', memberId);
+        setDocumentNonBlocking(memberRef, newMemberData, { merge: true });
+        
         setIsDialogOpen(false);
         setEditingMember(null);
     };
+    
+    const isLoading = loadingBoardMembers || loadingResidents;
+
+    if (isLoading) {
+        return <div>در حال بارگذاری...</div>;
+    }
 
     return (
         <>
@@ -100,7 +121,7 @@ export default function BoardMembersPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {boardMembers.map((member) => (
+                            {boardMembers?.map((member) => (
                                 <TableRow key={member.id}>
                                     <TableCell className="font-medium">{member.name} {member.familyName}</TableCell>
                                     <TableCell>{member.villaNumber}</TableCell>
@@ -150,7 +171,7 @@ export default function BoardMembersPage() {
                                         <SelectValue placeholder="یکی از ساکنین را انتخاب کنید" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {residents.filter(r => r.status === 'ساکن').map(resident => (
+                                        {residents?.filter(r => r.status === 'ساکن').map(resident => (
                                             <SelectItem key={resident.id} value={resident.id}>
                                                 {resident.name} {resident.familyName} (ویلا {resident.villaNumber})
                                             </SelectItem>

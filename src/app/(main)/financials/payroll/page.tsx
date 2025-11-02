@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useData } from '@/context/data-context';
+import { useCollection, useDoc, useFirebase, useMemoFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import type { CompanyInfo, Personnel, PayrollRecord, WorkLog, PayrollSettings } from '@/lib/types';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator, Users, Clock, Receipt, Search, Printer, Save, Settings } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,22 +22,38 @@ import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import PayrollListPage from './payroll-list-content';
+import { collection, doc } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 function CompanyInfoForm() {
-    const { companyInfo, setCompanyInfo } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+    const companyInfoQuery = useMemoFirebase(() => estateId ? doc(firestore, 'estates', estateId, 'companyInfo', 'default') : null, [firestore, estateId]);
+    const { data: companyInfo, isLoading } = useDoc<CompanyInfo>(companyInfoQuery);
     const { toast } = useToast();
+    
+    const [formData, setFormData] = useState<Partial<CompanyInfo>>({});
+
+    useEffect(() => {
+        if (companyInfo) {
+            setFormData(companyInfo);
+        }
+    }, [companyInfo]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-        const newInfo: CompanyInfo = {
-            name: formData.get('name') as string,
-            defaultEntryTime: formData.get('defaultEntryTime') as string,
-            defaultExitTime: formData.get('defaultExitTime') as string,
-        };
-        setCompanyInfo(newInfo);
+        if (!estateId) return;
+        const companyInfoRef = doc(firestore, 'estates', estateId, 'companyInfo', 'default');
+        const dataToSave = { ...formData, estateId };
+        setDocumentNonBlocking(companyInfoRef, dataToSave, { merge: true });
         toast({ title: 'موفقیت', description: 'اطلاعات پایه با موفقیت ذخیره شد.' });
     };
+
+    if (isLoading) return <div>در حال بارگذاری...</div>
 
     return (
         <Card>
@@ -51,16 +67,16 @@ function CompanyInfoForm() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="name">نام شرکت/فروشگاه</Label>
-                        <Input id="name" name="name" defaultValue={companyInfo?.name} placeholder="مثال: شهرک سینا" />
+                        <Input id="name" name="name" value={formData?.name || ''} onChange={handleChange} placeholder="مثال: شهرک سینا" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="defaultEntryTime">ساعت ورود پیش‌فرض</Label>
-                            <Input id="defaultEntryTime" name="defaultEntryTime" type="time" defaultValue={companyInfo?.defaultEntryTime ?? '08:00'} />
+                            <Input id="defaultEntryTime" name="defaultEntryTime" type="time" value={formData?.defaultEntryTime || '08:00'}  onChange={handleChange} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="defaultExitTime">ساعت خروج پیش‌فرض</Label>
-                            <Input id="defaultExitTime" name="defaultExitTime" type="time" defaultValue={companyInfo?.defaultExitTime ?? '17:00'} />
+                            <Input id="defaultExitTime" name="defaultExitTime" type="time" value={formData?.defaultExitTime || '17:00'} onChange={handleChange} />
                         </div>
                     </div>
                     <Button type="submit">ذخیره اطلاعات پایه</Button>
@@ -87,13 +103,22 @@ const calculateHours = (entry: string, exit: string): number => {
 };
 
 function WorkHoursContent() {
-    const { personnel, workLogs, setWorkLogs } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+
+    const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
+    const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
+
+    const workLogsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'workLogs') : null, [firestore, estateId]);
+    const { data: workLogs, isLoading: loadingWorkLogs } = useCollection<WorkLog>(workLogsQuery);
+
     const { toast } = useToast();
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
     const dateString = formatEn(selectedDate, 'yyyy-MM-dd');
 
     const dailyLogs = useMemo(() => {
+        if (!personnel || !workLogs) return [];
         const logsForDate = workLogs.filter(log => log.date === dateString);
         
         return personnel.map(p => {
@@ -110,8 +135,7 @@ function WorkHoursContent() {
 
     const [editableLogs, setEditableLogs] = useState(dailyLogs);
 
-    // Update editable logs when date or personnel changes
-    useMemo(() => {
+    useEffect(() => {
         setEditableLogs(dailyLogs);
     }, [dailyLogs]);
 
@@ -126,25 +150,30 @@ function WorkHoursContent() {
     };
 
     const handleSaveLogs = () => {
-        const updatedLogs: WorkLog[] = [];
-        const otherDayLogs = workLogs.filter(log => log.date !== dateString);
+        if (!estateId) return;
 
         editableLogs.forEach(log => {
             if (log.entryTime && log.exitTime) {
-                updatedLogs.push({
-                    id: `${log.personnelId}-${dateString}`,
+                const logId = `${log.personnelId}-${dateString}`;
+                const logRef = doc(firestore, 'estates', estateId, 'workLogs', logId);
+                const dataToSave: WorkLog = {
+                    id: logId,
                     personnelId: log.personnelId,
                     date: dateString,
                     entryTime: log.entryTime,
                     exitTime: log.exitTime,
                     hoursWorked: log.hoursWorked,
-                });
+                    estateId
+                };
+                setDocumentNonBlocking(logRef, dataToSave, { merge: true });
             }
         });
-
-        setWorkLogs([...otherDayLogs, ...updatedLogs]);
         toast({ title: 'موفقیت', description: 'ساعات کاری با موفقیت ذخیره شد.' });
     };
+
+    if(loadingPersonnel || loadingWorkLogs) {
+        return <div>در حال بارگذاری...</div>;
+    }
     
     return (
         <Card>
@@ -326,7 +355,15 @@ export function PayslipDisplay({ payslip, personnel }: { payslip: PayrollRecord,
 }
 
 function PayslipContent() {
-    const { payrollRecords, personnel } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+
+    const payrollRecordsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'payrollRecords') : null, [firestore, estateId]);
+    const { data: payrollRecords, isLoading: loadingPayroll } = useCollection<PayrollRecord>(payrollRecordsQuery);
+
+    const personnelQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'personnel') : null, [firestore, estateId]);
+    const { data: personnel, isLoading: loadingPersonnel } = useCollection<Personnel>(personnelQuery);
+
     const [personnelId, setPersonnelId] = useState('');
     const [foundPayslip, setFoundPayslip] = useState<PayrollRecord | null>(null);
     const [foundPersonnel, setFoundPersonnel] = useState<Personnel | null>(null);
@@ -338,6 +375,8 @@ function PayslipContent() {
         setFoundPayslip(null);
         setFoundPersonnel(null);
 
+        if (!payrollRecords || !personnel) return;
+
         const records = payrollRecords.filter(p => p.personnelId === personnelId).sort((a, b) => new Date(b.calculationDate).getTime() - new Date(a.calculationDate).getTime());
         if (records.length > 0) {
             setFoundPayslip(records[0]); // Get the latest record
@@ -348,6 +387,9 @@ function PayslipContent() {
         }
     };
     
+    if (loadingPayroll || loadingPersonnel) {
+        return <div>در حال بارگذاری...</div>;
+    }
 
     return (
         <>
@@ -389,19 +431,33 @@ function PayslipContent() {
 }
 
 function PayrollSettingsForm() {
-    const { payrollSettings, setPayrollSettings } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+    const payrollSettingsQuery = useMemoFirebase(() => estateId ? doc(firestore, 'estates', estateId, 'payrollSettings', 'default') : null, [firestore, estateId]);
+    const { data: payrollSettings, isLoading } = useDoc<PayrollSettings>(payrollSettingsQuery);
     const { toast } = useToast();
+    const [formData, setFormData] = useState<Partial<PayrollSettings>>({});
+
+    useEffect(() => {
+        if(payrollSettings) {
+            setFormData(payrollSettings);
+        }
+    }, [payrollSettings]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-        const newSettings: PayrollSettings = {
-            baseHourlyRate: Number(formData.get('baseHourlyRate')),
-            overtimeMultiplier: Number(formData.get('overtimeMultiplier')),
-        };
-        setPayrollSettings(newSettings);
+        if (!estateId) return;
+        const settingsRef = doc(firestore, 'estates', estateId, 'payrollSettings', 'default');
+        const dataToSave = { ...formData, estateId, baseHourlyRate: Number(formData.baseHourlyRate), overtimeMultiplier: Number(formData.overtimeMultiplier) };
+        setDocumentNonBlocking(settingsRef, dataToSave, { merge: true });
         toast({ title: 'موفقیت', description: 'تنظیمات حقوق و دستمزد با موفقیت ذخیره شد.' });
     };
+
+    if (isLoading) return <div>در حال بارگذاری...</div>;
 
     return (
         <Card>
@@ -415,12 +471,12 @@ function PayrollSettingsForm() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="baseHourlyRate">پایه حقوق قانون کار (ساعتی)</Label>
-                        <Input id="baseHourlyRate" name="baseHourlyRate" type="number" defaultValue={payrollSettings?.baseHourlyRate} placeholder="مثال: 33299" />
+                        <Input id="baseHourlyRate" name="baseHourlyRate" type="number" value={formData.baseHourlyRate || ''} onChange={handleChange} placeholder="مثال: 33299" />
                         <p className="text-xs text-muted-foreground">این مبلغ به عنوان نرخ پیش‌فرض ساعتی در محاسبه‌گر حقوق استفاده می‌شود.</p>
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="overtimeMultiplier">ضریب اضافه کاری</Label>
-                        <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.1" defaultValue={payrollSettings?.overtimeMultiplier} placeholder="مثال: 1.4" />
+                        <Input id="overtimeMultiplier" name="overtimeMultiplier" type="number" step="0.1" value={formData.overtimeMultiplier || ''} onChange={handleChange} placeholder="مثال: 1.4" />
                          <p className="text-xs text-muted-foreground">طبق قانون کار، این ضریب معمولا ۱.۴ است.</p>
                     </div>
                     <Button type="submit">ذخیره تنظیمات</Button>

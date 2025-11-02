@@ -9,6 +9,7 @@ export interface Personnel {
   phone: string;
   position: 'سرایدار' | 'خدمات' | 'نگهبان' | 'حسابدار' | 'مدیر شهرک';
   status: 'مشغول کار' | 'اتمام کار' | 'مرخصی' | 'غیبت';
+  estateId: string;
 }
 
 export interface Resident {
@@ -20,6 +21,8 @@ export interface Resident {
   villaNumber: number;
   status: 'ساکن' | 'خالی';
   isPresent: boolean;
+  estateId: string;
+  villaId: string;
 }
 
 export interface BoardMember {
@@ -30,15 +33,18 @@ export interface BoardMember {
   position: string;
   phone: string;
   villaNumber?: number;
+  estateId: string;
 }
 
 export interface Villa {
-  id: number;
+  id: string;
   name: string;
   owner: string;
   area: number;
   residentInfo: string;
   phone: string;
+  estateId: string;
+  villaNumber: number;
 }
 
 export interface Transaction {
@@ -48,6 +54,7 @@ export interface Transaction {
   reason: string;
   amount: number;
   date: string;
+  estateId: string;
 }
 
 export interface Document {
@@ -56,6 +63,7 @@ export interface Document {
   category: 'شرکت' | 'طرفین' | 'پرسنل' | 'ادارات';
   uploadDate: string;
   url: string;
+  estateId: string;
 }
 
 export interface PayrollRecord {
@@ -76,12 +84,14 @@ export interface PayrollRecord {
   grossPay: number;
   netPay: number;
   overtimePay: number;
+  estateId: string;
 }
 
 export interface CompanyInfo {
     name: string;
     defaultEntryTime: string;
     defaultExitTime: string;
+    estateId: string;
 }
 
 export interface WorkLog {
@@ -91,9 +101,11 @@ export interface WorkLog {
   entryTime: string; // HH:MM
   exitTime: string; // HH:MM
   hoursWorked: number;
+  estateId: string;
 }
 
 export interface PayrollSettings {
     baseHourlyRate: number;
     overtimeMultiplier: number;
+    estateId: string;
 }

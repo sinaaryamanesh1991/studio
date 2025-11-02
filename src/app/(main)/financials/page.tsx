@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useData } from '@/context/data-context';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -22,30 +22,43 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Transaction } from '@/lib/types';
 import { format } from 'date-fns-jalali';
+import { collection, doc } from 'firebase/firestore';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function FinancialsPage() {
-    const { transactions, setTransactions } = useData();
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+    const transactionsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'financialTransactions') : null, [firestore, estateId]);
+    const { data: transactions, isLoading } = useCollection<Transaction>(transactionsQuery);
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    const receipts = transactions.filter(t => t.type === 'دریافتی');
-    const payments = transactions.filter(t => t.type === 'پرداختی');
+    const receipts = transactions?.filter(t => t.type === 'دریافتی') ?? [];
+    const payments = transactions?.filter(t => t.type === 'پرداختی') ?? [];
 
     const handleSaveTransaction = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!estateId) return;
+
         const formData = new FormData(e.currentTarget);
+        const transactionRef = collection(firestore, 'estates', estateId, 'financialTransactions');
         
-        const newTransaction: Transaction = {
-            id: `t${Date.now()}`,
+        const newTransaction: Omit<Transaction, 'id'> = {
             type: formData.get('type') as 'دریافتی' | 'پرداختی',
             party: formData.get('party') as string,
             reason: formData.get('reason') as string,
             amount: Number(formData.get('amount')),
             date: format(new Date(), 'yyyy/MM/dd'),
+            estateId,
         };
 
-        setTransactions(prev => [...prev, newTransaction]);
+        addDocumentNonBlocking(transactionRef, newTransaction);
         setIsDialogOpen(false);
     };
+    
+    if (isLoading) {
+        return <div>در حال بارگذاری...</div>;
+    }
 
     return (
         <>
