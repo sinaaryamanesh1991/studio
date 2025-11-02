@@ -5,7 +5,7 @@ export interface Personnel {
   nationalId: string;
   accountNumber: string;
   insuranceNumber: string;
-  hireDate: string;
+  hireDate: string; // Keep as string e.g. "1403-01-20"
   phone: string;
   position: 'سرایدار' | 'خدمات' | 'نگهبان' | 'حسابدار' | 'مدیر شهرک';
   status: 'مشغول کار' | 'اتمام کار' | 'مرخصی' | 'غیبت';
@@ -109,5 +109,3 @@ export interface PayrollSettings {
     overtimeMultiplier: number;
     estateId: string;
 }
-
-    

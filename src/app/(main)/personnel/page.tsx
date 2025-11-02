@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { PlusCircle, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Edit, Trash2, Calendar as CalendarIcon } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { Personnel } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -35,6 +35,12 @@ import {
 } from '@/components/ui/select';
 import { collection, doc } from 'firebase/firestore';
 import { setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format, parse, isValid } from 'date-fns-jalali';
+import { faIR } from 'date-fns-jalali/locale';
+import { cn } from '@/lib/utils';
+
 
 const statusVariant = {
   'مشغول کار': 'default',
@@ -52,6 +58,22 @@ export default function PersonnelPage() {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingPersonnel, setEditingPersonnel] = useState<Personnel | null>(null);
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+    useEffect(() => {
+        if (isDialogOpen) {
+            if (editingPersonnel && editingPersonnel.hireDate) {
+                const parsedDate = parse(editingPersonnel.hireDate, 'yyyy-MM-dd', new Date());
+                if (isValid(parsedDate)) {
+                    setSelectedDate(parsedDate);
+                } else {
+                    setSelectedDate(undefined);
+                }
+            } else {
+                setSelectedDate(new Date());
+            }
+        }
+    }, [editingPersonnel, isDialogOpen]);
 
     const handleAddNew = () => {
         setEditingPersonnel(null);
@@ -80,7 +102,7 @@ export default function PersonnelPage() {
             name: formData.get('name') as string,
             familyName: formData.get('familyName') as string,
             phone: formData.get('phone') as string,
-            hireDate: formData.get('hireDate') as string,
+            hireDate: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
             position: formData.get('position') as Personnel['position'],
             status: formData.get('status') as Personnel['status'],
             nationalId: formData.get('nationalId') as string,
@@ -94,6 +116,7 @@ export default function PersonnelPage() {
 
         setIsDialogOpen(false);
         setEditingPersonnel(null);
+        setSelectedDate(undefined);
     };
 
     if (isLoading) {
@@ -163,7 +186,13 @@ export default function PersonnelPage() {
                 </CardContent>
             </Card>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
+                if (!isOpen) {
+                    setEditingPersonnel(null);
+                    setSelectedDate(undefined);
+                }
+                setIsDialogOpen(isOpen);
+            }}>
                 <DialogContent className="sm:max-w-md font-body">
                     <form onSubmit={handleSave}>
                         <DialogHeader>
@@ -191,7 +220,29 @@ export default function PersonnelPage() {
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="hireDate" className="text-right">تاریخ استخدام</Label>
-                                <Input id="hireDate" name="hireDate" defaultValue={editingPersonnel?.hireDate} className="col-span-3" placeholder="مثال: 1403-01-20" />
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "col-span-3 justify-start text-left font-normal",
+                                                !selectedDate && "text-muted-foreground"
+                                            )}
+                                        >
+                                            <CalendarIcon className="ml-2 h-4 w-4" />
+                                            {selectedDate ? format(selectedDate, 'PPP', { locale: faIR }) : <span>انتخاب تاریخ</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            locale={faIR}
+                                            mode="single"
+                                            selected={selectedDate}
+                                            onSelect={setSelectedDate}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                              <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="accountNumber" className="text-right">شماره حساب</Label>
