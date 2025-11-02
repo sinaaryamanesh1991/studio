@@ -87,13 +87,39 @@ export default function PayrollSystemPage() {
                     <CompanyInfoForm />
                 </TabsContent>
                 <TabsContent value="personnel-info">
-                    <PersonnelPage />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>اطلاعات پرسنل</CardTitle>
+                            <CardDescription>برای مدیریت کامل پرسنل، به صفحه اختصاصی آن مراجعه کنید.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Link href="/personnel" passHref>
+                                <Button>
+                                    <Users className="ms-2 h-4 w-4" />
+                                    رفتن به صفحه مدیریت پرسنل
+                                </Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
                 <TabsContent value="work-hours">
                     {/* Work hours component will go here */}
                 </TabsContent>
                 <TabsContent value="payroll-list">
-                    <PayrollListPage/>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>لیست حقوق</CardTitle>
+                            <CardDescription>برای مشاهده و مدیریت حقوق های محاسبه شده، به صفحه لیست حقوق مراجعه کنید.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Link href="/financials/payroll-list" passHref>
+                                <Button>
+                                    <List className="ms-2 h-4 w-4" />
+                                    رفتن به صفحه لیست حقوق
+                                </Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
                 <TabsContent value="payslip">
                     {/* Payslip component will go here */}

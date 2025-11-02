@@ -96,7 +96,7 @@ export function MainNav() {
                            </SidebarMenuItem>
                            <SidebarMenuItem>
                                 <Link href="/financials/payroll" legacyBehavior passHref>
-                                    <SidebarMenuSubButton isActive={pathname.startsWith('/financials/payroll') && !pathname.endsWith('calculator') && !pathname.endsWith('list')}>
+                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll'}>
                                         <Settings />
                                         <span>حقوق و دستمزد</span>
                                     </SidebarMenuSubButton>
@@ -107,6 +107,14 @@ export function MainNav() {
                                     <SidebarMenuSubButton isActive={pathname === '/financials/payroll-calculator'}>
                                         <Calculator />
                                         <span>محاسبه حقوق</span>
+                                    </SidebarMenuSubButton>
+                                </Link>
+                            </SidebarMenuItem>
+                             <SidebarMenuItem>
+                                <Link href="/financials/payroll-list" legacyBehavior passHref>
+                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll-list'}>
+                                        <List />
+                                        <span>لیست حقوق</span>
                                     </SidebarMenuSubButton>
                                 </Link>
                             </SidebarMenuItem>
