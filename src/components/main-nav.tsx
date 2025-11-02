@@ -14,7 +14,6 @@ import {
   ChevronDown,
   Settings,
   List,
-  Clock,
   Receipt,
 } from 'lucide-react';
 import {
@@ -95,14 +94,6 @@ export function MainNav() {
                                     <SidebarMenuSubButton isActive={pathname.startsWith('/financials/payroll')}>
                                         <Settings />
                                         <span>حقوق و دستمزد</span>
-                                    </SidebarMenuSubButton>
-                                </Link>
-                            </SidebarMenuItem>
-                             <SidebarMenuItem>
-                                <Link href="/financials/payroll/work-hours">
-                                    <SidebarMenuSubButton isActive={pathname === '/financials/payroll/work-hours'}>
-                                        <Clock />
-                                        <span>ساعت کاری</span>
                                     </SidebarMenuSubButton>
                                 </Link>
                             </SidebarMenuItem>

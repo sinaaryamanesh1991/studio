@@ -82,3 +82,12 @@ export interface CompanyInfo {
     defaultEntryTime: string;
     defaultExitTime: string;
 }
+
+export interface WorkLog {
+  id: string; // e.g., `p001-2024-07-28`
+  personnelId: string;
+  date: string; // YYYY-MM-DD
+  entryTime: string; // HH:MM
+  exitTime: string; // HH:MM
+  hoursWorked: number;
+}
