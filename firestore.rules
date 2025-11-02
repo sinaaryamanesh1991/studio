@@ -38,21 +38,21 @@ service cloud.firestore {
     }
 
     /**
-     * @description Checks if the authenticated user is the owner of the estate and the document exists.
+     * @description Checks if the authenticated user is the owner of the estate for an existing document.
      * Used for update and delete operations.
      * @param {string} estateId - The estate ID to check against.
-     * @returns {boolean} True if the user is the owner and the document exists, false otherwise.
+     * @returns {boolean} True if the user is the owner of the existing document's estate, false otherwise.
      */
     function isExistingOwner(estateId) {
-        return isOwner(estateId) && resource != null;
+        return isSignedIn() && resource.data.estateId == estateId;
     }
 
     /**
      * @description Enforces that the 'estateId' field in the request data matches the 'estateId' parameter in the path.
      * @returns {boolean} True if the 'estateId' values match, false otherwise.
      */
-    function isValidEstateId() {
-      return request.resource.data.estateId == request.params.estateId;
+    function isValidEstateId(estateId) {
+      return request.resource.data.estateId == estateId;
     }
 
     /**
@@ -75,11 +75,11 @@ service cloud.firestore {
      * @principle Enforces strict owner-only access for estate creation and prevents unauthorized access.
      */
     match /estates/{estateId} {
-      allow get: if false;
+      allow get: if isOwner(estateId);
       allow list: if false;
-      allow create: if isSignedIn() && request.auth.uid == estateId;
-      allow update: if false;
-      allow delete: if false;
+      allow create: if isOwner(estateId);
+      allow update: if isOwner(estateId);
+      allow delete: if isOwner(estateId);
     }
 
     /**
@@ -94,10 +94,10 @@ service cloud.firestore {
      * @principle Enforces strict estate-scoped access for personnel data.
      */
     match /estates/{estateId}/personnel/{personnelId} {
-      allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow get: if isExistingOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
 
@@ -113,10 +113,10 @@ service cloud.firestore {
      * @principle Enforces strict estate-scoped access for resident data.
      */
     match /estates/{estateId}/residents/{residentId} {
-      allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow get: if isExistingOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
 
@@ -132,10 +132,10 @@ service cloud.firestore {
      * @principle Enforces strict estate-scoped access for board member data.
      */
     match /estates/{estateId}/boardMembers/{boardMemberId} {
-      allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow get: if isExistingOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
 
@@ -151,10 +151,10 @@ service cloud.firestore {
      * @principle Enforces strict estate-scoped access for villa data.
      */
     match /estates/{estateId}/villas/{villaId} {
-      allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow get: if isExistingOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
 
@@ -170,10 +170,10 @@ service cloud.firestore {
      * @principle Enforces strict estate-scoped access for financial transaction data.
      */
     match /estates/{estateId}/financialTransactions/{transactionId} {
-      allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow get: if isExistingOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
 
@@ -189,10 +189,10 @@ service cloud.firestore {
      * @principle Enforces strict estate-scoped access for document data.
      */
     match /estates/{estateId}/documents/{documentId} {
-      allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow get: if isExistingOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
 
@@ -208,10 +208,10 @@ service cloud.firestore {
      * @principle Enforces strict estate-scoped access for payroll information data.
      */
     match /estates/{estateId}/payrollInformation/{payrollInformationId} {
-      allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow get: if isExistingOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
 
@@ -227,46 +227,44 @@ service cloud.firestore {
      * @principle Enforces strict estate-scoped access for attendance records data.
      */
     match /estates/{estateId}/attendanceRecords/{attendanceRecordId} {
-      allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow get: if isExistingOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
     
     // This allows reading the companyInfo and payrollSettings documents
     match /estates/{estateId}/companyInfo/{docId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
+      allow get: if isOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
+      allow delete: if isOwner(estateId);
     }
 
     match /estates/{estateId}/payrollSettings/{docId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
-      allow delete: if isExistingOwner(estateId);
+      allow get: if isOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
+      allow delete: if isOwner(estateId);
     }
     
     match /estates/{estateId}/workLogs/{docId} {
-      allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow get: if isExistingOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
 
     match /estates/{estateId}/payrollRecords/{docId} {
-      allow get: if isSignedIn() && resource.data.estateId == estateId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidEstateId();
-      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow get: if isExistingOwner(estateId);
+      allow list: if isOwner(estateId);
+      allow create: if isOwner(estateId) && isValidEstateId(estateId);
+      allow update: if isExistingOwner(estateId) && isValidEstateId(estateId) && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
   }
 }
-
-    
