@@ -18,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Home, Phone } from 'lucide-react';
+import Image from 'next/image';
 
 export default function MapPage() {
     const { villas, setVillas } = useData();
@@ -86,6 +87,29 @@ export default function MapPage() {
                         ))}
                     </div>
                 </CardContent>
+            </Card>
+
+            <Card className="mt-6">
+                <CardHeader>
+                    <CardTitle>شماتیک نقشه شهرک</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="relative w-full aspect-[4/3]">
+                        <Image
+                            src="https://picsum.photos/seed/map/800/600"
+                            alt="نقشه شماتیک شهرک"
+                            layout="fill"
+                            objectFit="contain"
+                            className="rounded-md"
+                            data-ai-hint="site map"
+                        />
+                    </div>
+                </CardContent>
+                 <CardFooter>
+                    <p className="text-xs text-muted-foreground">
+                        این یک تصویر جایگزین است. شما می‌توانید تصویر نقشه اصلی را در کد جایگزین کنید.
+                    </p>
+                </CardFooter>
             </Card>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
