@@ -233,6 +233,39 @@ service cloud.firestore {
       allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
       allow delete: if isExistingOwner(estateId);
     }
+    
+    // This allows reading the companyInfo and payrollSettings documents
+    match /estates/{estateId}/companyInfo/{docId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidEstateId();
+      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow delete: if isExistingOwner(estateId);
+    }
+
+    match /estates/{estateId}/payrollSettings/{docId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidEstateId();
+      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow delete: if isExistingOwner(estateId);
+    }
+    
+    match /estates/{estateId}/workLogs/{docId} {
+      allow get: if isSignedIn() && resource.data.estateId == estateId;
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidEstateId();
+      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow delete: if isExistingOwner(estateId);
+    }
+
+    match /estates/{estateId}/payrollRecords/{docId} {
+      allow get: if isSignedIn() && resource.data.estateId == estateId;
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidEstateId();
+      allow update: if isExistingOwner(estateId) && isValidEstateId() && estateIdIsImmutable();
+      allow delete: if isExistingOwner(estateId);
+    }
   }
 }
 
