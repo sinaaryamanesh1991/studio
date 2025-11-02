@@ -42,7 +42,7 @@ export const initialVillas: Villa[] = [
   { id: 3, name: "ویلا ۳", owner: "احمدی (احمدی) گنج", area: 180, residentInfo: "احمدی (احمدی) گنج", phone: "09121148481" },
   { id: 4, name: "ویلا ۴", owner: "احمدی گنج", area: 220, residentInfo: "احمدی گنج", phone: "09121122387" },
   { id: 5, name: "ویلا ۵", owner: "مظفری منفرد", area: 250, residentInfo: "مظفری منفرد", phone: "09121143803" },
-  { id_6: 6, name: "ویلا ۶", owner: "احمدی گنج", area: 170, residentInfo: "احمدی گنج", phone: "09124772848" },
+  { id: 6, name: "ویلا ۶", owner: "احمدی گنج", area: 170, residentInfo: "احمدی گنج", phone: "09124772848" },
   { id: 7, name: "ویلا ۷", owner: "تهرانی", area: 190, residentInfo: "تهرانی", phone: "09124506178" },
   { id: 8, name: "ویلا ۸", owner: "ظفرمندی", area: 210, residentInfo: "ظفرمندی", phone: "" },
   { id: 9, name: "ویلا ۹", owner: "مهدی احمدی گنج", area: 230, residentInfo: "مهدی احمدی گنج", phone: "09121110100" },
