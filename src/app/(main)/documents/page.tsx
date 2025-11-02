@@ -101,34 +101,31 @@ export default function DocumentsPage() {
         });
     };
 
-    const renderRelatedEntity = (doc: Document) => {
-        if (!doc.relatedEntityId) {
-          return doc.description || '-';
-        }
-    
-        if (doc.category === 'پرسنل' && personnel) {
-          const p = personnel.find(p => p.id === doc.relatedEntityId);
-          if (!p) return <span className="text-muted-foreground">پرسنل یافت نشد</span>;
+    const renderRelatedEntity = (docItem: Document) => {
+        if (docItem.category === 'پرسنل') {
+          const person = personnel?.find(p => p.id === docItem.relatedEntityId);
+          if (!person) return <span className="text-muted-foreground">پرسنل یافت نشد</span>;
           return (
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={p.photoUrl} alt={`${p.name} ${p.familyName}`} />
+                <AvatarImage src={person.photoUrl} alt={`${person.name} ${person.familyName}`} />
                 <AvatarFallback>
                   <User className="h-4 w-4" />
                 </AvatarFallback>
               </Avatar>
-              <span>{p.name} {p.familyName}</span>
+              <span>{person.name} {person.familyName}</span>
             </div>
           );
         }
     
-        if (doc.category === 'ساکنین' && residents) {
-          const r = residents.find(r => r.id === doc.relatedEntityId);
-           if (!r) return <span className="text-muted-foreground">ساکن یافت نشد</span>;
-          return `${r.name} ${r.familyName}`;
+        if (docItem.category === 'ساکنین') {
+          const resident = residents?.find(r => r.id === docItem.relatedEntityId);
+          if (!resident) return <span className="text-muted-foreground">ساکن یافت نشد</span>;
+          return `${resident.name} ${resident.familyName}`;
         }
-    
-        return '-';
+        
+        // For 'شهرک' or 'ویلا'
+        return docItem.description || '-';
       };
 
     
@@ -159,12 +156,12 @@ export default function DocumentsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {documents?.map((doc) => (
-                                <TableRow key={doc.id}>
-                                    <TableCell className="font-medium">{doc.name}</TableCell>
-                                    <TableCell>{doc.category}</TableCell>
-                                    <TableCell>{renderRelatedEntity(doc)}</TableCell>
-                                    <TableCell>{doc.uploadDate}</TableCell>
+                            {documents?.map((docItem) => (
+                                <TableRow key={docItem.id}>
+                                    <TableCell className="font-medium">{docItem.name}</TableCell>
+                                    <TableCell>{docItem.category}</TableCell>
+                                    <TableCell>{renderRelatedEntity(docItem)}</TableCell>
+                                    <TableCell>{docItem.uploadDate}</TableCell>
                                     <TableCell className="text-left">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -178,7 +175,7 @@ export default function DocumentsPage() {
                                                     <Eye className="ms-2 h-4 w-4" />
                                                     مشاهده
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(doc.id)}>
+                                                <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(docItem.id)}>
                                                     <Trash2 className="ms-2 h-4 w-4" />
                                                     حذف
                                                 </DropdownMenuItem>
