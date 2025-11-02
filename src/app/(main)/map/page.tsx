@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Home } from 'lucide-react';
+import { Home, Phone } from 'lucide-react';
 
 export default function MapPage() {
     const { villas, setVillas } = useData();
@@ -40,6 +40,7 @@ export default function MapPage() {
             owner: formData.get('owner') as string,
             area: parseInt(formData.get('area') as string, 10),
             residentInfo: formData.get('residentInfo') as string,
+            phone: formData.get('phone') as string,
         };
 
         setVillas(prev => prev.map(v => v.id === updatedVilla.id ? updatedVilla : v));
@@ -62,7 +63,7 @@ export default function MapPage() {
                         {villas.map(villa => (
                             <Card 
                                 key={villa.id} 
-                                className="cursor-pointer hover:shadow-lg hover:border-primary transition-all"
+                                className="cursor-pointer hover:shadow-lg hover:border-primary transition-all flex flex-col"
                                 onClick={() => handleCardClick(villa)}
                             >
                                 <CardHeader className="flex-row gap-4 items-center p-4">
@@ -74,8 +75,12 @@ export default function MapPage() {
                                         <CardDescription>{villa.owner}</CardDescription>
                                     </div>
                                 </CardHeader>
-                                <CardFooter className="p-4 pt-0 text-sm text-muted-foreground">
+                                <CardContent className="p-4 pt-0 text-sm text-muted-foreground">
                                     مساحت: {villa.area} متر مربع
+                                </CardContent>
+                                <CardFooter className="p-4 pt-0 mt-auto flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Phone className="w-4 h-4"/>
+                                    <span>{villa.phone || 'ثبت نشده'}</span>
                                 </CardFooter>
                             </Card>
                         ))}
@@ -100,6 +105,10 @@ export default function MapPage() {
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="owner" className="text-right">نام مالک</Label>
                                 <Input id="owner" name="owner" defaultValue={selectedVilla?.owner} className="col-span-3" />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="phone" className="text-right">شماره تماس</Label>
+                                <Input id="phone" name="phone" defaultValue={selectedVilla?.phone} className="col-span-3" />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="area" className="text-right">مساحت (متر)</Label>

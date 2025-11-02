@@ -33,6 +33,7 @@ export interface Villa {
   owner: string;
   area: number;
   residentInfo: string;
+  phone: string;
 }
 
 export interface Transaction {
