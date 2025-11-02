@@ -4,10 +4,6 @@ import { collection, doc, writeBatch, Firestore } from 'firebase/firestore';
 import type { Personnel, Resident, Villa, BoardMember, Transaction, Document, CompanyInfo, PayrollSettings } from '@/lib/types';
 
 const initialPersonnel: Omit<Personnel, 'estateId'>[] = [
-    { id: 'p1689345001', name: 'اسحاق', familyName: 'بهادری', hireDate: '1403-01-01', phone: '09103053794', position: 'نگهبان', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
-    { id: 'p1689345002', name: 'رضا', familyName: 'کابچی', hireDate: '1403-01-01', phone: '09117444694', position: 'خدمات', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
-    { id: 'p1689345003', name: 'علی', familyName: 'فرهنگ', hireDate: '1403-01-01', phone: '09334881914', position: 'سرایدار', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
-    { id: 'p1689345004', name: 'ناصر', familyName: 'رمضانی', hireDate: '1403-01-01', phone: '09120000000', position: 'نگهبان', status: 'مشغول کار', nationalId: '', accountNumber: '', insuranceNumber: '' },
 ];
 
 const initialResidents: Omit<Resident, 'estateId' | 'villaId'>[] = [
@@ -43,7 +39,12 @@ const initialVillas: Omit<Villa, 'estateId'>[] = initialResidents.map(resident =
     villaNumber: resident.villaNumber
 }));
 
-const initialBoardMembers: Omit<BoardMember, 'estateId'>[] = [];
+const initialBoardMembers: Omit<BoardMember, 'estateId'>[] = [
+    { id: 'bm1', residentId: 'res1', name: 'علیرضا', familyName: 'عبادی', position: 'مدیر عامل', phone: '09123070435', villaNumber: 1 },
+    { id: 'bm2', residentId: 'res2', name: 'شهمیری', familyName: '(احمدی) گنج', position: 'نایب رئیس', phone: '09394957877', villaNumber: 2 },
+    { id: 'bm3', residentId: 'res3', name: 'احمدی', familyName: '(احمدی) گنج', position: 'خزانه دار', phone: '09121148481', villaNumber: 3 },
+    { id: 'bm4', residentId: 'res4', name: 'احمدی', familyName: 'گنج', position: 'منشی', phone: '09121122387', villaNumber: 4 },
+];
 const initialTransactions: Omit<Transaction, 'estateId'>[] = [];
 const initialDocuments: Omit<Document, 'estateId'>[] = [];
 
@@ -84,22 +85,27 @@ export async function seedDatabase(db: Firestore, estateId: string) {
       });
   }
 
-  initialBoardMembers.forEach(item => {
-    const docRef = doc(db, 'estates', estateId, 'boardMembers', item.id);
-    batch.set(docRef, { ...item, estateId });
-  });
+  if (initialBoardMembers.length > 0) {
+      initialBoardMembers.forEach(item => {
+        const docRef = doc(db, 'estates', estateId, 'boardMembers', item.id);
+        batch.set(docRef, { ...item, estateId });
+      });
+  }
 
-  initialTransactions.forEach(item => {
-    const docRef = doc(collection(db, 'estates', estateId, 'financialTransactions'));
-    batch.set(docRef, { ...item, id: docRef.id, estateId });
-  });
+  if (initialTransactions.length > 0) {
+      initialTransactions.forEach(item => {
+        const docRef = doc(collection(db, 'estates', estateId, 'financialTransactions'));
+        batch.set(docRef, { ...item, id: docRef.id, estateId });
+      });
+  }
 
-  initialDocuments.forEach(item => {
-    const docRef = doc(collection(db, 'estates', estateId, 'documents'));
-    batch.set(docRef, { ...item, id: docRef.id, estateId });
-  });
+  if (initialDocuments.length > 0) {
+      initialDocuments.forEach(item => {
+        const docRef = doc(collection(db, 'estates', estateId, 'documents'));
+        batch.set(docRef, { ...item, id: docRef.id, estateId });
+      });
+  }
 
-  // These single documents can be set with default base values to ensure the app structure holds.
   const companyInfoRef = doc(db, 'estates', estateId, 'companyInfo', 'default');
   batch.set(companyInfoRef, { ...initialCompanyInfo, estateId });
 
