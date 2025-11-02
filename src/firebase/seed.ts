@@ -40,7 +40,8 @@ const initialVillas: Omit<Villa, 'estateId'>[] = initialResidents.map(resident =
     area: Math.floor(Math.random() * 100) + 150, // Random area between 150-250
     residentInfo: `ساکن: ${resident.name} ${resident.familyName}`,
     phone: resident.phone,
-    villaNumber: resident.villaNumber
+    villaNumber: resident.villaNumber,
+    occupantType: 'owner', // Default all to owner initially
 }));
 
 const initialBoardMembers: Omit<BoardMember, 'estateId'>[] = [

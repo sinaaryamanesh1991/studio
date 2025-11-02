@@ -45,6 +45,7 @@ export interface Villa {
   phone: string;
   estateId: string;
   villaNumber: number;
+  occupantType: 'owner' | 'tenant';
 }
 
 export interface Transaction {

@@ -77,9 +77,10 @@
         "residentInfo": { "type": "string" },
         "phone": { "type": "string" },
         "villaNumber": { "type": "number" },
+        "occupantType": { "type": "string", "enum": ["owner", "tenant"], "description": "Indicates if the current occupant is the owner or a tenant." },
         "estateId": { "type": "string", "description": "FK to Estate" }
       },
-      "required": ["id", "name", "owner", "villaNumber", "estateId"]
+      "required": ["id", "name", "owner", "villaNumber", "estateId", "occupantType"]
     },
     "FinancialTransaction": {
       "title": "FinancialTransaction",

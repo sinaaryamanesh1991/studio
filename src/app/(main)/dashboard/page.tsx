@@ -27,11 +27,10 @@ const statusVariant = {
   'خالی': 'secondary',
 } as const;
 
-const ownerStatusVariant = {
-    'مالک ساکن است': 'default',
-    'ویلا خالی است': 'secondary',
-    'ساکن مستاجر است': 'outline',
-};
+const occupantTypeVariant = {
+  'owner': 'default',
+  'tenant': 'outline',
+} as const;
 
 
 export default function DashboardPage() {
@@ -60,24 +59,22 @@ export default function DashboardPage() {
     setDocumentNonBlocking(residentRef, updatedData, { merge: true });
   };
   
+  const handleOccupantTypeChange = (villa: Villa, isOwner: boolean) => {
+      if (!estateId) return;
+      const villaRef = doc(firestore, 'estates', estateId, 'villas', villa.id);
+      const updatedData = { ...villa, occupantType: isOwner ? 'owner' : 'tenant' };
+      setDocumentNonBlocking(villaRef, updatedData, { merge: true });
+  };
+
   const presentCount = residents?.filter(r => r.status === 'ساکن').length ?? 0;
 
-  const getOwnerStatus = (resident: Resident): { text: string; variant: keyof typeof ownerStatusVariant } => {
-    const villa = villas?.find(v => v.villaNumber === resident.villaNumber);
+  const getOccupantText = (villa: Villa | undefined, resident: Resident): string => {
+      if(resident.status !== 'ساکن' || !villa) {
+          return 'ویلا خالی است';
+      }
+      return villa.occupantType === 'owner' ? 'مالک ساکن است' : 'ساکن مستاجر است';
+  }
 
-    if (resident.status !== 'ساکن' || !villa) {
-        return { text: 'ویلا خالی است', variant: 'ویلا خالی است' };
-    }
-    
-    const residentFullName = `${resident.name} ${resident.familyName}`.trim();
-    const ownerFullName = villa.owner.trim();
-
-    if (residentFullName === ownerFullName) {
-        return { text: 'مالک ساکن است', variant: 'مالک ساکن است' };
-    }
-    
-    return { text: 'ساکن مستاجر است', variant: 'ساکن مستاجر است' };
-};
 
   const handleSeed = async () => {
     if (!firestore || !estateId) return;
@@ -171,12 +168,13 @@ export default function DashboardPage() {
                             <TableHead>نام خانوادگی</TableHead>
                             <TableHead>شماره تماس</TableHead>
                             <TableHead>وضعیت سکونت</TableHead>
-                            <TableHead>وضعیت ویلا</TableHead>
+                            <TableHead>وضعیت مالکیت</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident: Resident) => {
-                             const ownerStatus = getOwnerStatus(resident);
+                             const villa = villas?.find(v => v.villaNumber === resident.villaNumber);
+                             const occupantText = getOccupantText(villa, resident);
                              return (
                                 <TableRow key={resident.id}>
                                     <TableCell className="font-medium">{resident.villaNumber}</TableCell>
@@ -197,9 +195,21 @@ export default function DashboardPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={ownerStatusVariant[ownerStatus.variant]}>
-                                            {ownerStatus.text}
-                                        </Badge>
+                                        {resident.status === 'ساکن' && villa ? (
+                                             <div className="flex items-center space-x-2 space-x-reverse">
+                                                <Switch
+                                                    id={`occupant-type-switch-${villa.id}`}
+                                                    checked={villa.occupantType === 'owner'}
+                                                    onCheckedChange={(checked) => handleOccupantTypeChange(villa, checked)}
+                                                    aria-label="وضعیت مالکیت"
+                                                />
+                                                <Badge variant={occupantTypeVariant[villa.occupantType]}>
+                                                    {villa.occupantType === 'owner' ? 'مالک' : 'مستاجر'}
+                                                </Badge>
+                                            </div>
+                                        ) : (
+                                            <Badge variant="secondary">ویلا خالی است</Badge>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             );
