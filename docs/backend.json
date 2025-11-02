@@ -1,0 +1,584 @@
+{
+  "entities": {
+    "Estate": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Estate",
+      "type": "object",
+      "description": "Represents the overall estate or compound being managed.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the estate."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the estate (e.g., Sina Estate, Nilarz Estate)."
+        },
+        "address": {
+          "type": "string",
+          "description": "Physical address of the estate."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "Contact email address for the estate.",
+          "format": "email"
+        },
+        "contactPhone": {
+          "type": "string",
+          "description": "Contact phone number for the estate."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Personnel": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Personnel",
+      "type": "object",
+      "description": "Represents an employee or staff member working in the estate.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the personnel."
+        },
+        "personnelId": {
+          "type": "string",
+          "description": "Personnel number as defined by the estate."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the personnel."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the personnel."
+        },
+        "employmentDate": {
+          "type": "string",
+          "description": "Date when the personnel was employed.",
+          "format": "date-time"
+        },
+        "contactNumber": {
+          "type": "string",
+          "description": "Contact phone number of the personnel."
+        },
+        "position": {
+          "type": "string",
+          "description": "Position of the personnel (e.g., caretaker, service, guard, accountant, estate manager)."
+        },
+        "status": {
+          "type": "string",
+          "description": "Employment status of the personnel (e.g., working, terminated, on leave, absent)."
+        },
+        "estateId": {
+          "type": "string",
+          "description": "Reference to Estate. (Relationship: Estate 1:N Personnel)"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "estateId"
+      ]
+    },
+    "Resident": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Resident",
+      "type": "object",
+      "description": "Represents a resident living in the estate.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the resident."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the resident."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the resident."
+        },
+        "contactNumber": {
+          "type": "string",
+          "description": "Contact phone number of the resident."
+        },
+        "vehiclePlateNumbers": {
+          "type": "array",
+          "description": "List of vehicle plate numbers associated with the resident.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "villaId": {
+          "type": "string",
+          "description": "Reference to Villa. (Relationship: Villa 1:N Resident)"
+        },
+        "residencyStatus": {
+          "type": "string",
+          "description": "Residency status of the resident (e.g., resident, non-resident)."
+        },
+        "estateId": {
+          "type": "string",
+          "description": "Reference to Estate. (Relationship: Estate 1:N Resident)"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "villaId",
+        "estateId"
+      ]
+    },
+    "BoardMember": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BoardMember",
+      "type": "object",
+      "description": "Represents a member of the board of directors for the estate.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the board member."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the board member."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the board member."
+        },
+        "isResident": {
+          "type": "boolean",
+          "description": "Indicates whether the board member is a resident of the estate."
+        },
+        "villaId": {
+          "type": "string",
+          "description": "Reference to Villa if the board member is a resident. (Relationship: Villa 1:N BoardMember)"
+        },
+        "contactNumber": {
+          "type": "string",
+          "description": "Contact phone number of the board member."
+        },
+        "estateId": {
+          "type": "string",
+          "description": "Reference to Estate. (Relationship: Estate 1:N BoardMember)"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "estateId"
+      ]
+    },
+    "Villa": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Villa",
+      "type": "object",
+      "description": "Represents a villa or property within the estate.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the villa."
+        },
+        "villaNumber": {
+          "type": "string",
+          "description": "Villa number or identifier within the estate."
+        },
+        "area": {
+          "type": "number",
+          "description": "Area of the villa in square meters."
+        },
+        "estateMapLocation": {
+          "type": "string",
+          "description": "Coordinates of the villa on the estate map (e.g., JSON or string representation)."
+        },
+        "estateId": {
+          "type": "string",
+          "description": "Reference to Estate. (Relationship: Estate 1:N Villa)"
+        }
+      },
+      "required": [
+        "id",
+        "villaNumber",
+        "estateId"
+      ]
+    },
+    "FinancialTransaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FinancialTransaction",
+      "type": "object",
+      "description": "Represents a financial transaction (receipt or payment).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the transaction."
+        },
+        "transactionDate": {
+          "type": "string",
+          "description": "Date of the transaction.",
+          "format": "date-time"
+        },
+        "transactionType": {
+          "type": "string",
+          "description": "Type of transaction (e.g., receipt, payment, salary)."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the transaction."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description or purpose of the transaction."
+        },
+        "personnelId": {
+          "type": "string",
+          "description": "Reference to Personnel if the transaction is related to salary. (Relationship: Personnel 1:N FinancialTransaction)"
+        },
+        "residentId": {
+          "type": "string",
+          "description": "Reference to Resident if the transaction is related to a resident payment. (Relationship: Resident 1:N FinancialTransaction)"
+        },
+        "estateId": {
+          "type": "string",
+          "description": "Reference to Estate. (Relationship: Estate 1:N FinancialTransaction)"
+        }
+      },
+      "required": [
+        "id",
+        "transactionDate",
+        "transactionType",
+        "amount",
+        "estateId"
+      ]
+    },
+    "Document": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Document",
+      "type": "object",
+      "description": "Represents a document related to the estate, personnel, residents, or board members.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the document."
+        },
+        "documentName": {
+          "type": "string",
+          "description": "Name of the document."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL or path to the document file.",
+          "format": "uri"
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "Date when the document was uploaded.",
+          "format": "date-time"
+        },
+        "personnelId": {
+          "type": "string",
+          "description": "Reference to Personnel if the document is related to personnel. (Relationship: Personnel 1:N Document)"
+        },
+        "residentId": {
+          "type": "string",
+          "description": "Reference to Resident if the document is related to a resident. (Relationship: Resident 1:N Document)"
+        },
+        "boardMemberId": {
+          "type": "string",
+          "description": "Reference to BoardMember if the document is related to a board member. (Relationship: BoardMember 1:N Document)"
+        },
+        "estateId": {
+          "type": "string",
+          "description": "Reference to Estate. (Relationship: Estate 1:N Document)"
+        }
+      },
+      "required": [
+        "id",
+        "documentName",
+        "fileUrl",
+        "uploadDate",
+        "estateId"
+      ]
+    },
+    "PayrollInformation": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PayrollInformation",
+      "type": "object",
+      "description": "Represents payroll related information for calculating employee salaries.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for payroll information."
+        },
+        "personnelId": {
+          "type": "string",
+          "description": "Reference to Personnel. (Relationship: Personnel 1:1 PayrollInformation)"
+        },
+        "hourlyRate": {
+          "type": "number",
+          "description": "Hourly rate of the personnel."
+        },
+        "insurancePercentage": {
+          "type": "number",
+          "description": "Insurance percentage for payroll deduction."
+        },
+        "taxPercentage": {
+          "type": "number",
+          "description": "Tax percentage for payroll deduction."
+        },
+        "otherDeductions": {
+          "type": "number",
+          "description": "Other deductions from the salary."
+        },
+        "estateId": {
+          "type": "string",
+          "description": "Reference to Estate. (Relationship: Estate 1:N PayrollInformation)"
+        }
+      },
+      "required": [
+        "id",
+        "personnelId",
+        "hourlyRate",
+        "insurancePercentage",
+        "taxPercentage",
+        "estateId"
+      ]
+    },
+    "AttendanceRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AttendanceRecord",
+      "type": "object",
+      "description": "Represents a record of an employee's attendance, including check-in and check-out times.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the attendance record."
+        },
+        "personnelId": {
+          "type": "string",
+          "description": "Reference to Personnel. (Relationship: Personnel 1:N AttendanceRecord)"
+        },
+        "checkInTime": {
+          "type": "string",
+          "description": "Time when the personnel checked in.",
+          "format": "date-time"
+        },
+        "checkOutTime": {
+          "type": "string",
+          "description": "Time when the personnel checked out.",
+          "format": "date-time"
+        },
+        "absence": {
+          "type": "boolean",
+          "description": "Indicates if the employee was absent on this day."
+        },
+        "lateArrival": {
+          "type": "boolean",
+          "description": "Indicates if the employee had a late arrival."
+        },
+        "estateId": {
+          "type": "string",
+          "description": "Reference to Estate. (Relationship: Estate 1:N AttendanceRecord)"
+        }
+      },
+      "required": [
+        "id",
+        "personnelId",
+        "estateId"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/estates/{estateId}",
+        "definition": {
+          "entityName": "Estate",
+          "schema": {
+            "$ref": "#/backend/entities/Estate"
+          },
+          "description": "Stores information about each estate. The estateId is used to scope all other collections.",
+          "params": [
+            {
+              "name": "estateId",
+              "description": "Unique identifier for the estate."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/estates/{estateId}/personnel/{personnelId}",
+        "definition": {
+          "entityName": "Personnel",
+          "schema": {
+            "$ref": "#/backend/entities/Personnel"
+          },
+          "description": "Stores information about estate personnel. Includes denormalized 'estateId' for authorization independence.",
+          "params": [
+            {
+              "name": "estateId",
+              "description": "The ID of the estate to which the personnel belongs."
+            },
+            {
+              "name": "personnelId",
+              "description": "Unique identifier for the personnel."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/estates/{estateId}/residents/{residentId}",
+        "definition": {
+          "entityName": "Resident",
+          "schema": {
+            "$ref": "#/backend/entities/Resident"
+          },
+          "description": "Stores information about estate residents. Includes denormalized 'estateId' for authorization independence.",
+          "params": [
+            {
+              "name": "estateId",
+              "description": "The ID of the estate to which the resident belongs."
+            },
+            {
+              "name": "residentId",
+              "description": "Unique identifier for the resident."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/estates/{estateId}/boardMembers/{boardMemberId}",
+        "definition": {
+          "entityName": "BoardMember",
+          "schema": {
+            "$ref": "#/backend/entities/BoardMember"
+          },
+          "description": "Stores information about estate board members. Includes denormalized 'estateId' for authorization independence.",
+          "params": [
+            {
+              "name": "estateId",
+              "description": "The ID of the estate to which the board member belongs."
+            },
+            {
+              "name": "boardMemberId",
+              "description": "Unique identifier for the board member."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/estates/{estateId}/villas/{villaId}",
+        "definition": {
+          "entityName": "Villa",
+          "schema": {
+            "$ref": "#/backend/entities/Villa"
+          },
+          "description": "Stores information about villas within the estate. Includes denormalized 'estateId' for authorization independence.",
+          "params": [
+            {
+              "name": "estateId",
+              "description": "The ID of the estate to which the villa belongs."
+            },
+            {
+              "name": "villaId",
+              "description": "Unique identifier for the villa."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/estates/{estateId}/financialTransactions/{transactionId}",
+        "definition": {
+          "entityName": "FinancialTransaction",
+          "schema": {
+            "$ref": "#/backend/entities/FinancialTransaction"
+          },
+          "description": "Stores financial transactions related to the estate. Includes denormalized 'estateId' for authorization independence.",
+          "params": [
+            {
+              "name": "estateId",
+              "description": "The ID of the estate to which the transaction belongs."
+            },
+            {
+              "name": "transactionId",
+              "description": "Unique identifier for the transaction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/estates/{estateId}/documents/{documentId}",
+        "definition": {
+          "entityName": "Document",
+          "schema": {
+            "$ref": "#/backend/entities/Document"
+          },
+          "description": "Stores documents related to the estate. Includes denormalized 'estateId' for authorization independence.",
+          "params": [
+            {
+              "name": "estateId",
+              "description": "The ID of the estate to which the document belongs."
+            },
+            {
+              "name": "documentId",
+              "description": "Unique identifier for the document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/estates/{estateId}/payrollInformation/{payrollInformationId}",
+        "definition": {
+          "entityName": "PayrollInformation",
+          "schema": {
+            "$ref": "#/backend/entities/PayrollInformation"
+          },
+          "description": "Stores payroll information for personnel within the estate. Includes denormalized 'estateId' for authorization independence.",
+          "params": [
+            {
+              "name": "estateId",
+              "description": "The ID of the estate to which the payroll information belongs."
+            },
+            {
+              "name": "payrollInformationId",
+              "description": "Unique identifier for the payroll information record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/estates/{estateId}/attendanceRecords/{attendanceRecordId}",
+        "definition": {
+          "entityName": "AttendanceRecord",
+          "schema": {
+            "$ref": "#/backend/entities/AttendanceRecord"
+          },
+          "description": "Stores attendance records for personnel within the estate. Includes denormalized 'estateId' for authorization independence.",
+          "params": [
+            {
+              "name": "estateId",
+              "description": "The ID of the estate to which the attendance record belongs."
+            },
+            {
+              "name": "attendanceRecordId",
+              "description": "Unique identifier for the attendance record."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the \"Sina Estate Manager\" application, focusing on offline capabilities and efficient data management for estates. The structure adheres to Authorization Independence by denormalizing relevant data, and supports QAPs by segregating data based on access requirements.\n\nTo support the requirement of an offline mobile application, consider using Firestore's offline persistence features, and local caching.\n\n1.  **Estates Collection:** The root collection `/estates` stores estate-specific data. Each document represents an estate, identified by its unique `estateId`. This collection serves as the anchor for all related data.\n2.  **Personnel Collection:** Located at `/estates/{estateId}/personnel/{personnelId}`, this collection stores information about estate employees. The `estateId` is denormalized within each `Personnel` document to ensure Authorization Independence.\n3.  **Residents Collection:** Located at `/estates/{estateId}/residents/{residentId}`, this collection stores resident data. The `estateId` is denormalized within each `Resident` document to ensure Authorization Independence. Each resident is associated with a `villaId`.\n4.  **Board Members Collection:** Located at `/estates/{estateId}/boardMembers/{boardMemberId}`, this collection stores board member data.  The `estateId` is denormalized within each `BoardMember` document to ensure Authorization Independence.\n5.  **Villas Collection:** Located at `/estates/{estateId}/villas/{villaId}`, this collection stores villa details. The `estateId` is denormalized within each `Villa` document to ensure Authorization Independence.\n6.  **Financial Transactions Collection:** Located at `/estates/{estateId}/financialTransactions/{transactionId}`, this collection stores financial transaction records. The `estateId` is denormalized within each `FinancialTransaction` document to ensure Authorization Independence.\n7.  **Documents Collection:** Located at `/estates/{estateId}/documents/{documentId}`, this collection stores documents.  The `estateId` is denormalized within each `Document` document to ensure Authorization Independence.\n8.  **Payroll Information Collection:** Located at `/estates/{estateId}/payrollInformation/{payrollInformationId}`, this collection stores payroll information. The `estateId` is denormalized within each `PayrollInformation` document to ensure Authorization Independence.\n9.  **Attendance Records Collection:** Located at `/estates/{estateId}/attendanceRecords/{attendanceRecordId}`, this collection stores attendance records. The `estateId` is denormalized within each `AttendanceRecord` document to ensure Authorization Independence."
+  }
+}
