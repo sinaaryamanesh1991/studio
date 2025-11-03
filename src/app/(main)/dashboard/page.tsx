@@ -226,9 +226,9 @@ export default function DashboardPage() {
                 <TableHead>نام و نام خانوادگی</TableHead>
                 <TableHead>شماره تماس</TableHead>
                 <TableHead>پلاک خودرو</TableHead>
+                <TableHead>وضعیت حضور</TableHead>
                 <TableHead>وضعیت سکونت</TableHead>
                 <TableHead>نوع سکونت</TableHead>
-                <TableHead>وضعیت حضور</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -238,6 +238,17 @@ export default function DashboardPage() {
                   <TableCell>{resident.name} {resident.familyName}</TableCell>
                   <TableCell>{resident.phone}</TableCell>
                   <TableCell>{resident.carPlates}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2 space-x-reverse">
+                      <Switch
+                        id={`presence-switch-${resident.id}`}
+                        checked={resident.isPresent}
+                        onCheckedChange={(checked) => handleStatusChange(resident, checked)}
+                        aria-label="وضعیت حضور"
+                      />
+                       <Label htmlFor={`presence-switch-${resident.id}`}>{resident.isPresent ? 'حاضر' : 'غایب'}</Label>
+                    </div>
+                  </TableCell>
                    <TableCell>
                       <Badge variant={residentStatusVariant[resident.status]}>{resident.status}</Badge>
                    </TableCell>
@@ -254,17 +265,6 @@ export default function DashboardPage() {
                         </Label>
                       </div>
                    </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2 space-x-reverse">
-                      <Switch
-                        id={`presence-switch-${resident.id}`}
-                        checked={resident.isPresent}
-                        onCheckedChange={(checked) => handleStatusChange(resident, checked)}
-                        aria-label="وضعیت حضور"
-                      />
-                       <Label htmlFor={`presence-switch-${resident.id}`}>{resident.isPresent ? 'حاضر' : 'غایب'}</Label>
-                    </div>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
