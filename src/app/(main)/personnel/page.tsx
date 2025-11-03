@@ -152,8 +152,6 @@ export default function PersonnelPage() {
             photoUrl: photoUrl,
             estateId: estateId,
             childrenCount: Number(formData.get('childrenCount') || 0),
-            shiftDays: formData.get('shiftDays') as string,
-            shiftHours: formData.get('shiftHours') as string,
         };
         
         const personRef = doc(firestore, 'estates', estateId, 'personnel', personId);
@@ -352,14 +350,6 @@ export default function PersonnelPage() {
                                 <Label htmlFor="insuranceNumber" className="text-right">شماره بیمه</Label>
                                 <Input id="insuranceNumber" name="insuranceNumber" defaultValue={editingPersonnel?.insuranceNumber} className="col-span-3" />
                             </div>
-                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="shiftDays" className="text-right">روزهای کاری</Label>
-                                <Input id="shiftDays" name="shiftDays" defaultValue={editingPersonnel?.shiftDays} className="col-span-3" placeholder="مثال: شنبه تا چهارشنبه"/>
-                            </div>
-                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="shiftHours" className="text-right">ساعت کاری</Label>
-                                <Input id="shiftHours" name="shiftHours" defaultValue={editingPersonnel?.shiftHours} className="col-span-3" placeholder="مثال: 08:00 - 16:00" />
-                            </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="position" className="text-right">سمت</Label>
                                 <Select name="position" defaultValue={editingPersonnel?.position}>
@@ -402,5 +392,3 @@ export default function PersonnelPage() {
         </>
     );
 }
-
-    

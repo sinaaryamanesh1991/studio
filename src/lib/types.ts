@@ -12,8 +12,6 @@ export interface Personnel {
   photoUrl?: string;
   estateId: string;
   childrenCount?: number; // Added for payroll calculation
-  shiftDays?: string; // e.g., "شنبه - چهارشنبه"
-  shiftHours?: string; // e.g., "08:00 - 17:00"
 }
 
 export interface Resident {

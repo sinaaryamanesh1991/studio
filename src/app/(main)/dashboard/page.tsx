@@ -179,8 +179,7 @@ export default function DashboardPage() {
                 <TableHeader>
                     <TableRow>
                         <TableHead>نام پرسنل</TableHead>
-                        <TableHead>روز</TableHead>
-                        <TableHead>شیفت</TableHead>
+                        <TableHead>سمت</TableHead>
                         <TableHead>وضعیت</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -197,12 +196,10 @@ export default function DashboardPage() {
                                     </Avatar>
                                     <div className="flex flex-col">
                                         <span className="font-medium">{person.name} {person.familyName}</span>
-                                        <span className="text-xs text-muted-foreground">{person.position}</span>
                                     </div>
                                 </div>
                             </TableCell>
-                            <TableCell>{person.shiftDays || '-'}</TableCell>
-                            <TableCell>{person.shiftHours || '-'}</TableCell>
+                            <TableCell>{person.position}</TableCell>
                             <TableCell>
                                 <Badge variant={personnelStatusVariant[person.status]}>{person.status}</Badge>
                             </TableCell>
@@ -295,5 +292,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
-    
