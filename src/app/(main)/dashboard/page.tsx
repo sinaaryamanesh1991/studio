@@ -212,7 +212,7 @@ export default function DashboardPage() {
                                 className="w-32"
                             />
                         ) : (
-                            <span className="text-muted-foreground">-</span>
+                           <span>{resident.name} {resident.familyName}</span>
                         )}
                         </TableCell>
                       <TableCell>{resident.carPlates}</TableCell>
@@ -421,3 +421,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
