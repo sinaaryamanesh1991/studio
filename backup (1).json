@@ -1,0 +1,960 @@
+{
+  "personnel": [
+    {
+      "id": "p1",
+      "data": {
+        "photoUrl": "https://picsum.photos/seed/p1/200/200",
+        "childrenCount": 0,
+        "nationalId": "",
+        "hireDate": "1403-01-01",
+        "name": "",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "familyName": "اسحاقی",
+        "status": "مشغول کار",
+        "position": "نگهبان",
+        "phone": "09103053794",
+        "insuranceNumber": "",
+        "id": "p1",
+        "accountNumber": ""
+      }
+    },
+    {
+      "id": "p2",
+      "data": {
+        "photoUrl": "https://picsum.photos/seed/p2/200/200",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "familyName": "کالجی",
+        "name": "سینا",
+        "nationalId": "2220058336",
+        "phone": "09117444694",
+        "hireDate": "1402-05-10",
+        "position": "نگهبان",
+        "status": "مشغول کار",
+        "childrenCount": 0,
+        "id": "p2",
+        "accountNumber": "",
+        "insuranceNumber": ""
+      }
+    },
+    {
+      "id": "p3",
+      "data": {
+        "phone": "09334881914",
+        "status": "مشغول کار",
+        "photoUrl": "https://picsum.photos/seed/p3/200/200",
+        "accountNumber": "",
+        "hireDate": "1401-11-20",
+        "familyName": "رمضانی ",
+        "position": "سرایدار",
+        "insuranceNumber": "",
+        "name": "فرهنگ",
+        "id": "p3",
+        "nationalId": "",
+        "childrenCount": 0,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2"
+      }
+    },
+    {
+      "id": "p4",
+      "data": {
+        "position": "نگهبان",
+        "photoUrl": "https://picsum.photos/seed/p4/200/200",
+        "childrenCount": 0,
+        "accountNumber": "",
+        "nationalId": "",
+        "hireDate": "1400-01-01",
+        "id": "p4",
+        "familyName": "رمضانی",
+        "phone": "09120000000",
+        "status": "مشغول کار",
+        "insuranceNumber": "",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "name": "ناصر"
+      }
+    }
+  ],
+  "residents": [
+    {
+      "id": "res1",
+      "data": {
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "status": "ساکن",
+        "villaId": "v1",
+        "id": "res1",
+        "phone": "09123070435",
+        "tenantName": "",
+        "villaNumber": 1,
+        "carPlates": "",
+        "isPresent": true,
+        "familyName": "عبادی",
+        "name": "علیرضا",
+        "occupantType": "owner"
+      }
+    },
+    {
+      "id": "res10",
+      "data": {
+        "id": "res10",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "villaNumber": 10,
+        "villaId": "v10",
+        "name": "عبدالهی",
+        "carPlates": "",
+        "isPresent": true,
+        "phone": "09122387053",
+        "familyName": "",
+        "status": "ساکن"
+      }
+    },
+    {
+      "id": "res11",
+      "data": {
+        "villaId": "v11",
+        "familyName": "شمار",
+        "id": "res11",
+        "status": "خالی",
+        "carPlates": "",
+        "villaNumber": 11,
+        "isPresent": false,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "phone": "09121114885",
+        "name": "نوید"
+      }
+    },
+    {
+      "id": "res12",
+      "data": {
+        "familyName": "",
+        "phone": "09121219871",
+        "name": "جعفری",
+        "isPresent": true,
+        "status": "ساکن",
+        "villaNumber": 12,
+        "villaId": "v12",
+        "id": "res12",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "carPlates": ""
+      }
+    },
+    {
+      "id": "res13",
+      "data": {
+        "phone": "09122830616",
+        "name": "دانشور",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "status": "خالی",
+        "villaNumber": 13,
+        "isPresent": false,
+        "carPlates": "",
+        "familyName": "",
+        "id": "res13",
+        "villaId": "v13"
+      }
+    },
+    {
+      "id": "res14",
+      "data": {
+        "phone": "09121162187",
+        "familyName": "",
+        "villaNumber": 14,
+        "villaId": "v14",
+        "carPlates": "",
+        "name": "مقدادی",
+        "id": "res14",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "isPresent": true,
+        "status": "ساکن"
+      }
+    },
+    {
+      "id": "res15",
+      "data": {
+        "villaId": "v15",
+        "status": "خالی",
+        "phone": "09183344995",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "familyName": "",
+        "villaNumber": 15,
+        "isPresent": false,
+        "name": "فورادی",
+        "carPlates": "",
+        "id": "res15"
+      }
+    },
+    {
+      "id": "res16",
+      "data": {
+        "villaNumber": 16,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "status": "خالی",
+        "carPlates": "",
+        "id": "res16",
+        "villaId": "v16",
+        "isPresent": false,
+        "phone": "09123444541",
+        "familyName": "(قاجار)",
+        "name": "خدیوزاده"
+      }
+    },
+    {
+      "id": "res17",
+      "data": {
+        "familyName": "",
+        "carPlates": "",
+        "villaNumber": 17,
+        "villaId": "v17",
+        "isPresent": false,
+        "name": "شجاعی",
+        "status": "خالی",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "phone": "09121063777",
+        "id": "res17"
+      }
+    },
+    {
+      "id": "res18",
+      "data": {
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "carPlates": "",
+        "name": "روحانی",
+        "phone": "09121195271",
+        "id": "res18",
+        "villaId": "v18",
+        "villaNumber": 18,
+        "isPresent": true,
+        "familyName": "",
+        "status": "ساکن"
+      }
+    },
+    {
+      "id": "res19",
+      "data": {
+        "familyName": "جو",
+        "villaId": "v19",
+        "phone": "09131112799",
+        "isPresent": true,
+        "name": "هاشمی",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "status": "ساکن",
+        "id": "res19",
+        "carPlates": "",
+        "villaNumber": 19
+      }
+    },
+    {
+      "id": "res2",
+      "data": {
+        "carPlates": "",
+        "occupantType": "owner",
+        "status": "ساکن",
+        "villaId": "v2",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "phone": "09394957877",
+        "isPresent": true,
+        "familyName": "(احمدی) گنج",
+        "villaNumber": 2,
+        "name": "شهمیری",
+        "id": "res2"
+      }
+    },
+    {
+      "id": "res20",
+      "data": {
+        "isPresent": true,
+        "villaNumber": 20,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "status": "ساکن",
+        "familyName": "",
+        "carPlates": "",
+        "villaId": "v20",
+        "name": "مقصودی",
+        "phone": "09119021145",
+        "id": "res20"
+      }
+    },
+    {
+      "id": "res3",
+      "data": {
+        "villaNumber": 3,
+        "name": "احمدی",
+        "isPresent": true,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "villaId": "v3",
+        "familyName": "(احمدی) گنج",
+        "id": "res3",
+        "carPlates": "",
+        "phone": "09121148481",
+        "status": "ساکن"
+      }
+    },
+    {
+      "id": "res4",
+      "data": {
+        "id": "res4",
+        "status": "ساکن",
+        "phone": "09121122387",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "isPresent": true,
+        "villaId": "v4",
+        "villaNumber": 4,
+        "familyName": "گنج",
+        "name": "احمدی",
+        "carPlates": ""
+      }
+    },
+    {
+      "id": "res5",
+      "data": {
+        "villaNumber": 5,
+        "familyName": "",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "carPlates": "",
+        "isPresent": true,
+        "id": "res5",
+        "name": "مندری",
+        "villaId": "v5",
+        "phone": "09121143803",
+        "status": "ساکن"
+      }
+    },
+    {
+      "id": "res6",
+      "data": {
+        "phone": "09121122387",
+        "familyName": "گنج",
+        "villaId": "v6",
+        "isPresent": true,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "name": "احمدی",
+        "villaNumber": 6,
+        "status": "ساکن",
+        "id": "res6",
+        "carPlates": ""
+      }
+    },
+    {
+      "id": "res7",
+      "data": {
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "villaNumber": 7,
+        "name": "تهرانی",
+        "phone": "09124772848",
+        "villaId": "v7",
+        "status": "ساکن",
+        "familyName": "",
+        "isPresent": true,
+        "id": "res7",
+        "carPlates": ""
+      }
+    },
+    {
+      "id": "res8",
+      "data": {
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "villaNumber": 8,
+        "name": "ظفرمندی",
+        "phone": "09124506178",
+        "carPlates": "",
+        "id": "res8",
+        "isPresent": true,
+        "villaId": "v8",
+        "status": "ساکن",
+        "familyName": ""
+      }
+    },
+    {
+      "id": "res9",
+      "data": {
+        "familyName": "(احمدی) گنج",
+        "carPlates": "",
+        "id": "res9",
+        "name": "مصدی",
+        "status": "ساکن",
+        "villaNumber": 9,
+        "villaId": "v9",
+        "phone": "09121110100",
+        "isPresent": true,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2"
+      }
+    }
+  ],
+  "boardMembers": [
+    {
+      "id": "bm1",
+      "data": {
+        "villaNumber": 1,
+        "position": "مدیر عامل",
+        "name": "علیرضا",
+        "id": "bm1",
+        "familyName": "عبادی",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "phone": "09123070435",
+        "residentId": "res1"
+      }
+    },
+    {
+      "id": "bm2",
+      "data": {
+        "residentId": "res2",
+        "familyName": "(احمدی) گنج",
+        "id": "bm2",
+        "name": "شهمیری",
+        "villaNumber": 2,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "position": "نایب رئیس",
+        "phone": "09394957877"
+      }
+    },
+    {
+      "id": "bm3",
+      "data": {
+        "position": "خزانه دار",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "familyName": "(احمدی) گنج",
+        "phone": "09121148481",
+        "name": "احمدی",
+        "residentId": "res3",
+        "id": "bm3",
+        "villaNumber": 3
+      }
+    },
+    {
+      "id": "bm4",
+      "data": {
+        "id": "bm4",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "position": "منشی",
+        "name": "احمدی",
+        "phone": "09121122387",
+        "residentId": "res4",
+        "villaNumber": 4,
+        "familyName": "گنج"
+      }
+    }
+  ],
+  "villas": [
+    {
+      "id": "v1",
+      "data": {
+        "area": 180,
+        "owner": "علیرضا عبادی",
+        "occupantType": "owner",
+        "villaNumber": 1,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "name": "ویلا 1",
+        "residentInfo": "ساکن: علیرضا عبادی",
+        "id": "v1",
+        "phone": "09123070435"
+      }
+    },
+    {
+      "id": "v10",
+      "data": {
+        "owner": "عبدالهی",
+        "residentInfo": "ساکن: عبدالهی ",
+        "phone": "09122387053",
+        "id": "v10",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "area": 160,
+        "name": "ویلا 10",
+        "occupantType": "owner",
+        "villaNumber": 10
+      }
+    },
+    {
+      "id": "v11",
+      "data": {
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "phone": "09121114885",
+        "id": "v11",
+        "name": "ویلا 11",
+        "residentInfo": "ساکن: نوید شمار",
+        "villaNumber": 11,
+        "area": 152,
+        "owner": "نوید شمار",
+        "occupantType": "owner"
+      }
+    },
+    {
+      "id": "v12",
+      "data": {
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "villaNumber": 12,
+        "id": "v12",
+        "phone": "09121219871",
+        "name": "ویلا 12",
+        "owner": "جعفری",
+        "area": 242,
+        "residentInfo": "ساکن: جعفری ",
+        "occupantType": "owner"
+      }
+    },
+    {
+      "id": "v13",
+      "data": {
+        "phone": "09122830616",
+        "villaNumber": 13,
+        "area": 231,
+        "residentInfo": "ساکن: دانشور ",
+        "occupantType": "owner",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "id": "v13",
+        "owner": "دانشور",
+        "name": "ویلا 13"
+      }
+    },
+    {
+      "id": "v14",
+      "data": {
+        "owner": "مقدادی",
+        "occupantType": "owner",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "residentInfo": "ساکن: مقدادی ",
+        "area": 154,
+        "phone": "09121162187",
+        "id": "v14",
+        "name": "ویلا 14",
+        "villaNumber": 14
+      }
+    },
+    {
+      "id": "v15",
+      "data": {
+        "owner": "فولادی ",
+        "name": "ویلا 15",
+        "residentInfo": "ساکن: فورادی ",
+        "id": "v15",
+        "occupantType": "owner",
+        "villaNumber": 15,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "area": 246,
+        "phone": "09183344995"
+      }
+    },
+    {
+      "id": "v16",
+      "data": {
+        "occupantType": "owner",
+        "phone": "09123444541",
+        "area": 208,
+        "villaNumber": 16,
+        "id": "v16",
+        "residentInfo": "ساکن: خدیوزاده (قاجار)",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "name": "ویلا 16",
+        "owner": "خدیوزاده (قاجار)"
+      }
+    },
+    {
+      "id": "v17",
+      "data": {
+        "residentInfo": "ساکن: شجاعی ",
+        "owner": "شجاعی",
+        "occupantType": "owner",
+        "villaNumber": 17,
+        "name": "ویلا 17",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "phone": "09121063777",
+        "area": 246,
+        "id": "v17"
+      }
+    },
+    {
+      "id": "v18",
+      "data": {
+        "occupantType": "owner",
+        "area": 168,
+        "villaNumber": 18,
+        "residentInfo": "ساکن: روحانی ",
+        "phone": "09121195271",
+        "name": "ویلا 18",
+        "owner": "روحانی",
+        "id": "v18",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2"
+      }
+    },
+    {
+      "id": "v19",
+      "data": {
+        "owner": "هاشمی جو",
+        "name": "ویلا 19",
+        "residentInfo": "ساکن: هاشمی جو",
+        "id": "v19",
+        "occupantType": "owner",
+        "villaNumber": 19,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "area": 170,
+        "phone": "09131112799"
+      }
+    },
+    {
+      "id": "v2",
+      "data": {
+        "residentInfo": "ساکن: شهمیری (احمدی) گنج",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "id": "v2",
+        "phone": "09394957877",
+        "villaNumber": 2,
+        "name": "ویلا 2",
+        "owner": "شهمیری (احمدی) گنج",
+        "area": 161,
+        "occupantType": "owner"
+      }
+    },
+    {
+      "id": "v20",
+      "data": {
+        "area": 237,
+        "villaNumber": 20,
+        "name": "ویلا 20",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "occupantType": "owner",
+        "owner": "مقصودی",
+        "residentInfo": "ساکن: مقصودی ",
+        "phone": "09119021145",
+        "id": "v20"
+      }
+    },
+    {
+      "id": "v3",
+      "data": {
+        "area": 178,
+        "residentInfo": "ساکن: احمدی (احمدی) گنج",
+        "villaNumber": 3,
+        "owner": "احمدی (احمدی) گنج",
+        "name": "ویلا 3",
+        "phone": "09121148481",
+        "id": "v3",
+        "occupantType": "owner",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2"
+      }
+    },
+    {
+      "id": "v4",
+      "data": {
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "occupantType": "owner",
+        "phone": "09121122387",
+        "id": "v4",
+        "area": 153,
+        "residentInfo": "ساکن: احمدی گنج",
+        "name": "ویلا 4",
+        "owner": "احمدی گنج",
+        "villaNumber": 4
+      }
+    },
+    {
+      "id": "v5",
+      "data": {
+        "area": 218,
+        "occupantType": "owner",
+        "owner": "مندری",
+        "residentInfo": "ساکن: مندری ",
+        "villaNumber": 5,
+        "phone": "09121143803",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "id": "v5",
+        "name": "ویلا 5"
+      }
+    },
+    {
+      "id": "v6",
+      "data": {
+        "villaNumber": 6,
+        "id": "v6",
+        "owner": "احمدی گنج",
+        "name": "ویلا 6",
+        "phone": "09121122387",
+        "area": 232,
+        "occupantType": "owner",
+        "residentInfo": "ساکن: احمدی گنج",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2"
+      }
+    },
+    {
+      "id": "v7",
+      "data": {
+        "residentInfo": "ساکن: تهرانی ",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "phone": "09124772848",
+        "name": "ویلا 7",
+        "villaNumber": 7,
+        "area": 249,
+        "occupantType": "owner",
+        "id": "v7",
+        "owner": "تهرانی"
+      }
+    },
+    {
+      "id": "v8",
+      "data": {
+        "owner": "ظفرمندی",
+        "occupantType": "owner",
+        "id": "v8",
+        "residentInfo": "ساکن: ظفرمندی ",
+        "area": 177,
+        "villaNumber": 8,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "phone": "09124506178",
+        "name": "ویلا 8"
+      }
+    },
+    {
+      "id": "v9",
+      "data": {
+        "owner": "مصدی (احمدی) گنج",
+        "villaNumber": 9,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "phone": "09121110100",
+        "id": "v9",
+        "residentInfo": "ساکن: مصدی (احمدی) گنج",
+        "occupantType": "owner",
+        "area": 233,
+        "name": "ویلا 9"
+      }
+    }
+  ],
+  "financialTransactions": [
+    {
+      "id": "08OLrnUEgb7CfOoY0Qmq",
+      "data": {
+        "amount": 1200000,
+        "party": "شرکت باغبانی",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "date": "1403/04/05",
+        "id": "08OLrnUEgb7CfOoY0Qmq",
+        "type": "پرداختی",
+        "reason": "هزینه نگهداری فضای سبز"
+      }
+    },
+    {
+      "id": "MgICu04JCQ8d8DYr6ujE",
+      "data": {
+        "date": "1403/04/02",
+        "party": "ویلا شماره ۱۰",
+        "amount": 500000,
+        "reason": "شارژ ماهانه",
+        "id": "MgICu04JCQ8d8DYr6ujE",
+        "type": "دریافتی",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2"
+      }
+    },
+    {
+      "id": "arkwqoH9enzAtHdAM5hD",
+      "data": {
+        "reason": "قبض برق مشاعات",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "type": "پرداختی",
+        "amount": 750000,
+        "date": "1403/04/10",
+        "id": "arkwqoH9enzAtHdAM5hD",
+        "party": "اداره برق"
+      }
+    },
+    {
+      "id": "g9nDmHoqYufm0zINlndi",
+      "data": {
+        "amount": 500000,
+        "date": "1403/04/01",
+        "reason": "شارژ ماهانه",
+        "id": "g9nDmHoqYufm0zINlndi",
+        "type": "دریافتی",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "party": "ویلا شماره ۵"
+      }
+    }
+  ],
+  "documents": [
+    {
+      "id": "3de9rHvuP62n7yPga0Fa",
+      "data": {
+        "relatedEntityId": "p3",
+        "uploadDate": "1404/08/12",
+        "category": "پرسنل",
+        "description": "عکس پروفایل برای پرسنل علی فرهنگ",
+        "fileName": "profile_p3.jpg",
+        "name": "عکس پروفایل علی فرهنگ",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "url": "https://picsum.photos/seed/p3/200/200"
+      }
+    },
+    {
+      "id": "TYpEqkGvxMuiKEWSRMs6",
+      "data": {
+        "relatedEntityId": "p2",
+        "name": "عکس پروفایل سینا کالجی",
+        "category": "پرسنل",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "fileName": "profile_p2.jpg",
+        "description": "عکس پروفایل برای پرسنل سینا کالجی",
+        "url": "https://picsum.photos/seed/p2/200/200",
+        "uploadDate": "1404/08/12"
+      }
+    },
+    {
+      "id": "X60Idr0gjKKRQK9TTDPC",
+      "data": {
+        "description": "عکس پروفایل برای پرسنل  اسحاقی",
+        "fileName": "profile_p1.jpg",
+        "relatedEntityId": "p1",
+        "category": "پرسنل",
+        "name": "عکس پروفایل  اسحاقی",
+        "uploadDate": "1404/08/12",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "url": "https://picsum.photos/seed/p1/200/200"
+      }
+    },
+    {
+      "id": "XauMNJFz9HEkQg9LKX57",
+      "data": {
+        "fileName": "profile_p4.jpg",
+        "url": "https://picsum.photos/seed/p4/200/200",
+        "uploadDate": "1404/08/12",
+        "description": "عکس پروفایل برای پرسنل ناصر رمضانی",
+        "category": "پرسنل",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "name": "عکس پروفایل ناصر رمضانی",
+        "relatedEntityId": "p4"
+      }
+    }
+  ],
+  "companyInfo": [
+    {
+      "id": "default",
+      "data": {
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "defaultEntryTime": "08:00",
+        "defaultExitTime": "17:00",
+        "name": "شهرک سینا"
+      }
+    }
+  ],
+  "payrollSettings": [
+    {
+      "id": "default",
+      "data": {
+        "overtimeMultiplier": 1.4,
+        "maxAllowedLateness": 15,
+        "childAllowance": 7166184,
+        "housingAllowance": 9000000,
+        "holidayWorkMultiplier": 1.9,
+        "nightWorkMultiplier": 1.35,
+        "baseSalaryOfMonth": 71661840,
+        "foodAllowance": 14000000,
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "latenessPenaltyAmount": 0,
+        "insuranceDeductionPercentage": 7
+      }
+    }
+  ],
+  "workLogs": [],
+  "payrollRecords": [],
+  "shifts": [
+    {
+      "id": "shift1762157403791",
+      "data": {
+        "hours": "08:00-16:00",
+        "name": "شیف صبح",
+        "id": "shift1762157403791",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2"
+      }
+    },
+    {
+      "id": "shift1762157422547",
+      "data": {
+        "name": "شیفت عصر ",
+        "hours": "16:00-00:00",
+        "id": "shift1762157422547",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2"
+      }
+    },
+    {
+      "id": "shift1762157440248",
+      "data": {
+        "name": "شیفت شب ",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "hours": "00:00-08:00",
+        "id": "shift1762157440248"
+      }
+    },
+    {
+      "id": "shift1762157454828",
+      "data": {
+        "hours": "08:00-20:00",
+        "name": "شیفت صبح تا غروب ",
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "id": "shift1762157454828"
+      }
+    },
+    {
+      "id": "shift1762157494509",
+      "data": {
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "hours": "20:00-08:00",
+        "id": "shift1762157494509",
+        "name": "شیفت شب تا صبح"
+      }
+    }
+  ],
+  "guardShifts": [
+    {
+      "id": "p1",
+      "data": {
+        "id": "p1",
+        "personnelId": "p1",
+        "days": {
+          "thursday": "shift1762157403791",
+          "saturday": "shift1762157403791",
+          "friday": "shift1762157403791",
+          "sunday": "shift1762157403791",
+          "tuesday": "shift1762157403791",
+          "wednesday": "shift1762157403791",
+          "monday": "shift1762157403791"
+        },
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2"
+      }
+    },
+    {
+      "id": "p2",
+      "data": {
+        "id": "p2",
+        "days": {
+          "saturday": "shift1762157422547",
+          "sunday": "shift1762157422547",
+          "thursday": "shift1762157422547",
+          "friday": "shift1762157422547",
+          "tuesday": "shift1762157422547",
+          "monday": "shift1762157422547",
+          "wednesday": "shift1762157422547"
+        },
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "personnelId": "p2"
+      }
+    },
+    {
+      "id": "p4",
+      "data": {
+        "personnelId": "p4",
+        "days": {
+          "monday": "shift1762157440248",
+          "thursday": "shift1762157440248",
+          "tuesday": "shift1762157440248",
+          "wednesday": "shift1762157440248",
+          "friday": "shift1762157440248",
+          "saturday": "shift1762157440248",
+          "sunday": "shift1762157440248"
+        },
+        "estateId": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+        "id": "p4"
+      }
+    }
+  ],
+  "estate": [
+    {
+      "id": "lBgWs0TM7zYXfGwboTj0brW1HQH2",
+      "data": {
+        "name": "Estate Backup"
+      }
+    }
+  ]
+}
