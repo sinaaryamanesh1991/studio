@@ -93,24 +93,24 @@ export default function PayrollListPage() {
                      <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>نام پرسنل</TableHead>
-                                <TableHead>تاریخ محاسبه</TableHead>
-                                <TableHead>حقوق ناخالص</TableHead>
-                                <TableHead>پرداختی نهایی</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="text-center">نام پرسنل</TableHead>
+                                <TableHead className="text-center">تاریخ محاسبه</TableHead>
+                                <TableHead className="text-center">حقوق ناخالص</TableHead>
+                                <TableHead className="text-center">پرداختی نهایی</TableHead>
+                                <TableHead className="text-center"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {payrollRecords?.map((record) => (
                                 <TableRow key={record.id}>
-                                    <TableCell className="font-medium">{record.personnelName}</TableCell>
-                                    <TableCell>{formatDate(record.calculationDate)}</TableCell>
-                                    <TableCell className="font-mono">{record.grossPay.toLocaleString('fa-IR')} تومان</TableCell>
-                                    <TableCell className="font-mono font-bold">{record.netPay.toLocaleString('fa-IR')} تومان</TableCell>
-                                    <TableCell className="text-left">
+                                    <TableCell className="font-medium text-center">{record.personnelName}</TableCell>
+                                    <TableCell className="text-center">{formatDate(record.calculationDate)}</TableCell>
+                                    <TableCell className="font-mono text-center">{record.grossPay.toLocaleString('fa-IR')} تومان</TableCell>
+                                    <TableCell className="font-mono font-bold text-center">{record.netPay.toLocaleString('fa-IR')} تومان</TableCell>
+                                    <TableCell className="text-center">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <Button variant="ghost" className="h-8 w-8 p-0 mx-auto">
                                                     <span className="sr-only">باز کردن منو</span>
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>

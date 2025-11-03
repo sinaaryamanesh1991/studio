@@ -198,13 +198,13 @@ function WorkHoursContent() {
                      <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>روز</TableHead>
-                                <TableHead>تاریخ</TableHead>
-                                <TableHead>ساعت ورود</TableHead>
-                                <TableHead>ساعت خروج</TableHead>
-                                <TableHead>اضافه‌کاری (خودکار)</TableHead>
-                                <TableHead>تعطیل‌کاری (خودکار)</TableHead>
-                                <TableHead>جمع ساعات</TableHead>
+                                <TableHead className="text-center">روز</TableHead>
+                                <TableHead className="text-center">تاریخ</TableHead>
+                                <TableHead className="text-center">ساعت ورود</TableHead>
+                                <TableHead className="text-center">ساعت خروج</TableHead>
+                                <TableHead className="text-center">اضافه‌کاری (خودکار)</TableHead>
+                                <TableHead className="text-center">تعطیل‌کاری (خودکار)</TableHead>
+                                <TableHead className="text-center">جمع ساعات</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -215,34 +215,34 @@ function WorkHoursContent() {
 
                                return (
                                     <TableRow key={log.day} className={cn(isHoliday && 'bg-muted/50')}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-medium text-center">
                                             {log.day}
                                             <span className="text-xs text-muted-foreground mr-1">({dayName})</span>
                                         </TableCell>
-                                        <TableCell>{format(date, 'yyyy/MM/dd', { locale: faIR })}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">{format(date, 'yyyy/MM/dd', { locale: faIR })}</TableCell>
+                                        <TableCell className="text-center">
                                             <Input 
                                                 type="time" 
-                                                className="w-32" 
+                                                className="w-32 mx-auto" 
                                                 value={log.entryTime}
                                                 onChange={(e) => handleTimeChange(log.day, 'entryTime', e.target.value)}
                                             />
                                         </TableCell>
-                                         <TableCell>
+                                         <TableCell className="text-center">
                                             <Input 
                                                 type="time" 
-                                                className="w-32"
+                                                className="w-32 mx-auto"
                                                 value={log.exitTime}
                                                 onChange={(e) => handleTimeChange(log.day, 'exitTime', e.target.value)}
                                             />
                                         </TableCell>
-                                         <TableCell>
+                                         <TableCell className="text-center">
                                             <span className="font-mono text-base">{log.overtimeHours > 0 ? log.overtimeHours.toFixed(2) : '-'}</span>
                                         </TableCell>
-                                         <TableCell>
+                                         <TableCell className="text-center">
                                             <span className="font-mono text-base">{log.holidayHours > 0 ? log.holidayHours.toFixed(2) : '-'}</span>
                                         </TableCell>
-                                         <TableCell>
+                                         <TableCell className="text-center">
                                             <span className="font-mono text-lg">{log.hoursWorked.toFixed(2)}</span>
                                             <span className="text-xs text-muted-foreground mr-1">ساعت</span>
                                         </TableCell>

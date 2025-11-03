@@ -111,7 +111,7 @@ export default function DocumentsPage() {
           const person = personnel?.find(p => p.id === docItem.relatedEntityId);
           if (!person) return <span className="text-muted-foreground">پرسنل یافت نشد</span>;
           return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 justify-center">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={person.photoUrl} alt={`${person.name} ${person.familyName}`} />
                 <AvatarFallback>
@@ -153,24 +153,24 @@ export default function DocumentsPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>نام سند</TableHead>
-                                <TableHead>دسته بندی</TableHead>
-                                <TableHead>موجودیت مرتبط / توضیحات</TableHead>
-                                <TableHead>تاریخ بارگذاری</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="text-center">نام سند</TableHead>
+                                <TableHead className="text-center">دسته بندی</TableHead>
+                                <TableHead className="text-center">موجودیت مرتبط / توضیحات</TableHead>
+                                <TableHead className="text-center">تاریخ بارگذاری</TableHead>
+                                <TableHead className="text-center"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {documents?.map((docItem) => (
                                 <TableRow key={docItem.id}>
-                                    <TableCell className="font-medium">{docItem.name}</TableCell>
-                                    <TableCell>{docItem.category}</TableCell>
-                                    <TableCell>{renderRelatedEntity(docItem)}</TableCell>
-                                    <TableCell>{docItem.uploadDate}</TableCell>
-                                    <TableCell className="text-left">
+                                    <TableCell className="font-medium text-center">{docItem.name}</TableCell>
+                                    <TableCell className="text-center">{docItem.category}</TableCell>
+                                    <TableCell className="text-center">{renderRelatedEntity(docItem)}</TableCell>
+                                    <TableCell className="text-center">{docItem.uploadDate}</TableCell>
+                                    <TableCell className="text-center">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <Button variant="ghost" className="h-8 w-8 p-0 mx-auto">
                                                     <span className="sr-only">باز کردن منو</span>
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>

@@ -217,41 +217,41 @@ export default function PersonnelPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>عکس</TableHead>
-                                <TableHead>شماره پرسنلی</TableHead>
-                                <TableHead>نام</TableHead>
-                                <TableHead>نام خانوادگی</TableHead>
-                                <TableHead>تاریخ استخدام</TableHead>
-                                <TableHead>شماره تماس</TableHead>
-                                <TableHead>سمت</TableHead>
-                                <TableHead>وضعیت</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="text-center">عکس</TableHead>
+                                <TableHead className="text-center">شماره پرسنلی</TableHead>
+                                <TableHead className="text-center">نام</TableHead>
+                                <TableHead className="text-center">نام خانوادگی</TableHead>
+                                <TableHead className="text-center">تاریخ استخدام</TableHead>
+                                <TableHead className="text-center">شماره تماس</TableHead>
+                                <TableHead className="text-center">سمت</TableHead>
+                                <TableHead className="text-center">وضعیت</TableHead>
+                                <TableHead className="text-center"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {personnel?.map((person) => (
                                 <TableRow key={person.id}>
-                                    <TableCell>
-                                        <Avatar>
+                                    <TableCell className="text-center">
+                                        <Avatar className="mx-auto">
                                             <AvatarImage src={person.photoUrl} alt={`${person.name} ${person.familyName}`} />
                                             <AvatarFallback>
                                                 <User className="h-5 w-5"/>
                                             </AvatarFallback>
                                         </Avatar>
                                     </TableCell>
-                                    <TableCell className="font-mono">{formatPersonnelId(person.id)}</TableCell>
-                                    <TableCell>{person.name}</TableCell>
-                                    <TableCell>{person.familyName}</TableCell>
-                                    <TableCell>{formatDateForDisplay(person.hireDate)}</TableCell>
-                                    <TableCell>{person.phone}</TableCell>
-                                    <TableCell>{person.position}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="font-mono text-center">{formatPersonnelId(person.id)}</TableCell>
+                                    <TableCell className="text-center">{person.name}</TableCell>
+                                    <TableCell className="text-center">{person.familyName}</TableCell>
+                                    <TableCell className="text-center">{formatDateForDisplay(person.hireDate)}</TableCell>
+                                    <TableCell className="text-center">{person.phone}</TableCell>
+                                    <TableCell className="text-center">{person.position}</TableCell>
+                                    <TableCell className="text-center">
                                         <Badge variant={statusVariant[person.status]}>{person.status}</Badge>
                                     </TableCell>
-                                    <TableCell className="text-left">
+                                    <TableCell className="text-center">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <Button variant="ghost" className="h-8 w-8 p-0 mx-auto">
                                                     <span className="sr-only">باز کردن منو</span>
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>

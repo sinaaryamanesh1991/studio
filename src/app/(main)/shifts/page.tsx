@@ -105,9 +105,9 @@ export default function GuardShiftsPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className='min-w-[200px]'>نام نگهبان</TableHead>
+                                    <TableHead className='min-w-[200px] text-center'>نام نگهبان</TableHead>
                                     {weekDays.map(day => (
-                                        <TableHead key={day} className='min-w-[180px]'>{weekDayLabels[day]}</TableHead>
+                                        <TableHead key={day} className='min-w-[180px] text-center'>{weekDayLabels[day]}</TableHead>
                                     ))}
                                 </TableRow>
                             </TableHeader>
@@ -116,27 +116,27 @@ export default function GuardShiftsPage() {
                                     const currentShifts = guardShifts?.find(gs => gs.id === guard.id);
                                     return (
                                         <TableRow key={guard.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
+                                            <TableCell className="text-center">
+                                                <div className="flex items-center gap-2 justify-center">
                                                      <Avatar className="h-9 w-9">
                                                         <AvatarImage src={guard.photoUrl} alt="Avatar" />
                                                         <AvatarFallback>
                                                             <User className="h-5 w-5"/>
                                                         </AvatarFallback>
                                                     </Avatar>
-                                                    <div className="flex flex-col">
+                                                    <div className="flex flex-col items-start">
                                                         <span className="font-medium">{guard.name} {guard.familyName}</span>
                                                         <span className="text-xs text-muted-foreground font-mono">{guard.id}</span>
                                                     </div>
                                                 </div>
                                             </TableCell>
                                             {weekDays.map(day => (
-                                                <TableCell key={day}>
+                                                <TableCell key={day} className="text-center">
                                                     <Select
                                                         value={currentShifts?.days[day] || ''}
                                                         onValueChange={(shiftId) => handleShiftChange(guard.id, day, shiftId)}
                                                     >
-                                                        <SelectTrigger>
+                                                        <SelectTrigger className="mx-auto">
                                                             <SelectValue placeholder="انتخاب شیفت" />
                                                         </SelectTrigger>
                                                         <SelectContent>

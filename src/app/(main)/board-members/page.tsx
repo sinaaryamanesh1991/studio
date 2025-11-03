@@ -112,24 +112,24 @@ export default function BoardMembersPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>نام و نام خانوادگی</TableHead>
-                                <TableHead>شماره ویلا</TableHead>
-                                <TableHead>شماره تماس</TableHead>
-                                <TableHead>سمت</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="text-center">نام و نام خانوادگی</TableHead>
+                                <TableHead className="text-center">شماره ویلا</TableHead>
+                                <TableHead className="text-center">شماره تماس</TableHead>
+                                <TableHead className="text-center">سمت</TableHead>
+                                <TableHead className="text-center"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {boardMembers?.map((member) => (
                                 <TableRow key={member.id}>
-                                    <TableCell className="font-medium">{member.name} {member.familyName}</TableCell>
-                                    <TableCell>{member.villaNumber}</TableCell>
-                                    <TableCell>{member.phone}</TableCell>
-                                    <TableCell>{member.position}</TableCell>
-                                    <TableCell className="text-left">
+                                    <TableCell className="font-medium text-center">{member.name} {member.familyName}</TableCell>
+                                    <TableCell className="text-center">{member.villaNumber}</TableCell>
+                                    <TableCell className="text-center">{member.phone}</TableCell>
+                                    <TableCell className="text-center">{member.position}</TableCell>
+                                    <TableCell className="text-center">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <Button variant="ghost" className="h-8 w-8 p-0 mx-auto">
                                                     <span className="sr-only">باز کردن منو</span>
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>

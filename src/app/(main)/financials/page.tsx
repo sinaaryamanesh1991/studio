@@ -83,19 +83,19 @@ export default function FinancialsPage() {
                              <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>تاریخ</TableHead>
-                                        <TableHead>طرف حساب</TableHead>
-                                        <TableHead>بابت</TableHead>
-                                        <TableHead className="text-left">مبلغ (تومان)</TableHead>
+                                        <TableHead className="text-center">تاریخ</TableHead>
+                                        <TableHead className="text-center">طرف حساب</TableHead>
+                                        <TableHead className="text-center">بابت</TableHead>
+                                        <TableHead className="text-center">مبلغ (تومان)</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {receipts.map(t => (
                                         <TableRow key={t.id}>
-                                            <TableCell>{t.date}</TableCell>
-                                            <TableCell className="font-medium">{t.party}</TableCell>
-                                            <TableCell>{t.reason}</TableCell>
-                                            <TableCell className="text-left font-mono text-green-600">
+                                            <TableCell className="text-center">{t.date}</TableCell>
+                                            <TableCell className="font-medium text-center">{t.party}</TableCell>
+                                            <TableCell className="text-center">{t.reason}</TableCell>
+                                            <TableCell className="text-center font-mono text-green-600">
                                                 {`+ ${t.amount.toLocaleString('fa-IR')}`}
                                             </TableCell>
                                         </TableRow>
@@ -112,19 +112,19 @@ export default function FinancialsPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>تاریخ</TableHead>
-                                        <TableHead>طرف حساب</TableHead>
-                                        <TableHead>بابت</TableHead>
-                                        <TableHead className="text-left">مبلغ (تومان)</TableHead>
+                                        <TableHead className="text-center">تاریخ</TableHead>
+                                        <TableHead className="text-center">طرف حساب</TableHead>
+                                        <TableHead className="text-center">بابت</TableHead>
+                                        <TableHead className="text-center">مبلغ (تومان)</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {payments.map(t => (
                                         <TableRow key={t.id}>
-                                            <TableCell>{t.date}</TableCell>
-                                            <TableCell className="font-medium">{t.party}</TableCell>
-                                            <TableCell>{t.reason}</TableCell>
-                                            <TableCell className="text-left font-mono text-destructive">
+                                            <TableCell className="text-center">{t.date}</TableCell>
+                                            <TableCell className="font-medium text-center">{t.party}</TableCell>
+                                            <TableCell className="text-center">{t.reason}</TableCell>
+                                            <TableCell className="text-center font-mono text-destructive">
                                                 {`- ${t.amount.toLocaleString('fa-IR')}`}
                                             </TableCell>
                                         </TableRow>

@@ -185,15 +185,15 @@ export default function DashboardPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>شماره ویلا</TableHead>
-                    <TableHead>نوع سکونت</TableHead>
-                    <TableHead>نام مالک</TableHead>
-                    <TableHead>شماره تماس مالک</TableHead>
-                    <TableHead>نام ساکن (مستاجر)</TableHead>
-                    <TableHead>شماره تماس ساکن</TableHead>
-                    <TableHead>پلاک خودرو</TableHead>
-                    <TableHead>وضعیت حضور</TableHead>
-                    <TableHead>وضعیت سکونت</TableHead>
+                    <TableHead className="text-center">شماره ویلا</TableHead>
+                    <TableHead className="text-center">نوع سکونت</TableHead>
+                    <TableHead className="text-center">نام مالک</TableHead>
+                    <TableHead className="text-center">شماره تماس مالک</TableHead>
+                    <TableHead className="text-center">ساکن</TableHead>
+                    <TableHead className="text-center">شماره تماس ساکن</TableHead>
+                    <TableHead className="text-center">پلاک خودرو</TableHead>
+                    <TableHead className="text-center">وضعیت حضور</TableHead>
+                    <TableHead className="text-center">وضعیت سکونت</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -202,9 +202,9 @@ export default function DashboardPage() {
                     
                     return (
                     <TableRow key={resident.id}>
-                      <TableCell className="font-mono font-medium">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
-                       <TableCell>
-                          <div className="flex items-center space-x-2 space-x-reverse">
+                      <TableCell className="font-mono font-medium text-center">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
+                       <TableCell className="text-center">
+                          <div className="flex items-center justify-center space-x-2 space-x-reverse">
                             <Switch
                                 id={`occupant-switch-${resident.id}`}
                                 checked={resident.occupantType === 'tenant'}
@@ -216,35 +216,35 @@ export default function DashboardPage() {
                             </Label>
                           </div>
                        </TableCell>
-                      <TableCell>{villa?.owner || '-'}</TableCell>
-                      <TableCell>{resident.phone}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">{villa?.owner || '-'}</TableCell>
+                      <TableCell className="text-center">{resident.phone}</TableCell>
+                      <TableCell className="text-center">
                         {resident.occupantType === 'tenant' ? (
                             <Input
                                 defaultValue={resident.tenantName}
                                 onBlur={(e) => handleTenantNameChange(resident, e.target.value)}
                                 placeholder="نام مستاجر"
-                                className="w-32"
+                                className="w-32 mx-auto text-center"
                             />
                         ) : (
                            <span>{resident.name} {resident.familyName}</span>
                         )}
                         </TableCell>
-                       <TableCell>
+                       <TableCell className="text-center">
                         {resident.occupantType === 'tenant' ? (
                             <Input
                                 defaultValue={resident.tenantPhone}
                                 onBlur={(e) => handleTenantPhoneChange(resident, e.target.value)}
                                 placeholder="شماره مستاجر"
-                                className="w-32"
+                                className="w-32 mx-auto text-center"
                             />
                         ) : (
                             <span>-</span>
                         )}
                        </TableCell>
-                      <TableCell>{resident.carPlates}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2 space-x-reverse">
+                      <TableCell className="text-center">{resident.carPlates}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center space-x-2 space-x-reverse">
                           <Switch
                             id={`presence-switch-${resident.id}`}
                             checked={resident.isPresent}
@@ -254,7 +254,7 @@ export default function DashboardPage() {
                            <Label htmlFor={`presence-switch-${resident.id}`}>{resident.isPresent ? 'حاضر' : 'غایب'}</Label>
                         </div>
                       </TableCell>
-                       <TableCell>
+                       <TableCell className="text-center">
                           <Badge variant={residentStatusVariant[resident.status]}>{resident.status}</Badge>
                        </TableCell>
                     </TableRow>
@@ -289,9 +289,9 @@ export default function DashboardPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className='min-w-[200px]'>نام نگهبان</TableHead>
+                                <TableHead className='min-w-[200px] text-center'>نام نگهبان</TableHead>
                                 {weekDays.map(day => (
-                                    <TableHead key={day} className='min-w-[150px]'>{weekDayLabels[day]}</TableHead>
+                                    <TableHead key={day} className='min-w-[150px] text-center'>{weekDayLabels[day]}</TableHead>
                                 ))}
                             </TableRow>
                         </TableHeader>
@@ -300,8 +300,8 @@ export default function DashboardPage() {
                                 const currentGuardShifts = guardShifts?.find(gs => gs.id === guard.id);
                                 return (
                                     <TableRow key={guard.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center gap-2 justify-center">
                                                 <Avatar className="h-9 w-9">
                                                     <AvatarImage src={guard.photoUrl} alt={guard.name} />
                                                     <AvatarFallback><Users className="h-5 w-5"/></AvatarFallback>
@@ -314,7 +314,7 @@ export default function DashboardPage() {
                                             const shiftInfo = shifts?.find(s => s.id === shiftId);
                                             const shiftLabel = shiftId === 'off' ? 'مرخصی' : (shiftInfo?.name || '-');
                                             return (
-                                                <TableCell key={day}>
+                                                <TableCell key={day} className="text-center">
                                                     <Badge variant={shiftId === 'off' ? 'secondary' : 'default'} className="whitespace-nowrap">
                                                         {shiftLabel}
                                                     </Badge>
@@ -347,29 +347,29 @@ export default function DashboardPage() {
                  <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>نام پرسنل</TableHead>
-                            <TableHead>سمت</TableHead>
-                            <TableHead>وضعیت</TableHead>
+                            <TableHead className="text-center">نام پرسنل</TableHead>
+                            <TableHead className="text-center">سمت</TableHead>
+                            <TableHead className="text-center">وضعیت</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {personnel?.slice(0, 5).map((person) => (
                             <TableRow key={person.id}>
-                                 <TableCell>
-                                    <div className="flex items-center gap-2">
+                                 <TableCell className="text-center">
+                                    <div className="flex items-center gap-2 justify-center">
                                          <Avatar className="h-9 w-9">
                                             <AvatarImage src={person.photoUrl} alt="Avatar" />
                                             <AvatarFallback>
                                                 <Users className="h-5 w-5"/>
                                             </AvatarFallback>
                                         </Avatar>
-                                        <div className="flex flex-col">
+                                        <div className="flex flex-col items-start">
                                             <span className="font-medium">{person.name} {person.familyName}</span>
                                         </div>
                                     </div>
                                 </TableCell>
-                                <TableCell>{person.position}</TableCell>
-                                <TableCell>
+                                <TableCell className="text-center">{person.position}</TableCell>
+                                <TableCell className="text-center">
                                     <Badge variant={personnelStatusVariant[person.status]}>{person.status}</Badge>
                                 </TableCell>
                             </TableRow>
@@ -394,17 +394,17 @@ export default function DashboardPage() {
                  <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>طرف حساب</TableHead>
-                            <TableHead>بابت</TableHead>
-                            <TableHead className="text-left">مبلغ (ریال)</TableHead>
+                            <TableHead className="text-center">طرف حساب</TableHead>
+                            <TableHead className="text-center">بابت</TableHead>
+                            <TableHead className="text-center">مبلغ (ریال)</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {transactions?.slice(0, 5).map(t => (
                             <TableRow key={t.id}>
-                                <TableCell className="font-medium">{t.party}</TableCell>
-                                <TableCell>{t.reason}</TableCell>
-                                <TableCell className={`text-left font-mono ${t.type === 'دریافتی' ? 'text-green-600' : 'text-destructive'}`}>
+                                <TableCell className="font-medium text-center">{t.party}</TableCell>
+                                <TableCell className="text-center">{t.reason}</TableCell>
+                                <TableCell className={`text-center font-mono ${t.type === 'دریافتی' ? 'text-green-600' : 'text-destructive'}`}>
                                     {`${t.type === 'دریافتی' ? '+' : '-'} ${t.amount.toLocaleString('fa-IR')}`}
                                 </TableCell>
                             </TableRow>

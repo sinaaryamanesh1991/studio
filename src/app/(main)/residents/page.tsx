@@ -118,12 +118,12 @@ export default function ResidentsPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>شماره ویلا</TableHead>
-                                <TableHead>نام ساکن</TableHead>
-                                <TableHead>شماره تماس</TableHead>
-                                <TableHead>پلاک خودرو</TableHead>
-                                <TableHead>وضعیت</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className="text-center">شماره ویلا</TableHead>
+                                <TableHead className="text-center">نام ساکن</TableHead>
+                                <TableHead className="text-center">شماره تماس</TableHead>
+                                <TableHead className="text-center">پلاک خودرو</TableHead>
+                                <TableHead className="text-center">وضعیت</TableHead>
+                                <TableHead className="text-center"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -132,12 +132,12 @@ export default function ResidentsPage() {
                                 const displayPhone = resident.occupantType === 'tenant' ? resident.tenantPhone : resident.phone;
                                 return (
                                 <TableRow key={resident.id}>
-                                    <TableCell className="font-medium font-mono">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
-                                    <TableCell>{displayName}</TableCell>
-                                    <TableCell>{displayPhone}</TableCell>
-                                    <TableCell>{resident.carPlates}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center space-x-2 space-x-reverse">
+                                    <TableCell className="font-medium font-mono text-center">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
+                                    <TableCell className="text-center">{displayName}</TableCell>
+                                    <TableCell className="text-center">{displayPhone}</TableCell>
+                                    <TableCell className="text-center">{resident.carPlates}</TableCell>
+                                    <TableCell className="text-center">
+                                        <div className="flex items-center justify-center space-x-2 space-x-reverse">
                                             <Switch
                                                 checked={resident.isPresent}
                                                 onCheckedChange={(checked) => handleStatusChange(resident, checked)}
@@ -146,10 +146,10 @@ export default function ResidentsPage() {
                                             <Badge variant={statusVariant[resident.status]}>{resident.status}</Badge>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-left">
+                                    <TableCell className="text-center">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                <Button variant="ghost" className="h-8 w-8 p-0 mx-auto">
                                                     <span className="sr-only">باز کردن منو</span>
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
