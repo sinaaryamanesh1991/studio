@@ -14,7 +14,8 @@ import {
   ChevronDown,
   Settings,
   List,
-  DatabaseZap,
+  UploadCloud,
+  DownloadCloud,
   Clock,
 } from 'lucide-react';
 import {
@@ -33,7 +34,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useState } from 'react';
 import { useFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { seedDatabase } from '@/firebase/seed';
+import { exportData, importData } from '@/lib/backup';
+import { Button } from './ui/button';
 
 const navItems = [
   { href: '/dashboard', label: 'داشبورد', icon: LayoutDashboard },
@@ -52,23 +54,45 @@ export function MainNav() {
   const { firestore, user } = useFirebase();
   const { toast } = useToast();
 
-  const handleSeed = async () => {
-    if (!firestore || !user?.uid) return;
-    try {
-        await seedDatabase(firestore, user.uid);
-        toast({
-            title: 'موفقیت',
-            description: 'داده‌های نمونه با موفقیت در دیتابیس بارگذاری شدند.',
-        });
-    } catch(e) {
-        console.error(e);
-        toast({
-            variant: 'destructive',
-            title: 'خطا',
-            description: 'خطایی در بارگذاری داده‌های نمونه رخ داد.',
-        });
+  const handleExport = async () => {
+    if (!firestore || !user?.uid) {
+        toast({ variant: 'destructive', title: 'خطا', description: 'برای خروج داده، ابتدا وارد شوید.' });
+        return;
     }
-  }
+    try {
+        await exportData(firestore, user.uid);
+        toast({ title: 'موفقیت', description: 'فایل پشتیبان با نام backup.json دانلود شد.' });
+    } catch (e: any) {
+        console.error(e);
+        toast({ variant: 'destructive', title: 'خطا در خروج داده', description: e.message });
+    }
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!firestore || !user?.uid) {
+        toast({ variant: 'destructive', title: 'خطا', description: 'برای ورود داده، ابتدا وارد شوید.' });
+        return;
+    }
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const content = e.target?.result;
+            if (typeof content !== 'string') throw new Error('محتوای فایل نامعتبر است.');
+            
+            const data = JSON.parse(content);
+            await importData(firestore, user.uid, data);
+            toast({ title: 'موفقیت', description: 'داده‌ها با موفقیت وارد شدند. صفحه را مجددا بارگذاری کنید.' });
+        } catch (err: any) {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'خطا در ورود داده', description: err.message });
+        }
+    };
+    reader.readAsText(file);
+  };
+
 
   return (
     <>
@@ -139,16 +163,25 @@ export function MainNav() {
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
-            <SidebarMenuItem>
+             <SidebarMenuItem>
+                <Button asChild variant="ghost" className="h-8 justify-start w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground px-2">
+                    <label htmlFor="import-file" className="cursor-pointer">
+                        <UploadCloud className="ms-2" />
+                        <span className="text-sm">ورود داده (Import)</span>
+                    </label>
+                </Button>
+                <input id="import-file" type="file" accept=".json" className="hidden" onChange={handleImport} />
+            </SidebarMenuItem>
+             <SidebarMenuItem>
               <SidebarMenuButton
-                onClick={handleSeed}
+                onClick={handleExport}
                 tooltip={{
-                  children: 'بارگذاری داده‌های نمونه',
+                  children: 'خروج داده (Export)',
                   className: 'font-body',
                 }}
               >
-                <DatabaseZap />
-                <span>بارگذاری داده‌های نمونه</span>
+                <DownloadCloud />
+                <span>خروج داده (Export)</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
