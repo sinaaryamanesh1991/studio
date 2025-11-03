@@ -93,13 +93,34 @@ export default function PersonnelPage() {
         deleteDocumentNonBlocking(doc(firestore, 'estates', estateId, 'personnel', id));
     };
     
+    const getNextAvailablePersonnelId = (): string => {
+        if (!personnel || personnel.length === 0) {
+            return 'p1';
+        }
+    
+        const existingIds = personnel
+            .map(p => parseInt(p.id.replace('p', ''), 10))
+            .filter(id => !isNaN(id))
+            .sort((a, b) => a - b);
+    
+        let nextId = 1;
+        for (const id of existingIds) {
+            if (id > nextId) {
+                break;
+            }
+            nextId++;
+        }
+        
+        return `p${nextId}`;
+    };
+
     const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!estateId) return;
 
         const formData = new FormData(e.currentTarget);
         
-        const personId = editingPersonnel ? editingPersonnel.id : `p${Date.now()}`;
+        const personId = editingPersonnel ? editingPersonnel.id : getNextAvailablePersonnelId();
         const name = formData.get('name') as string;
         const familyName = formData.get('familyName') as string;
         
@@ -131,6 +152,8 @@ export default function PersonnelPage() {
             photoUrl: photoUrl,
             estateId: estateId,
             childrenCount: Number(formData.get('childrenCount') || 0),
+            shiftDays: formData.get('shiftDays') as string,
+            shiftHours: formData.get('shiftHours') as string,
         };
         
         const personRef = doc(firestore, 'estates', estateId, 'personnel', personId);
@@ -329,6 +352,14 @@ export default function PersonnelPage() {
                                 <Label htmlFor="insuranceNumber" className="text-right">شماره بیمه</Label>
                                 <Input id="insuranceNumber" name="insuranceNumber" defaultValue={editingPersonnel?.insuranceNumber} className="col-span-3" />
                             </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="shiftDays" className="text-right">روزهای کاری</Label>
+                                <Input id="shiftDays" name="shiftDays" defaultValue={editingPersonnel?.shiftDays} className="col-span-3" placeholder="مثال: شنبه تا چهارشنبه"/>
+                            </div>
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="shiftHours" className="text-right">ساعت کاری</Label>
+                                <Input id="shiftHours" name="shiftHours" defaultValue={editingPersonnel?.shiftHours} className="col-span-3" placeholder="مثال: 08:00 - 16:00" />
+                            </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="position" className="text-right">سمت</Label>
                                 <Select name="position" defaultValue={editingPersonnel?.position}>
@@ -371,4 +402,3 @@ export default function PersonnelPage() {
         </>
     );
 }
-

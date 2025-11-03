@@ -175,25 +175,41 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-             <div className="space-y-4">
-              {personnel?.slice(0, 5).map((person) => (
-                <div key={person.id} className="flex items-center">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={person.photoUrl} alt="Avatar" />
-                    <AvatarFallback>
-                        <Users className="h-5 w-5"/>
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="mr-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">{person.name} {person.familyName}</p>
-                    <p className="text-sm text-muted-foreground">{person.position}</p>
-                  </div>
-                  <div className="mr-auto font-medium">
-                      <Badge variant={personnelStatusVariant[person.status]}>{person.status}</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
+             <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>نام پرسنل</TableHead>
+                        <TableHead>روز</TableHead>
+                        <TableHead>شیفت</TableHead>
+                        <TableHead>وضعیت</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {personnel?.slice(0, 5).map((person) => (
+                        <TableRow key={person.id}>
+                             <TableCell>
+                                <div className="flex items-center gap-2">
+                                     <Avatar className="h-9 w-9">
+                                        <AvatarImage src={person.photoUrl} alt="Avatar" />
+                                        <AvatarFallback>
+                                            <Users className="h-5 w-5"/>
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">{person.name} {person.familyName}</span>
+                                        <span className="text-xs text-muted-foreground">{person.position}</span>
+                                    </div>
+                                </div>
+                            </TableCell>
+                            <TableCell>{person.shiftDays || '-'}</TableCell>
+                            <TableCell>{person.shiftHours || '-'}</TableCell>
+                            <TableCell>
+                                <Badge variant={personnelStatusVariant[person.status]}>{person.status}</Badge>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
              {(personnel?.length ?? 0) === 0 && (
                 <p className="text-center text-muted-foreground py-8">
                     هنوز هیچ پرسنلی ثبت نشده است.
