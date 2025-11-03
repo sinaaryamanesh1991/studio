@@ -186,12 +186,12 @@ export default function DashboardPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>شماره ویلا</TableHead>
+                    <TableHead>نوع سکونت</TableHead>
                     <TableHead>نام مالک</TableHead>
                     <TableHead>نام ساکن (مستاجر)</TableHead>
                     <TableHead>پلاک خودرو</TableHead>
                     <TableHead>وضعیت حضور</TableHead>
                     <TableHead>وضعیت سکونت</TableHead>
-                    <TableHead>نوع سکونت</TableHead>
                     <TableHead>شماره تماس</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -202,6 +202,19 @@ export default function DashboardPage() {
                     return (
                     <TableRow key={resident.id}>
                       <TableCell className="font-mono font-medium">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
+                       <TableCell>
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <Switch
+                                id={`occupant-switch-${resident.id}`}
+                                checked={resident.occupantType === 'tenant'}
+                                onCheckedChange={(checked) => handleOccupantTypeChange(resident, checked)}
+                                aria-label="نوع سکونت"
+                            />
+                            <Label htmlFor={`occupant-switch-${resident.id}`}>
+                                {resident.occupantType === 'tenant' ? 'مستاجر' : 'مالک'}
+                            </Label>
+                          </div>
+                       </TableCell>
                       <TableCell>{villa?.owner || '-'}</TableCell>
                       <TableCell>
                         {resident.occupantType === 'tenant' ? (
@@ -229,19 +242,6 @@ export default function DashboardPage() {
                       </TableCell>
                        <TableCell>
                           <Badge variant={residentStatusVariant[resident.status]}>{resident.status}</Badge>
-                       </TableCell>
-                       <TableCell>
-                          <div className="flex items-center space-x-2 space-x-reverse">
-                            <Switch
-                                id={`occupant-switch-${resident.id}`}
-                                checked={resident.occupantType === 'tenant'}
-                                onCheckedChange={(checked) => handleOccupantTypeChange(resident, checked)}
-                                aria-label="نوع سکونت"
-                            />
-                            <Label htmlFor={`occupant-switch-${resident.id}`}>
-                                {resident.occupantType === 'tenant' ? 'مستاجر' : 'مالک'}
-                            </Label>
-                          </div>
                        </TableCell>
                        <TableCell>
                         {resident.occupantType === 'tenant' ? (
@@ -421,5 +421,7 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
 
     
