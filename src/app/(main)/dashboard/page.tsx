@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { Users, Home, Loader2, DollarSign, ArrowLeft } from 'lucide-react';
-import type { Resident, Villa, Personnel } from '@/lib/types';
+import { Users, Home, Loader2, DollarSign, ArrowLeft, Clock } from 'lucide-react';
+import type { Resident, Villa, Personnel, GuardShift, ShiftSettings } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -14,6 +14,7 @@ import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
+import { useMemo } from 'react';
 
 // Define a type for financial transactions to avoid 'any'
 interface Transaction {
@@ -37,6 +38,17 @@ const residentStatusVariant = {
   'خالی': 'secondary',
 } as const;
 
+const weekDays: (keyof GuardShift['days'])[] = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+const weekDayLabels: { [key in keyof GuardShift['days']]: string } = {
+    saturday: 'شنبه',
+    sunday: 'یکشنبه',
+    monday: 'دوشنبه',
+    tuesday: 'سه‌شنبه',
+    wednesday: 'چهارشنبه',
+    thursday: 'پنج‌شنبه',
+    friday: 'جمعه'
+};
+
 
 export default function DashboardPage() {
   const { firestore, user, isUserLoading } = useFirebase();
@@ -54,7 +66,17 @@ export default function DashboardPage() {
   const villasQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'villas') : null, [firestore, estateId]);
   const { data: villas, isLoading: loadingVillas } = useCollection<Villa>(villasQuery);
 
-  const globalLoading = loadingPersonnel || loadingResidents || loadingVillas || isUserLoading || loadingTransactions;
+  const shiftsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'shifts') : null, [firestore, estateId]);
+  const { data: shifts, isLoading: loadingShifts } = useCollection<ShiftSettings>(shiftsQuery);
+    
+  const guardShiftsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'guardShifts') : null, [firestore, estateId]);
+  const { data: guardShifts, isLoading: loadingGuardShifts } = useCollection<GuardShift>(guardShiftsQuery);
+
+  const globalLoading = loadingPersonnel || loadingResidents || loadingVillas || isUserLoading || loadingTransactions || loadingShifts || loadingGuardShifts;
+
+  const guards = useMemo(() => {
+    return personnel?.filter(p => p.position === 'نگهبان' && p.status === 'مشغول کار') || [];
+  }, [personnel]);
 
   const handleStatusChange = (resident: Resident, isPresent: boolean) => {
     if (!estateId) return;
@@ -237,11 +259,11 @@ export default function DashboardPage() {
               <TableRow>
                 <TableHead>شماره ویلا</TableHead>
                 <TableHead>نام و نام خانوادگی</TableHead>
-                <TableHead>شماره تماس</TableHead>
                 <TableHead>پلاک خودرو</TableHead>
                 <TableHead>وضعیت حضور</TableHead>
                 <TableHead>وضعیت سکونت</TableHead>
                 <TableHead>نوع سکونت</TableHead>
+                <TableHead>شماره تماس</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -249,7 +271,6 @@ export default function DashboardPage() {
                 <TableRow key={resident.id}>
                   <TableCell className="font-mono font-medium">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
                   <TableCell>{resident.name} {resident.familyName}</TableCell>
-                  <TableCell>{resident.phone}</TableCell>
                   <TableCell>{resident.carPlates}</TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2 space-x-reverse">
@@ -278,6 +299,7 @@ export default function DashboardPage() {
                         </Label>
                       </div>
                    </TableCell>
+                   <TableCell>{resident.phone}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -289,6 +311,75 @@ export default function DashboardPage() {
           )}
         </CardContent>
       </Card>
+      
+      <Card className="mt-6">
+        <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle>شیفت نگهبانی</CardTitle>
+                <CardDescription>
+                نمای کلی برنامه هفتگی شیفت نگهبانان.
+                </CardDescription>
+            </div>
+            <Button asChild variant="outline">
+                <Link href="/shifts">
+                    مشاهده و ویرایش
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                </Link>
+            </Button>
+        </CardHeader>
+        <CardContent>
+            <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className='min-w-[200px]'>نام نگهبان</TableHead>
+                            {weekDays.map(day => (
+                                <TableHead key={day} className='min-w-[150px]'>{weekDayLabels[day]}</TableHead>
+                            ))}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {guards.map(guard => {
+                            const currentGuardShifts = guardShifts?.find(gs => gs.id === guard.id);
+                            return (
+                                <TableRow key={guard.id}>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <Avatar className="h-9 w-9">
+                                                <AvatarImage src={guard.photoUrl} alt={guard.name} />
+                                                <AvatarFallback><Users className="h-5 w-5"/></AvatarFallback>
+                                            </Avatar>
+                                            <span>{guard.name} {guard.familyName}</span>
+                                        </div>
+                                    </TableCell>
+                                    {weekDays.map(day => {
+                                        const shiftId = currentGuardShifts?.days[day];
+                                        const shiftInfo = shifts?.find(s => s.id === shiftId);
+                                        const shiftLabel = shiftId === 'off' ? 'مرخصی' : (shiftInfo?.name || '-');
+                                        return (
+                                            <TableCell key={day}>
+                                                <Badge variant={shiftId === 'off' ? 'secondary' : 'default'} className="whitespace-nowrap">
+                                                    {shiftLabel}
+                                                </Badge>
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </div>
+            {guards.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                    هیچ نگهبانی با وضعیت "مشغول کار" برای نمایش شیفت وجود ندارد.
+                </p>
+            )}
+        </CardContent>
+      </Card>
+
     </>
   );
 }
+
+    
