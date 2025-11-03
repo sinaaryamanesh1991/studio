@@ -100,7 +100,13 @@ export default function DashboardPage() {
     if (!estateId) return;
     const residentRef = doc(firestore, 'estates', estateId, 'residents', resident.id);
     setDocumentNonBlocking(residentRef, { tenantName }, { merge: true });
-};
+  };
+
+  const handleTenantPhoneChange = (resident: Resident, tenantPhone: string) => {
+    if (!estateId) return;
+    const residentRef = doc(firestore, 'estates', estateId, 'residents', resident.id);
+    setDocumentNonBlocking(residentRef, { tenantPhone }, { merge: true });
+  };
 
 
   if (globalLoading) {
@@ -236,7 +242,18 @@ export default function DashboardPage() {
                             </Label>
                           </div>
                        </TableCell>
-                       <TableCell>{resident.phone}</TableCell>
+                       <TableCell>
+                        {resident.occupantType === 'tenant' ? (
+                            <Input
+                                defaultValue={resident.tenantPhone}
+                                onBlur={(e) => handleTenantPhoneChange(resident, e.target.value)}
+                                placeholder="شماره مستاجر"
+                                className="w-32"
+                            />
+                        ) : (
+                            <span>{resident.phone}</span>
+                        )}
+                       </TableCell>
                     </TableRow>
                   )})}
                 </TableBody>
@@ -248,7 +265,7 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-      
+
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>

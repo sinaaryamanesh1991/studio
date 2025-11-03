@@ -66,6 +66,7 @@ export default function ResidentsPage() {
         const newStatus = formData.get('status') as Resident['status'];
         const newOccupantType = (formData.get('occupantType') === 'on' ? 'tenant' : 'owner') as Resident['occupantType'];
         const tenantName = formData.get('tenantName') as string || '';
+        const tenantPhone = formData.get('tenantPhone') as string || '';
         
         // Find the associated villa to get the owner's name if needed
         const villa = villas?.find(v => v.id === editingResident.villaId);
@@ -78,7 +79,8 @@ export default function ResidentsPage() {
             name: ownerName,
             familyName: ownerFamilyName,
             tenantName: newOccupantType === 'tenant' ? tenantName : '',
-            phone: formData.get('phone') as string,
+            tenantPhone: newOccupantType === 'tenant' ? tenantPhone : '',
+            phone: newOccupantType === 'owner' ? (formData.get('phone') as string) : editingResident.phone,
             carPlates: formData.get('carPlates') as string,
             villaNumber: parseInt(formData.get('villaNumber') as string, 10),
             status: newStatus,
@@ -132,11 +134,12 @@ export default function ResidentsPage() {
                         <TableBody>
                             {residents?.sort((a, b) => a.villaNumber - b.villaNumber).map((resident) => {
                                 const displayName = resident.occupantType === 'tenant' && resident.tenantName ? resident.tenantName : `${resident.name} ${resident.familyName}`;
+                                const displayPhone = resident.occupantType === 'tenant' ? resident.tenantPhone : resident.phone;
                                 return (
                                 <TableRow key={resident.id}>
                                     <TableCell className="font-medium font-mono">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
                                     <TableCell>{displayName}</TableCell>
-                                    <TableCell>{resident.phone}</TableCell>
+                                    <TableCell>{displayPhone}</TableCell>
                                     <TableCell>{resident.carPlates}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center space-x-2 space-x-reverse">
@@ -200,23 +203,31 @@ export default function ResidentsPage() {
                             </div>
                             
                             {dialogOccupantType === 'tenant' ? (
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="tenantName" className="text-right">نام مستاجر</Label>
-                                    <Input id="tenantName" name="tenantName" defaultValue={editingResident?.tenantName} className="col-span-3" />
-                                </div>
+                                <>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                        <Label htmlFor="tenantName" className="text-right">نام مستاجر</Label>
+                                        <Input id="tenantName" name="tenantName" defaultValue={editingResident?.tenantName} className="col-span-3" />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                        <Label htmlFor="tenantPhone" className="text-right">تماس مستاجر</Label>
+                                        <Input id="tenantPhone" name="tenantPhone" defaultValue={editingResident?.tenantPhone} className="col-span-3" />
+                                    </div>
+                                </>
                             ) : (
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label className="text-right">نام مالک</Label>
-                                    <p className="col-span-3 text-sm font-medium">
-                                        {editingResident?.name} {editingResident?.familyName}
-                                    </p>
-                                </div>
+                                <>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                        <Label className="text-right">نام مالک</Label>
+                                        <p className="col-span-3 text-sm font-medium">
+                                            {editingResident?.name} {editingResident?.familyName}
+                                        </p>
+                                    </div>
+                                     <div className="grid grid-cols-4 items-center gap-4">
+                                        <Label htmlFor="phone" className="text-right">شماره تماس</Label>
+                                        <Input id="phone" name="phone" defaultValue={editingResident?.phone} className="col-span-3" />
+                                    </div>
+                                </>
                             )}
 
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="phone" className="text-right">شماره تماس</Label>
-                                <Input id="phone" name="phone" defaultValue={editingResident?.phone} className="col-span-3" />
-                            </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="carPlates" className="text-right">پلاک خودرو</Label>
                                 <Input id="carPlates" name="carPlates" defaultValue={editingResident?.carPlates} className="col-span-3" />

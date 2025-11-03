@@ -12,8 +12,6 @@ export interface Personnel {
   photoUrl?: string;
   estateId: string;
   childrenCount?: number; // Added for payroll calculation
-  shiftDays?: string;
-  shiftHours?: string;
 }
 
 export interface Resident {
@@ -21,7 +19,8 @@ export interface Resident {
   name: string; // Owner's name, synced from Villa
   familyName: string; // Owner's familyName, synced from Villa
   tenantName?: string; // Tenant's name, if occupant is a tenant
-  phone: string;
+  tenantPhone?: string; // Tenant's phone, if occupant is a tenant
+  phone: string; // Owner's phone
   carPlates: string;
   villaNumber: number;
   status: 'ساکن' | 'خالی';
