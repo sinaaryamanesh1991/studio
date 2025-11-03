@@ -138,7 +138,7 @@ export default function PersonnelPage() {
             isNewPhoto = true;
         }
         
-        const newPerson: Personnel = {
+        const personData: Omit<Personnel, 'estateId'> = {
             id: personId,
             name: name,
             familyName: familyName,
@@ -150,12 +150,11 @@ export default function PersonnelPage() {
             accountNumber: formData.get('accountNumber') as string,
             insuranceNumber: formData.get('insuranceNumber') as string,
             photoUrl: photoUrl,
-            estateId: estateId,
             childrenCount: Number(formData.get('childrenCount') || 0),
         };
         
         const personRef = doc(firestore, 'estates', estateId, 'personnel', personId);
-        setDocumentNonBlocking(personRef, newPerson, { merge: true });
+        setDocumentNonBlocking(personRef, { ...personData, estateId }, { merge: true });
 
         // If a new photo was uploaded, create a corresponding document
         if (isNewPhoto && photoUrl) {
