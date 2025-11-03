@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { Users, Home, ArrowLeft, Loader2, DollarSign } from 'lucide-react';
+import { Users, Home, Loader2, DollarSign, ArrowLeft } from 'lucide-react';
 import type { Resident, Villa, Personnel } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,11 @@ const personnelStatusVariant = {
   'اتمام کار': 'destructive',
   'مرخصی': 'secondary',
   'غیبت': 'outline',
+} as const;
+
+const residentStatusVariant = {
+  'ساکن': 'default',
+  'خالی': 'secondary',
 } as const;
 
 
@@ -185,6 +190,65 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+       <Card className="mt-6">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>مدیریت ساکنین</CardTitle>
+            <CardDescription>
+              لیست کامل ساکنین و وضعیت حضور آنها.
+            </CardDescription>
+          </div>
+          <Button asChild variant="outline">
+            <Link href="/residents">
+              مشاهده همه
+              <ArrowLeft className="mr-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>شماره ویلا</TableHead>
+                <TableHead>نام و نام خانوادگی</TableHead>
+                <TableHead>شماره تماس</TableHead>
+                <TableHead>پلاک خودرو</TableHead>
+                <TableHead>وضعیت سکونت</TableHead>
+                <TableHead>وضعیت حضور</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident) => (
+                <TableRow key={resident.id}>
+                  <TableCell className="font-mono font-medium">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
+                  <TableCell>{resident.name} {resident.familyName}</TableCell>
+                  <TableCell>{resident.phone}</TableCell>
+                  <TableCell>{resident.carPlates}</TableCell>
+                   <TableCell>
+                      <Badge variant={residentStatusVariant[resident.status]}>{resident.status}</Badge>
+                   </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2 space-x-reverse">
+                      <Switch
+                        checked={resident.isPresent}
+                        onCheckedChange={(checked) => handleStatusChange(resident, checked)}
+                        aria-label="وضعیت حضور"
+                      />
+                       <span className="text-sm">{resident.isPresent ? 'حاضر' : 'غایب'}</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {(residents?.length ?? 0) === 0 && (
+            <p className="text-center text-muted-foreground py-8">
+              هنوز هیچ ساکنی ثبت نشده است.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </>
   );
 }
