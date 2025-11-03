@@ -188,6 +188,7 @@ export default function DashboardPage() {
                     <TableHead>شماره ویلا</TableHead>
                     <TableHead>نوع سکونت</TableHead>
                     <TableHead>نام مالک</TableHead>
+                    <TableHead>شماره تماس مالک</TableHead>
                     <TableHead>نام ساکن (مستاجر)</TableHead>
                     <TableHead>پلاک خودرو</TableHead>
                     <TableHead>وضعیت حضور</TableHead>
@@ -216,6 +217,7 @@ export default function DashboardPage() {
                           </div>
                        </TableCell>
                       <TableCell>{villa?.owner || '-'}</TableCell>
+                      <TableCell>{resident.phone}</TableCell>
                       <TableCell>
                         {resident.occupantType === 'tenant' ? (
                             <Input
@@ -252,7 +254,7 @@ export default function DashboardPage() {
                                 className="w-32"
                             />
                         ) : (
-                            <span>{resident.phone}</span>
+                            <span>-</span>
                         )}
                        </TableCell>
                     </TableRow>
