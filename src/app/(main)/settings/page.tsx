@@ -224,14 +224,24 @@ function ShiftSettingsForm() {
         }
     }, [shifts]);
 
-    const handleShiftChange = (index: number, field: 'name' | 'hours', value: string) => {
+    const handleShiftNameChange = (index: number, value: string) => {
         const newList = [...shiftList];
-        newList[index] = { ...newList[index], [field]: value };
+        newList[index] = { ...newList[index], name: value };
         setShiftList(newList);
     };
 
+    const handleShiftTimeChange = (index: number, part: 'from' | 'to', value: string) => {
+        const newList = [...shiftList];
+        const currentHours = newList[index].hours?.split('-') || ['',''];
+        const from = part === 'from' ? value : currentHours[0];
+        const to = part === 'to' ? value : currentHours[1];
+        newList[index] = { ...newList[index], hours: `${from}-${to}`};
+        setShiftList(newList);
+    };
+
+
     const handleAddNewShift = () => {
-        setShiftList([...shiftList, { id: `shift${Date.now()}`, name: '', hours: '' }]);
+        setShiftList([...shiftList, { id: `shift${Date.now()}`, name: '', hours: '-' }]);
     };
 
 
@@ -277,33 +287,45 @@ function ShiftSettingsForm() {
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {shiftList.map((shift, index) => (
-                        <div key={shift.id || index} className="flex items-end gap-4 p-4 border rounded-lg">
-                            <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor={`shift-name-${index}`}>نام شیفت</Label>
-                                    <Input
-                                        id={`shift-name-${index}`}
-                                        value={shift.name || ''}
-                                        onChange={(e) => handleShiftChange(index, 'name', e.target.value)}
-                                        placeholder="مثال: شیفت صبح"
-                                    />
+                    {shiftList.map((shift, index) => {
+                        const [from, to] = shift.hours?.split('-') || ['',''];
+                        return (
+                            <div key={shift.id || index} className="flex items-end gap-4 p-4 border rounded-lg">
+                                <div className="flex-grow grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor={`shift-name-${index}`}>نام شیفت</Label>
+                                        <Input
+                                            id={`shift-name-${index}`}
+                                            value={shift.name || ''}
+                                            onChange={(e) => handleShiftNameChange(index, e.target.value)}
+                                            placeholder="مثال: شیفت صبح"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor={`shift-from-${index}`}>از ساعت</Label>
+                                        <Input
+                                            id={`shift-from-${index}`}
+                                            type="time"
+                                            value={from}
+                                            onChange={(e) => handleShiftTimeChange(index, 'from', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor={`shift-to-${index}`}>تا ساعت</Label>
+                                        <Input
+                                            id={`shift-to-${index}`}
+                                            type="time"
+                                            value={to}
+                                            onChange={(e) => handleShiftTimeChange(index, 'to', e.target.value)}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor={`shift-hours-${index}`}>ساعات شیفت</Label>
-                                    <Input
-                                        id={`shift-hours-${index}`}
-                                        value={shift.hours || ''}
-                                        onChange={(e) => handleShiftChange(index, 'hours', e.target.value)}
-                                        placeholder="مثال: 08:00-16:00"
-                                    />
-                                </div>
+                                <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveShift(index)}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
                             </div>
-                            <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveShift(index)}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    ))}
+                        )
+                    })}
                     <div className="flex justify-between items-center">
                          <Button type="button" variant="outline" onClick={handleAddNewShift}>
                             <PlusCircle className="ms-2 h-4 w-4" />
