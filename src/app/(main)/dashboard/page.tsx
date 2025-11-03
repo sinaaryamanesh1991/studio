@@ -190,10 +190,10 @@ export default function DashboardPage() {
                     <TableHead>نام مالک</TableHead>
                     <TableHead>شماره تماس مالک</TableHead>
                     <TableHead>نام ساکن (مستاجر)</TableHead>
+                    <TableHead>شماره تماس ساکن</TableHead>
                     <TableHead>پلاک خودرو</TableHead>
                     <TableHead>وضعیت حضور</TableHead>
                     <TableHead>وضعیت سکونت</TableHead>
-                    <TableHead>شماره تماس ساکن</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -230,6 +230,18 @@ export default function DashboardPage() {
                            <span>{resident.name} {resident.familyName}</span>
                         )}
                         </TableCell>
+                       <TableCell>
+                        {resident.occupantType === 'tenant' ? (
+                            <Input
+                                defaultValue={resident.tenantPhone}
+                                onBlur={(e) => handleTenantPhoneChange(resident, e.target.value)}
+                                placeholder="شماره مستاجر"
+                                className="w-32"
+                            />
+                        ) : (
+                            <span>-</span>
+                        )}
+                       </TableCell>
                       <TableCell>{resident.carPlates}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
@@ -244,18 +256,6 @@ export default function DashboardPage() {
                       </TableCell>
                        <TableCell>
                           <Badge variant={residentStatusVariant[resident.status]}>{resident.status}</Badge>
-                       </TableCell>
-                       <TableCell>
-                        {resident.occupantType === 'tenant' ? (
-                            <Input
-                                defaultValue={resident.tenantPhone}
-                                onBlur={(e) => handleTenantPhoneChange(resident, e.target.value)}
-                                placeholder="شماره مستاجر"
-                                className="w-32"
-                            />
-                        ) : (
-                            <span>-</span>
-                        )}
                        </TableCell>
                     </TableRow>
                   )})}
