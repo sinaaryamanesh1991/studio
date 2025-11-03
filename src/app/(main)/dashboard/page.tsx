@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { useMemo } from 'react';
+import { Input } from '@/components/ui/input';
 
 // Define a type for financial transactions to avoid 'any'
 interface Transaction {
@@ -91,10 +92,15 @@ export default function DashboardPage() {
       const updatedData = { ...resident, occupantType: isTenant ? 'tenant' : 'owner' };
       setDocumentNonBlocking(residentRef, updatedData, { merge: true });
   
-      // Also update the related villa
       const villaRef = doc(firestore, 'estates', estateId, 'villas', resident.villaId);
       setDocumentNonBlocking(villaRef, { occupantType: isTenant ? 'tenant' : 'owner' }, { merge: true });
   };
+
+  const handleTenantNameChange = (resident: Resident, tenantName: string) => {
+    if (!estateId) return;
+    const residentRef = doc(firestore, 'estates', estateId, 'residents', resident.id);
+    setDocumentNonBlocking(residentRef, { tenantName }, { merge: true });
+};
 
 
   if (globalLoading) {
@@ -174,7 +180,7 @@ export default function DashboardPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>شماره ویلا</TableHead>
-                    <TableHead>نام و نام خانوادگی</TableHead>
+                    <TableHead>نام ساکن</TableHead>
                     <TableHead>پلاک خودرو</TableHead>
                     <TableHead>وضعیت حضور</TableHead>
                     <TableHead>وضعیت سکونت</TableHead>
@@ -183,10 +189,25 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident) => (
+                  {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident) => {
+                    const villa = villas?.find(v => v.id === resident.villaId);
+                    const displayName = resident.occupantType === 'tenant' ? resident.tenantName : villa?.owner;
+                    
+                    return (
                     <TableRow key={resident.id}>
                       <TableCell className="font-mono font-medium">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
-                      <TableCell>{resident.name} {resident.familyName}</TableCell>
+                      <TableCell>
+                        {resident.occupantType === 'tenant' ? (
+                            <Input
+                                defaultValue={resident.tenantName}
+                                onBlur={(e) => handleTenantNameChange(resident, e.target.value)}
+                                placeholder="نام مستاجر"
+                                className="w-32"
+                            />
+                        ) : (
+                            <span>{displayName || `${resident.name} ${resident.familyName}`}</span>
+                        )}
+                        </TableCell>
                       <TableCell>{resident.carPlates}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
@@ -217,7 +238,7 @@ export default function DashboardPage() {
                        </TableCell>
                        <TableCell>{resident.phone}</TableCell>
                     </TableRow>
-                  ))}
+                  )})}
                 </TableBody>
               </Table>
               {(residents?.length ?? 0) === 0 && (

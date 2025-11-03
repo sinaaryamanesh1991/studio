@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Resident } from '@/lib/types';
+import type { Resident, Villa } from '@/lib/types';
 import { useState } from 'react';
 import {
     Dialog,
@@ -41,13 +41,20 @@ export default function ResidentsPage() {
     const { firestore, user } = useFirebase();
     const estateId = user?.uid;
     const residentsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'residents') : null, [firestore, estateId]);
-    const { data: residents, isLoading } = useCollection<Resident>(residentsQuery);
+    const { data: residents, isLoading: loadingResidents } = useCollection<Resident>(residentsQuery);
+
+    const villasQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'villas') : null, [firestore, estateId]);
+    const { data: villas, isLoading: loadingVillas } = useCollection<Villa>(villasQuery);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingResident, setEditingResident] = useState<Resident | null>(null);
 
+    // State for occupant type within the dialog
+    const [dialogOccupantType, setDialogOccupantType] = useState<'owner' | 'tenant'>('owner');
+
     const handleEdit = (resident: Resident) => {
         setEditingResident(resident);
+        setDialogOccupantType(resident.occupantType);
         setIsDialogOpen(true);
     };
     
@@ -58,11 +65,19 @@ export default function ResidentsPage() {
         const formData = new FormData(e.currentTarget);
         const newStatus = formData.get('status') as Resident['status'];
         const newOccupantType = (formData.get('occupantType') === 'on' ? 'tenant' : 'owner') as Resident['occupantType'];
+        const tenantName = formData.get('tenantName') as string || '';
+        
+        // Find the associated villa to get the owner's name if needed
+        const villa = villas?.find(v => v.id === editingResident.villaId);
+        const ownerName = villa?.owner.split(' ')[0] || '';
+        const ownerFamilyName = villa?.owner.split(' ')[1] || '';
+
 
         const updatedResident: Resident = {
             ...editingResident,
-            name: formData.get('name') as string,
-            familyName: formData.get('familyName') as string,
+            name: ownerName,
+            familyName: ownerFamilyName,
+            tenantName: newOccupantType === 'tenant' ? tenantName : '',
             phone: formData.get('phone') as string,
             carPlates: formData.get('carPlates') as string,
             villaNumber: parseInt(formData.get('villaNumber') as string, 10),
@@ -75,8 +90,10 @@ export default function ResidentsPage() {
         setDocumentNonBlocking(residentRef, updatedResident, { merge: true });
 
         // Also update the related villa
-        const villaRef = doc(firestore, 'estates', estateId, 'villas', editingResident.villaId);
-        setDocumentNonBlocking(villaRef, { occupantType: newOccupantType }, { merge: true });
+        if (villa) {
+            const villaRef = doc(firestore, 'estates', estateId, 'villas', editingResident.villaId);
+            setDocumentNonBlocking(villaRef, { occupantType: newOccupantType }, { merge: true });
+        }
 
 
         setIsDialogOpen(false);
@@ -89,6 +106,8 @@ export default function ResidentsPage() {
         const updatedData = { ...resident, isPresent, status: isPresent ? 'ساکن' : 'خالی' };
         setDocumentNonBlocking(residentRef, updatedData, { merge: true });
     };
+
+    const isLoading = loadingResidents || loadingVillas;
 
     if (isLoading) {
         return <div>در حال بارگذاری...</div>;
@@ -103,8 +122,7 @@ export default function ResidentsPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>شماره ویلا</TableHead>
-                                <TableHead>نام</TableHead>
-                                <TableHead>نام خانوادگی</TableHead>
+                                <TableHead>نام ساکن</TableHead>
                                 <TableHead>شماره تماس</TableHead>
                                 <TableHead>پلاک خودرو</TableHead>
                                 <TableHead>وضعیت</TableHead>
@@ -112,11 +130,12 @@ export default function ResidentsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {residents?.sort((a, b) => a.villaNumber - b.villaNumber).map((resident) => (
+                            {residents?.sort((a, b) => a.villaNumber - b.villaNumber).map((resident) => {
+                                const displayName = resident.occupantType === 'tenant' && resident.tenantName ? resident.tenantName : `${resident.name} ${resident.familyName}`;
+                                return (
                                 <TableRow key={resident.id}>
                                     <TableCell className="font-medium font-mono">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
-                                    <TableCell>{resident.name}</TableCell>
-                                    <TableCell>{resident.familyName}</TableCell>
+                                    <TableCell>{displayName}</TableCell>
                                     <TableCell>{resident.phone}</TableCell>
                                     <TableCell>{resident.carPlates}</TableCell>
                                     <TableCell>
@@ -146,14 +165,14 @@ export default function ResidentsPage() {
                                         </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            )})}
                         </TableBody>
                     </Table>
                 </CardContent>
             </Card>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] font-body">
+                <DialogContent className="sm:max-w-md font-body">
                     <form onSubmit={handleSave}>
                         <DialogHeader>
                             <DialogTitle>ویرایش اطلاعات ساکن</DialogTitle>
@@ -166,14 +185,34 @@ export default function ResidentsPage() {
                                 <Label htmlFor="villaNumber" className="text-right">شماره ویلا</Label>
                                 <Input id="villaNumber" name="villaNumber" defaultValue={editingResident?.villaNumber} className="col-span-3" readOnly />
                             </div>
+                            
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="name" className="text-right">نام</Label>
-                                <Input id="name" name="name" defaultValue={editingResident?.name} className="col-span-3" />
+                                <Label htmlFor="occupantType" className="text-right">نوع سکونت</Label>
+                                <div className="col-span-3 flex items-center space-x-2 space-x-reverse">
+                                  <Switch
+                                      id="occupantType"
+                                      name="occupantType"
+                                      checked={dialogOccupantType === 'tenant'}
+                                      onCheckedChange={(checked) => setDialogOccupantType(checked ? 'tenant' : 'owner')}
+                                  />
+                                  <Label htmlFor="occupantType">{dialogOccupantType === 'tenant' ? 'مستاجر' : 'مالک'}</Label>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="familyName" className="text-right">نام خانوادگی</Label>
-                                <Input id="familyName" name="familyName" defaultValue={editingResident?.familyName} className="col-span-3" />
-                            </div>
+                            
+                            {dialogOccupantType === 'tenant' ? (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="tenantName" className="text-right">نام مستاجر</Label>
+                                    <Input id="tenantName" name="tenantName" defaultValue={editingResident?.tenantName} className="col-span-3" />
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label className="text-right">نام مالک</Label>
+                                    <p className="col-span-3 text-sm font-medium">
+                                        {editingResident?.name} {editingResident?.familyName}
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="phone" className="text-right">شماره تماس</Label>
                                 <Input id="phone" name="phone" defaultValue={editingResident?.phone} className="col-span-3" />
@@ -194,17 +233,7 @@ export default function ResidentsPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="occupantType" className="text-right">نوع سکونت</Label>
-                                <div className="col-span-3 flex items-center space-x-2 space-x-reverse">
-                                  <Switch
-                                      id="occupantType"
-                                      name="occupantType"
-                                      defaultChecked={editingResident?.occupantType === 'tenant'}
-                                  />
-                                  <Label htmlFor="occupantType">مستاجر</Label>
-                                </div>
-                            </div>
+                            
                         </div>
                         <DialogFooter>
                             <DialogClose asChild>

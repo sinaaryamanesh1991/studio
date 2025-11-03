@@ -12,12 +12,15 @@ export interface Personnel {
   photoUrl?: string;
   estateId: string;
   childrenCount?: number; // Added for payroll calculation
+  shiftDays?: string;
+  shiftHours?: string;
 }
 
 export interface Resident {
   id: string;
-  name: string;
-  familyName: string;
+  name: string; // Owner's name, synced from Villa
+  familyName: string; // Owner's familyName, synced from Villa
+  tenantName?: string; // Tenant's name, if occupant is a tenant
   phone: string;
   carPlates: string;
   villaNumber: number;
