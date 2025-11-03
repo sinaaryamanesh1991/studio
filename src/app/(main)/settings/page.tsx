@@ -5,13 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useDoc, useFirebase, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import type { CompanyInfo, PayrollSettings } from '@/lib/types';
+import { useDoc, useCollection, useFirebase, useMemoFirebase } from '@/firebase';
+import { doc, collection } from 'firebase/firestore';
+import type { CompanyInfo, PayrollSettings, ShiftSettings } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Trash2, PlusCircle } from 'lucide-react';
 
 
 function CompanyInfoForm() {
@@ -201,20 +202,139 @@ function PayrollSettingsForm() {
     );
 }
 
+function ShiftSettingsForm() {
+    const { firestore, user } = useFirebase();
+    const estateId = user?.uid;
+    const shiftsQuery = useMemoFirebase(() => estateId ? collection(firestore, 'estates', estateId, 'shifts') : null, [firestore, estateId]);
+    const { data: shifts, isLoading } = useCollection<ShiftSettings>(shiftsQuery);
+    const { toast } = useToast();
+    
+    const [shiftList, setShiftList] = useState<Partial<ShiftSettings>[]>([]);
+
+    useEffect(() => {
+        if (shifts) {
+            setShiftList(shifts);
+        } else {
+             // Set default shifts if none exist
+            setShiftList([
+                { id: 'shift1', name: 'شیفت صبح', hours: '08:00-16:00' },
+                { id: 'shift2', name: 'شیفت عصر', hours: '16:00-24:00' },
+                { id: 'shift3', name: 'شیفت شب', hours: '00:00-08:00' },
+            ]);
+        }
+    }, [shifts]);
+
+    const handleShiftChange = (index: number, field: 'name' | 'hours', value: string) => {
+        const newList = [...shiftList];
+        newList[index] = { ...newList[index], [field]: value };
+        setShiftList(newList);
+    };
+
+    const handleAddNewShift = () => {
+        setShiftList([...shiftList, { id: `shift${Date.now()}`, name: '', hours: '' }]);
+    };
+
+
+    const handleRemoveShift = (index: number) => {
+        const shiftToRemove = shiftList[index];
+        if (shiftToRemove.id && estateId) {
+             const docRef = doc(firestore, 'estates', estateId, 'shifts', shiftToRemove.id);
+             deleteDocumentNonBlocking(docRef);
+             toast({ title: 'موفقیت', description: `شیفت "${shiftToRemove.name}" حذف شد.` });
+        }
+        const newList = shiftList.filter((_, i) => i !== index);
+        setShiftList(newList);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!estateId) return;
+
+        shiftList.forEach(shift => {
+            if (shift.id && shift.name && shift.hours) {
+                const docRef = doc(firestore, 'estates', estateId, 'shifts', shift.id);
+                setDocumentNonBlocking(docRef, {
+                    id: shift.id,
+                    name: shift.name,
+                    hours: shift.hours,
+                    estateId: estateId,
+                }, { merge: true });
+            }
+        });
+
+        toast({ title: 'موفقیت', description: 'تنظیمات شیفت با موفقیت ذخیره شد.' });
+    };
+
+    if (isLoading) return <div>در حال بارگذاری تنظیمات شیفت...</div>;
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>تنظیمات شیفت نگهبانی</CardTitle>
+                <CardDescription>
+                    شیفت‌های کاری نگهبانان را تعریف، ویرایش یا حذف کنید. این شیفت‌ها در صفحه شیفت‌بندی قابل انتخاب خواهند بود.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {shiftList.map((shift, index) => (
+                        <div key={shift.id || index} className="flex items-end gap-4 p-4 border rounded-lg">
+                            <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor={`shift-name-${index}`}>نام شیفت</Label>
+                                    <Input
+                                        id={`shift-name-${index}`}
+                                        value={shift.name || ''}
+                                        onChange={(e) => handleShiftChange(index, 'name', e.target.value)}
+                                        placeholder="مثال: شیفت صبح"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor={`shift-hours-${index}`}>ساعات شیفت</Label>
+                                    <Input
+                                        id={`shift-hours-${index}`}
+                                        value={shift.hours || ''}
+                                        onChange={(e) => handleShiftChange(index, 'hours', e.target.value)}
+                                        placeholder="مثال: 08:00-16:00"
+                                    />
+                                </div>
+                            </div>
+                            <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveShift(index)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ))}
+                    <div className="flex justify-between items-center">
+                         <Button type="button" variant="outline" onClick={handleAddNewShift}>
+                            <PlusCircle className="ms-2 h-4 w-4" />
+                            افزودن شیفت جدید
+                        </Button>
+                        <Button type="submit">ذخیره تنظیمات شیفت</Button>
+                    </div>
+                </form>
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function SettingsPage() {
     return (
         <>
             <PageHeader title="تنظیمات" />
             <Tabs defaultValue="company-info" className="w-full">
-                 <TabsList className="grid w-full grid-cols-2 mb-6">
+                 <TabsList className="grid w-full grid-cols-3 mb-6">
                     <TabsTrigger value="company-info">اطلاعات پایه</TabsTrigger>
                     <TabsTrigger value="payroll-settings">تنظیمات حقوق</TabsTrigger>
+                    <TabsTrigger value="shift-settings">تنظیمات شیفت</TabsTrigger>
                 </TabsList>
                  <TabsContent value="company-info">
                     <CompanyInfoForm />
                 </TabsContent>
                  <TabsContent value="payroll-settings">
                     <PayrollSettingsForm />
+                </TabsContent>
+                <TabsContent value="shift-settings">
+                    <ShiftSettingsForm />
                 </TabsContent>
             </Tabs>
         </>

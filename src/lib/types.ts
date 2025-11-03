@@ -155,6 +155,28 @@ export interface PayrollSettings {
     estateId: string;
 }
 
+export interface ShiftSettings {
+    id: string;
+    name: string;
+    hours: string; // e.g., "08:00-16:00"
+    estateId: string;
+}
+
+export interface GuardShift {
+    id: string; // Should be the same as personnelId
+    personnelId: string;
+    estateId: string;
+    days: {
+        saturday: string; // Stores shiftId or 'off'
+        sunday: string;
+        monday: string;
+        tuesday: string;
+        wednesday: string;
+        thursday: string;
+        friday: string;
+    };
+}
+
 
 // This type combines all necessary inputs for a payroll calculation.
 // It's used by both the AI flow and the reliable TypeScript calculator.
@@ -167,5 +189,3 @@ export interface AutomatedPayrollCalculationInput extends Omit<PayrollSettings, 
   otherDeductions: number;
   entryTime: string;
 }
-
-    

@@ -15,6 +15,7 @@ import {
   Settings,
   List,
   DatabaseZap,
+  Clock,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -39,6 +40,7 @@ const navItems = [
   { href: '/personnel', label: 'پرسنل', icon: Users },
   { href: '/residents', label: 'ساکنین', icon: Home },
   { href: '/board-members', label: 'هیئت مدیره', icon: Briefcase },
+  { href: '/shifts', label: 'شیفت‌بندی نگهبانان', icon: Clock },
   { href: '/map', label: 'نقشه شهرک', icon: Map },
   { href: '/documents', label: 'اسناد و مدارک', icon: FileText },
 ];

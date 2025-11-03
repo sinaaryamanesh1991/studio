@@ -29,7 +29,9 @@
         "status": { "type": "string", "enum": ["مشغول کار", "اتمام کار", "مرخصی", "غیبت"] },
         "photoUrl": { "type": "string", "format": "uri", "description": "URL of the personnel's profile photo." },
         "childrenCount": { "type": "number", "description": "Number of children for payroll calculations." },
-        "estateId": { "type": "string", "description": "FK to Estate" }
+        "estateId": { "type": "string", "description": "FK to Estate" },
+        "shiftDays": { "type": "string" },
+        "shiftHours": { "type": "string" }
       },
       "required": ["id", "name", "familyName", "position", "status", "estateId"]
     },
@@ -47,9 +49,10 @@
         "status": { "type": "string", "enum": ["ساکن", "خالی"] },
         "isPresent": { "type": "boolean" },
         "estateId": { "type": "string", "description": "FK to Estate" },
-        "villaId": { "type": "string", "description": "FK to Villa"}
+        "villaId": { "type": "string", "description": "FK to Villa"},
+        "occupantType": { "type": "string", "enum": ["owner", "tenant"] }
       },
-      "required": ["id", "name", "familyName", "villaNumber", "status", "isPresent", "estateId", "villaId"]
+      "required": ["id", "name", "familyName", "villaNumber", "status", "isPresent", "estateId", "villaId", "occupantType"]
     },
     "BoardMember": {
       "title": "BoardMember",
@@ -206,6 +209,42 @@
         "netPay": { "type": "number" }
       },
       "required": ["id", "personnelId", "calculationDate", "grossPay", "netPay", "estateId"]
+    },
+    "ShiftSettings": {
+      "title": "ShiftSettings",
+      "type": "object",
+      "description": "Defines a specific shift pattern for guards.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "description": "e.g., 'شیفت صبح'" },
+        "hours": { "type": "string", "description": "e.g., '08:00-16:00'" },
+        "estateId": { "type": "string" }
+      },
+      "required": ["id", "name", "hours", "estateId"]
+    },
+    "GuardShift": {
+      "title": "GuardShift",
+      "type": "object",
+      "description": "Represents the weekly shift schedule for a single guard.",
+      "properties": {
+        "id": { "type": "string", "description": "Matches the personnelId of the guard." },
+        "personnelId": { "type": "string" },
+        "estateId": { "type": "string" },
+        "days": {
+          "type": "object",
+          "properties": {
+            "saturday": { "type": "string", "description": "FK to ShiftSettings ID, or 'off'." },
+            "sunday": { "type": "string" },
+            "monday": { "type": "string" },
+            "tuesday": { "type": "string" },
+            "wednesday": { "type": "string" },
+            "thursday": { "type": "string" },
+            "friday": { "type": "string" }
+          },
+          "required": ["saturday", "sunday", "monday", "tuesday", "wednesday", "thursday", "friday"]
+        }
+      },
+      "required": ["id", "personnelId", "estateId", "days"]
     }
   },
   "auth": {
@@ -269,6 +308,16 @@
         "path": "/estates/{estateId}/payrollRecords/{docId}",
         "schema": { "$ref": "#/entities/PayrollRecord" },
         "description": "Subcollection for storing calculated payroll records."
+      },
+      {
+        "path": "/estates/{estateId}/shifts/{shiftId}",
+        "schema": { "$ref": "#/entities/ShiftSettings" },
+        "description": "Subcollection for storing guard shift definitions."
+      },
+      {
+        "path": "/estates/{estateId}/guardShifts/{personnelId}",
+        "schema": { "$ref": "#/entities/GuardShift" },
+        "description": "Subcollection for storing the weekly shift schedule for guards."
       }
     ]
   }
