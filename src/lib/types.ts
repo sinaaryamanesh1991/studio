@@ -25,6 +25,7 @@ export interface Resident {
   isPresent: boolean;
   estateId: string;
   villaId: string;
+  occupantType: 'owner' | 'tenant';
 }
 
 export interface BoardMember {

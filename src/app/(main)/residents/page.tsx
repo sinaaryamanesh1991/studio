@@ -57,6 +57,8 @@ export default function ResidentsPage() {
 
         const formData = new FormData(e.currentTarget);
         const newStatus = formData.get('status') as Resident['status'];
+        const newOccupantType = (formData.get('occupantType') === 'on' ? 'tenant' : 'owner') as Resident['occupantType'];
+
         const updatedResident: Resident = {
             ...editingResident,
             name: formData.get('name') as string,
@@ -66,10 +68,16 @@ export default function ResidentsPage() {
             villaNumber: parseInt(formData.get('villaNumber') as string, 10),
             status: newStatus,
             isPresent: newStatus === 'ساکن',
+            occupantType: newOccupantType,
         };
 
         const residentRef = doc(firestore, 'estates', estateId, 'residents', updatedResident.id);
         setDocumentNonBlocking(residentRef, updatedResident, { merge: true });
+
+        // Also update the related villa
+        const villaRef = doc(firestore, 'estates', estateId, 'villas', editingResident.villaId);
+        setDocumentNonBlocking(villaRef, { occupantType: newOccupantType }, { merge: true });
+
 
         setIsDialogOpen(false);
         setEditingResident(null);
@@ -185,6 +193,17 @@ export default function ResidentsPage() {
                                         <SelectItem value="خالی">خالی</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="occupantType" className="text-right">نوع سکونت</Label>
+                                <div className="col-span-3 flex items-center space-x-2 space-x-reverse">
+                                  <Switch
+                                      id="occupantType"
+                                      name="occupantType"
+                                      defaultChecked={editingResident?.occupantType === 'tenant'}
+                                  />
+                                  <Label htmlFor="occupantType">مستاجر</Label>
+                                </div>
                             </div>
                         </div>
                         <DialogFooter>

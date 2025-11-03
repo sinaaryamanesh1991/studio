@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
 
 // Define a type for financial transactions to avoid 'any'
 interface Transaction {
@@ -60,6 +61,17 @@ export default function DashboardPage() {
     const residentRef = doc(firestore, 'estates', estateId, 'residents', resident.id);
     const updatedData = { ...resident, isPresent, status: isPresent ? 'ساکن' : 'خالی' };
     setDocumentNonBlocking(residentRef, updatedData, { merge: true });
+  };
+  
+  const handleOccupantTypeChange = (resident: Resident, isTenant: boolean) => {
+      if (!estateId) return;
+      const residentRef = doc(firestore, 'estates', estateId, 'residents', resident.id);
+      const updatedData = { ...resident, occupantType: isTenant ? 'tenant' : 'owner' };
+      setDocumentNonBlocking(residentRef, updatedData, { merge: true });
+  
+      // Also update the related villa
+      const villaRef = doc(firestore, 'estates', estateId, 'villas', resident.villaId);
+      setDocumentNonBlocking(villaRef, { occupantType: isTenant ? 'tenant' : 'owner' }, { merge: true });
   };
 
 
@@ -215,6 +227,7 @@ export default function DashboardPage() {
                 <TableHead>شماره تماس</TableHead>
                 <TableHead>پلاک خودرو</TableHead>
                 <TableHead>وضعیت سکونت</TableHead>
+                <TableHead>نوع سکونت</TableHead>
                 <TableHead>وضعیت حضور</TableHead>
               </TableRow>
             </TableHeader>
@@ -228,14 +241,28 @@ export default function DashboardPage() {
                    <TableCell>
                       <Badge variant={residentStatusVariant[resident.status]}>{resident.status}</Badge>
                    </TableCell>
+                   <TableCell>
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <Switch
+                            id={`occupant-switch-${resident.id}`}
+                            checked={resident.occupantType === 'tenant'}
+                            onCheckedChange={(checked) => handleOccupantTypeChange(resident, checked)}
+                            aria-label="نوع سکونت"
+                        />
+                        <Label htmlFor={`occupant-switch-${resident.id}`}>
+                            {resident.occupantType === 'tenant' ? 'مستاجر' : 'مالک'}
+                        </Label>
+                      </div>
+                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2 space-x-reverse">
                       <Switch
+                        id={`presence-switch-${resident.id}`}
                         checked={resident.isPresent}
                         onCheckedChange={(checked) => handleStatusChange(resident, checked)}
                         aria-label="وضعیت حضور"
                       />
-                       <span className="text-sm">{resident.isPresent ? 'حاضر' : 'غایب'}</span>
+                       <Label htmlFor={`presence-switch-${resident.id}`}>{resident.isPresent ? 'حاضر' : 'غایب'}</Label>
                     </div>
                   </TableCell>
                 </TableRow>
