@@ -152,234 +152,233 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      
-       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
-           <CardHeader>
-            <CardTitle>تراکنش های اخیر</CardTitle>
-            <CardDescription>
-              ۵ تراکنش آخر ثبت شده در سیستم
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>طرف حساب</TableHead>
-                        <TableHead>بابت</TableHead>
-                        <TableHead className="text-left">مبلغ (ریال)</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {transactions?.slice(0, 5).map(t => (
-                        <TableRow key={t.id}>
-                            <TableCell className="font-medium">{t.party}</TableCell>
-                            <TableCell>{t.reason}</TableCell>
-                            <TableCell className={`text-left font-mono ${t.type === 'دریافتی' ? 'text-green-600' : 'text-destructive'}`}>
-                                {`${t.type === 'دریافتی' ? '+' : '-'} ${t.amount.toLocaleString('fa-IR')}`}
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-            {(transactions?.length ?? 0) === 0 && (
-                <p className="text-center text-muted-foreground py-8">
-                    هنوز هیچ تراکنشی ثبت نشده است.
-                </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>پرسنل</CardTitle>
-            <CardDescription>
-              نمای کلی از کارکنان شهرک.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>نام پرسنل</TableHead>
-                        <TableHead>سمت</TableHead>
-                        <TableHead>وضعیت</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {personnel?.slice(0, 5).map((person) => (
-                        <TableRow key={person.id}>
-                             <TableCell>
-                                <div className="flex items-center gap-2">
-                                     <Avatar className="h-9 w-9">
-                                        <AvatarImage src={person.photoUrl} alt="Avatar" />
-                                        <AvatarFallback>
-                                            <Users className="h-5 w-5"/>
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex flex-col">
-                                        <span className="font-medium">{person.name} {person.familyName}</span>
-                                    </div>
-                                </div>
-                            </TableCell>
-                            <TableCell>{person.position}</TableCell>
-                            <TableCell>
-                                <Badge variant={personnelStatusVariant[person.status]}>{person.status}</Badge>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-             {(personnel?.length ?? 0) === 0 && (
-                <p className="text-center text-muted-foreground py-8">
-                    هنوز هیچ پرسنلی ثبت نشده است.
-                </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
 
-       <Card className="mt-6">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>مدیریت ساکنین</CardTitle>
-            <CardDescription>
-              لیست کامل ساکنین و وضعیت حضور آنها.
-            </CardDescription>
-          </div>
-          <Button asChild variant="outline">
-            <Link href="/residents">
-              مشاهده همه
-              <ArrowLeft className="mr-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>شماره ویلا</TableHead>
-                <TableHead>نام و نام خانوادگی</TableHead>
-                <TableHead>پلاک خودرو</TableHead>
-                <TableHead>وضعیت حضور</TableHead>
-                <TableHead>وضعیت سکونت</TableHead>
-                <TableHead>نوع سکونت</TableHead>
-                <TableHead>شماره تماس</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident) => (
-                <TableRow key={resident.id}>
-                  <TableCell className="font-mono font-medium">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
-                  <TableCell>{resident.name} {resident.familyName}</TableCell>
-                  <TableCell>{resident.carPlates}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2 space-x-reverse">
-                      <Switch
-                        id={`presence-switch-${resident.id}`}
-                        checked={resident.isPresent}
-                        onCheckedChange={(checked) => handleStatusChange(resident, checked)}
-                        aria-label="وضعیت حضور"
-                      />
-                       <Label htmlFor={`presence-switch-${resident.id}`}>{resident.isPresent ? 'حاضر' : 'غایب'}</Label>
-                    </div>
-                  </TableCell>
-                   <TableCell>
-                      <Badge variant={residentStatusVariant[resident.status]}>{resident.status}</Badge>
-                   </TableCell>
-                   <TableCell>
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <Switch
-                            id={`occupant-switch-${resident.id}`}
-                            checked={resident.occupantType === 'tenant'}
-                            onCheckedChange={(checked) => handleOccupantTypeChange(resident, checked)}
-                            aria-label="نوع سکونت"
-                        />
-                        <Label htmlFor={`occupant-switch-${resident.id}`}>
-                            {resident.occupantType === 'tenant' ? 'مستاجر' : 'مالک'}
-                        </Label>
-                      </div>
-                   </TableCell>
-                   <TableCell>{resident.phone}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          {(residents?.length ?? 0) === 0 && (
-            <p className="text-center text-muted-foreground py-8">
-              هنوز هیچ ساکنی ثبت نشده است.
-            </p>
-          )}
-        </CardContent>
-      </Card>
-      
-      <Card className="mt-6">
-        <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle>شیفت نگهبانی</CardTitle>
+       <div className="flex flex-col gap-6">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>مدیریت ساکنین</CardTitle>
                 <CardDescription>
-                نمای کلی برنامه هفتگی شیفت نگهبانان.
+                  لیست کامل ساکنین و وضعیت حضور آنها.
                 </CardDescription>
-            </div>
-            <Button asChild variant="outline">
-                <Link href="/shifts">
-                    مشاهده و ویرایش
-                    <ArrowLeft className="mr-2 h-4 w-4" />
+              </div>
+              <Button asChild variant="outline">
+                <Link href="/residents">
+                  مشاهده همه
+                  <ArrowLeft className="mr-2 h-4 w-4" />
                 </Link>
-            </Button>
-        </CardHeader>
-        <CardContent>
-            <div className="overflow-x-auto">
-                <Table>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>شماره ویلا</TableHead>
+                    <TableHead>نام و نام خانوادگی</TableHead>
+                    <TableHead>پلاک خودرو</TableHead>
+                    <TableHead>وضعیت حضور</TableHead>
+                    <TableHead>وضعیت سکونت</TableHead>
+                    <TableHead>نوع سکونت</TableHead>
+                    <TableHead>شماره تماس</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident) => (
+                    <TableRow key={resident.id}>
+                      <TableCell className="font-mono font-medium">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
+                      <TableCell>{resident.name} {resident.familyName}</TableCell>
+                      <TableCell>{resident.carPlates}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2 space-x-reverse">
+                          <Switch
+                            id={`presence-switch-${resident.id}`}
+                            checked={resident.isPresent}
+                            onCheckedChange={(checked) => handleStatusChange(resident, checked)}
+                            aria-label="وضعیت حضور"
+                          />
+                           <Label htmlFor={`presence-switch-${resident.id}`}>{resident.isPresent ? 'حاضر' : 'غایب'}</Label>
+                        </div>
+                      </TableCell>
+                       <TableCell>
+                          <Badge variant={residentStatusVariant[resident.status]}>{resident.status}</Badge>
+                       </TableCell>
+                       <TableCell>
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <Switch
+                                id={`occupant-switch-${resident.id}`}
+                                checked={resident.occupantType === 'tenant'}
+                                onCheckedChange={(checked) => handleOccupantTypeChange(resident, checked)}
+                                aria-label="نوع سکونت"
+                            />
+                            <Label htmlFor={`occupant-switch-${resident.id}`}>
+                                {resident.occupantType === 'tenant' ? 'مستاجر' : 'مالک'}
+                            </Label>
+                          </div>
+                       </TableCell>
+                       <TableCell>{resident.phone}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {(residents?.length ?? 0) === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  هنوز هیچ ساکنی ثبت نشده است.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+      
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>شیفت نگهبانی</CardTitle>
+                    <CardDescription>
+                    نمای کلی برنامه هفتگی شیفت نگهبانان.
+                    </CardDescription>
+                </div>
+                <Button asChild variant="outline">
+                    <Link href="/shifts">
+                        مشاهده و ویرایش
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                    </Link>
+                </Button>
+            </CardHeader>
+            <CardContent>
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className='min-w-[200px]'>نام نگهبان</TableHead>
+                                {weekDays.map(day => (
+                                    <TableHead key={day} className='min-w-[150px]'>{weekDayLabels[day]}</TableHead>
+                                ))}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {guards.map(guard => {
+                                const currentGuardShifts = guardShifts?.find(gs => gs.id === guard.id);
+                                return (
+                                    <TableRow key={guard.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Avatar className="h-9 w-9">
+                                                    <AvatarImage src={guard.photoUrl} alt={guard.name} />
+                                                    <AvatarFallback><Users className="h-5 w-5"/></AvatarFallback>
+                                                </Avatar>
+                                                <span>{guard.name} {guard.familyName}</span>
+                                            </div>
+                                        </TableCell>
+                                        {weekDays.map(day => {
+                                            const shiftId = currentGuardShifts?.days[day];
+                                            const shiftInfo = shifts?.find(s => s.id === shiftId);
+                                            const shiftLabel = shiftId === 'off' ? 'مرخصی' : (shiftInfo?.name || '-');
+                                            return (
+                                                <TableCell key={day}>
+                                                    <Badge variant={shiftId === 'off' ? 'secondary' : 'default'} className="whitespace-nowrap">
+                                                        {shiftLabel}
+                                                    </Badge>
+                                                </TableCell>
+                                            );
+                                        })}
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </div>
+                {guards.length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                        هیچ نگهبانی با وضعیت "مشغول کار" برای نمایش شیفت وجود ندارد.
+                    </p>
+                )}
+            </CardContent>
+        </Card>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="lg:col-span-3">
+              <CardHeader>
+                <CardTitle>پرسنل</CardTitle>
+                <CardDescription>
+                  نمای کلی از کارکنان شهرک.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className='min-w-[200px]'>نام نگهبان</TableHead>
-                            {weekDays.map(day => (
-                                <TableHead key={day} className='min-w-[150px]'>{weekDayLabels[day]}</TableHead>
-                            ))}
+                            <TableHead>نام پرسنل</TableHead>
+                            <TableHead>سمت</TableHead>
+                            <TableHead>وضعیت</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {guards.map(guard => {
-                            const currentGuardShifts = guardShifts?.find(gs => gs.id === guard.id);
-                            return (
-                                <TableRow key={guard.id}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <Avatar className="h-9 w-9">
-                                                <AvatarImage src={guard.photoUrl} alt={guard.name} />
-                                                <AvatarFallback><Users className="h-5 w-5"/></AvatarFallback>
-                                            </Avatar>
-                                            <span>{guard.name} {guard.familyName}</span>
+                        {personnel?.slice(0, 5).map((person) => (
+                            <TableRow key={person.id}>
+                                 <TableCell>
+                                    <div className="flex items-center gap-2">
+                                         <Avatar className="h-9 w-9">
+                                            <AvatarImage src={person.photoUrl} alt="Avatar" />
+                                            <AvatarFallback>
+                                                <Users className="h-5 w-5"/>
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">{person.name} {person.familyName}</span>
                                         </div>
-                                    </TableCell>
-                                    {weekDays.map(day => {
-                                        const shiftId = currentGuardShifts?.days[day];
-                                        const shiftInfo = shifts?.find(s => s.id === shiftId);
-                                        const shiftLabel = shiftId === 'off' ? 'مرخصی' : (shiftInfo?.name || '-');
-                                        return (
-                                            <TableCell key={day}>
-                                                <Badge variant={shiftId === 'off' ? 'secondary' : 'default'} className="whitespace-nowrap">
-                                                    {shiftLabel}
-                                                </Badge>
-                                            </TableCell>
-                                        );
-                                    })}
-                                </TableRow>
-                            );
-                        })}
+                                    </div>
+                                </TableCell>
+                                <TableCell>{person.position}</TableCell>
+                                <TableCell>
+                                    <Badge variant={personnelStatusVariant[person.status]}>{person.status}</Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
-            </div>
-            {guards.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">
-                    هیچ نگهبانی با وضعیت "مشغول کار" برای نمایش شیفت وجود ندارد.
-                </p>
-            )}
-        </CardContent>
-      </Card>
-
+                 {(personnel?.length ?? 0) === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                        هنوز هیچ پرسنلی ثبت نشده است.
+                    </p>
+                )}
+              </CardContent>
+            </Card>
+            <Card className="lg:col-span-4">
+               <CardHeader>
+                <CardTitle>تراکنش های اخیر</CardTitle>
+                <CardDescription>
+                  ۵ تراکنش آخر ثبت شده در سیستم
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>طرف حساب</TableHead>
+                            <TableHead>بابت</TableHead>
+                            <TableHead className="text-left">مبلغ (ریال)</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {transactions?.slice(0, 5).map(t => (
+                            <TableRow key={t.id}>
+                                <TableCell className="font-medium">{t.party}</TableCell>
+                                <TableCell>{t.reason}</TableCell>
+                                <TableCell className={`text-left font-mono ${t.type === 'دریافتی' ? 'text-green-600' : 'text-destructive'}`}>
+                                    {`${t.type === 'دریافتی' ? '+' : '-'} ${t.amount.toLocaleString('fa-IR')}`}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+                {(transactions?.length ?? 0) === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                        هنوز هیچ تراکنشی ثبت نشده است.
+                    </p>
+                )}
+              </CardContent>
+            </Card>
+        </div>
+      </div>
     </>
   );
 }
-
-    
