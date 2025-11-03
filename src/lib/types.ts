@@ -167,3 +167,5 @@ export interface AutomatedPayrollCalculationInput extends Omit<PayrollSettings, 
   otherDeductions: number;
   entryTime: string;
 }
+
+    
