@@ -185,60 +185,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-
-       <div className="mt-6">
-            <Card>
-                <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <CardTitle>ورود و خروج ساکنین</CardTitle>
-                            <CardDescription>وضعیت حضور ساکنین در شهرک</CardDescription>
-                        </div>
-                        <Button asChild variant="outline" size="sm">
-                            <Link href="/residents">
-                                <ArrowLeft className="ms-2 h-4 w-4" />
-                                مشاهده همه
-                            </Link>
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>شماره ویلا</TableHead>
-                            <TableHead>نام و نام خانوادگی</TableHead>
-                            <TableHead>وضعیت حضور</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {residents?.filter(r => r.status === 'ساکن').slice(0, 5).map((resident) => (
-                            <TableRow key={resident.id}>
-                                <TableCell className="font-mono">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
-                                <TableCell className="font-medium">{resident.name} {resident.familyName}</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center space-x-2 space-x-reverse">
-                                        <Switch
-                                            checked={resident.isPresent}
-                                            onCheckedChange={(checked) => handleStatusChange(resident, checked)}
-                                            aria-label="وضعیت حضور"
-                                        />
-                                        <Badge variant={resident.isPresent ? 'default' : 'secondary'}>{resident.isPresent ? 'حاضر' : 'خارج از شهرک'}</Badge>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                 {(residents?.filter(r => r.status === 'ساکن').length ?? 0) === 0 && (
-                    <p className="text-center text-muted-foreground py-8">
-                        هنوز هیچ ساکنی ثبت نشده است.
-                    </p>
-                 )}
-                </CardContent>
-            </Card>
-       </div>
     </>
   );
 }
