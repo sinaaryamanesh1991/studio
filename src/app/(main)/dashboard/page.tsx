@@ -192,7 +192,7 @@ export default function DashboardPage() {
                     <TableHead>پلاک خودرو</TableHead>
                     <TableHead>وضعیت حضور</TableHead>
                     <TableHead>وضعیت سکونت</TableHead>
-                    <TableHead>شماره تماس</TableHead>
+                    <TableHead>شماره تماس ساکن</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -421,7 +421,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
-    
-
-    
