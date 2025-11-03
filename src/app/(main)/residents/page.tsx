@@ -65,24 +65,18 @@ export default function ResidentsPage() {
         const formData = new FormData(e.currentTarget);
         const newStatus = formData.get('status') as Resident['status'];
         const newOccupantType = (formData.get('occupantType') === 'on' ? 'tenant' : 'owner') as Resident['occupantType'];
-        const tenantName = formData.get('tenantName') as string || '';
-        const tenantPhone = formData.get('tenantPhone') as string || '';
         
-        // Find the associated villa to get the owner's name if needed
-        const villa = villas?.find(v => v.id === editingResident.villaId);
-        const ownerName = villa?.owner.split(' ')[0] || '';
-        const ownerFamilyName = villa?.owner.split(' ')[1] || '';
+        const tenantName = newOccupantType === 'tenant' ? (formData.get('tenantName') as string) : '';
+        const tenantPhone = newOccupantType === 'tenant' ? (formData.get('tenantPhone') as string) : '';
+        const ownerPhone = newOccupantType === 'owner' ? (formData.get('phone') as string) : editingResident.phone;
 
 
         const updatedResident: Resident = {
             ...editingResident,
-            name: ownerName,
-            familyName: ownerFamilyName,
-            tenantName: newOccupantType === 'tenant' ? tenantName : '',
-            tenantPhone: newOccupantType === 'tenant' ? tenantPhone : '',
-            phone: newOccupantType === 'owner' ? (formData.get('phone') as string) : editingResident.phone,
+            tenantName: tenantName,
+            tenantPhone: tenantPhone,
+            phone: ownerPhone,
             carPlates: formData.get('carPlates') as string,
-            villaNumber: parseInt(formData.get('villaNumber') as string, 10),
             status: newStatus,
             isPresent: newStatus === 'ساکن',
             occupantType: newOccupantType,
@@ -92,6 +86,7 @@ export default function ResidentsPage() {
         setDocumentNonBlocking(residentRef, updatedResident, { merge: true });
 
         // Also update the related villa
+        const villa = villas?.find(v => v.id === editingResident.villaId);
         if (villa) {
             const villaRef = doc(firestore, 'estates', estateId, 'villas', editingResident.villaId);
             setDocumentNonBlocking(villaRef, { occupantType: newOccupantType }, { merge: true });
@@ -188,6 +183,13 @@ export default function ResidentsPage() {
                                 <Label htmlFor="villaNumber" className="text-right">شماره ویلا</Label>
                                 <Input id="villaNumber" name="villaNumber" defaultValue={editingResident?.villaNumber} className="col-span-3" readOnly />
                             </div>
+
+                             <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">نام مالک</Label>
+                                <p className="col-span-3 text-sm font-medium text-muted-foreground">
+                                    {villas?.find(v => v.id === editingResident?.villaId)?.owner || 'نامشخص'}
+                                </p>
+                            </div>
                             
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="occupantType" className="text-right">نوع سکونت</Label>
@@ -206,23 +208,17 @@ export default function ResidentsPage() {
                                 <>
                                     <div className="grid grid-cols-4 items-center gap-4">
                                         <Label htmlFor="tenantName" className="text-right">نام مستاجر</Label>
-                                        <Input id="tenantName" name="tenantName" defaultValue={editingResident?.tenantName} className="col-span-3" />
+                                        <Input id="tenantName" name="tenantName" defaultValue={editingResident?.tenantName} className="col-span-3" placeholder="نام کامل مستاجر را وارد کنید"/>
                                     </div>
                                     <div className="grid grid-cols-4 items-center gap-4">
                                         <Label htmlFor="tenantPhone" className="text-right">تماس مستاجر</Label>
-                                        <Input id="tenantPhone" name="tenantPhone" defaultValue={editingResident?.tenantPhone} className="col-span-3" />
+                                        <Input id="tenantPhone" name="tenantPhone" defaultValue={editingResident?.tenantPhone} className="col-span-3" placeholder="شماره موبایل مستاجر"/>
                                     </div>
                                 </>
                             ) : (
                                 <>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label className="text-right">نام مالک</Label>
-                                        <p className="col-span-3 text-sm font-medium">
-                                            {editingResident?.name} {editingResident?.familyName}
-                                        </p>
-                                    </div>
                                      <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="phone" className="text-right">شماره تماس</Label>
+                                        <Label htmlFor="phone" className="text-right">شماره تماس مالک</Label>
                                         <Input id="phone" name="phone" defaultValue={editingResident?.phone} className="col-span-3" />
                                     </div>
                                 </>
