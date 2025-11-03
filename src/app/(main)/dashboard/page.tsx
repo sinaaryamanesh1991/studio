@@ -186,7 +186,8 @@ export default function DashboardPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>شماره ویلا</TableHead>
-                    <TableHead>نام ساکن</TableHead>
+                    <TableHead>نام مالک</TableHead>
+                    <TableHead>نام ساکن (مستاجر)</TableHead>
                     <TableHead>پلاک خودرو</TableHead>
                     <TableHead>وضعیت حضور</TableHead>
                     <TableHead>وضعیت سکونت</TableHead>
@@ -197,11 +198,11 @@ export default function DashboardPage() {
                 <TableBody>
                   {residents?.sort((a,b) => a.villaNumber - b.villaNumber).map((resident) => {
                     const villa = villas?.find(v => v.id === resident.villaId);
-                    const displayName = resident.occupantType === 'tenant' ? resident.tenantName : villa?.owner;
                     
                     return (
                     <TableRow key={resident.id}>
                       <TableCell className="font-mono font-medium">{String(resident.villaNumber).padStart(2, '0')}</TableCell>
+                      <TableCell>{villa?.owner || '-'}</TableCell>
                       <TableCell>
                         {resident.occupantType === 'tenant' ? (
                             <Input
@@ -211,7 +212,7 @@ export default function DashboardPage() {
                                 className="w-32"
                             />
                         ) : (
-                            <span>{displayName || `${resident.name} ${resident.familyName}`}</span>
+                            <span className="text-muted-foreground">-</span>
                         )}
                         </TableCell>
                       <TableCell>{resident.carPlates}</TableCell>
